@@ -1,0 +1,23 @@
+version: '3'
+services: 
+    python1:
+        container_name: ml-api-service-1
+        restart: always
+        build: 
+            context: .
+            dockerfile: Dockerfile
+        ports: 
+            - "3000:3000"
+        command: ["poetry", "run", "uvicorn", "app.main:app", "--host=0.0.0.0", "--port=3000", "--workers=10"]
+    unit-tests:
+        image: fastapi-ml-scaffolding-unittests
+        build:
+            dockerfile: tests/Dockerfile
+            context: .
+        ports:
+            - "8000:8000"
+        environment:
+            - DEFAULT_MODEL_PATH=/sample_model/lin_reg_california_housing_model.joblib
+        volumes:
+            - .:/app
+        
