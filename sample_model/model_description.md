@@ -1,6 +1,6 @@
 ## Model Description
 
-### California Housing Prices 
+### California Housing Prices
 
 #### Model Features (as defined in original data set from the StatLib repo. http://lib.stat.cmu.edu/datasets/ [1])
 - MedInc median income in block*

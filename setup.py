@@ -2,10 +2,12 @@
 
 from distutils.core import setup
 
-setup(name='FastAPI Scaffolding',
-      version='1.0',
-      description='Sample code for FastAPI',
-      author='Jason Eisele',
-      author_email='jeisele@shipt.com',
-      packages=['fastapi_scaffolding'],
-      )
+setup(
+    name='NLP Service',
+    version='1.0',
+    description='NLP Service',
+    author='Tiberiu Ichim',
+    author_email='tiberiu.ichim@eaudeweb.ro',
+    packages=['app'],
+    install_requires=['venusian']
+)

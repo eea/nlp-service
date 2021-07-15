@@ -1,16 +1,16 @@
 from typing import Callable
 
+# from app.core.config import DEFAULT_MODEL_PATH
+# from app.services.models import HousePriceModel
 from fastapi import FastAPI
 from loguru import logger
 
-from app.core.config import DEFAULT_MODEL_PATH
-from app.services.models import HousePriceModel
-
 
 def _startup_model(app: FastAPI) -> None:
-    model_path = DEFAULT_MODEL_PATH
-    model_instance = HousePriceModel(model_path)
-    app.state.model = model_instance
+    # model_path = DEFAULT_MODEL_PATH
+    # model_instance = HousePriceModel(model_path)
+    # app.state.model = model_instance
+    pass
 
 
 def _shutdown_model(app: FastAPI) -> None:
