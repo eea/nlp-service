@@ -1,25 +1,16 @@
 import json
-import logging
 import time
 from pathlib import Path
 
-import pkg_resources
-from app.core.config import (CONCURRENT_REQUEST_PER_WORKER, LOG_LEVEL,
-                             PIPELINE_YAML_PATH, QUERY_PIPELINE_NAME)
+from app.core.config import (CONCURRENT_REQUEST_PER_WORKER, PIPELINE_YAML_PATH,
+                             QUERY_PIPELINE_NAME)
 from app.core.messages import NO_VALID_PAYLOAD
 from app.core.model import register_model
 from app.core.utils import RequestLimiter
-from app.data_models.search import Request, Response
+from app.data_models.qa import Request, Response
 from haystack import Pipeline
+from loguru import logger
 
-logging.getLogger("haystack").setLevel(LOG_LEVEL)
-logger = logging.getLogger("haystack")
-
-PIPELINE = Pipeline.load_from_yaml(
-    Path(PIPELINE_YAML_PATH),
-    pipeline_name=QUERY_PIPELINE_NAME
-)
-logger.info(f"Loaded pipeline nodes: {PIPELINE.graph.nodes.keys()}")
 concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 
@@ -50,10 +41,18 @@ def _process_request(pipeline, request) -> Response:
 
 @register_model('qa')
 class QAModel(object):
+    pipeline = None
 
-    def __init__(self, path):
-        self.path = path
-        self._load_local_model()
+    def __init__(self):
+        self.pipeline = Pipeline.load_from_yaml(
+            Path(PIPELINE_YAML_PATH),
+            pipeline_name=QUERY_PIPELINE_NAME
+        )
+        logger.info(
+            f"Loaded pipeline nodes: {self.pipeline.graph.nodes.keys()}"
+        )
+        # self.path = path
+        # self._load_local_model()
 
     def predict(self, payload: Request) -> Response:
         if payload is None:

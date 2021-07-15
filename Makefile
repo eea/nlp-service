@@ -89,3 +89,7 @@ test.local: setup
 .PHONY: run
 run:
 	poetry run uvicorn app.main:app
+
+.PHONY: gtop
+gtop:
+	sudo fuser -v /dev/nvidia*

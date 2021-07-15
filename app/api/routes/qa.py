@@ -1,15 +1,12 @@
-import logging
 from pathlib import Path
 
-from app.core.config import (CONCURRENT_REQUEST_PER_WORKER, LOG_LEVEL,
-                             PIPELINE_YAML_PATH, QUERY_PIPELINE_NAME)
+from app.core.config import (CONCURRENT_REQUEST_PER_WORKER, PIPELINE_YAML_PATH,
+                             QUERY_PIPELINE_NAME)
 from app.core.utils import RequestLimiter
 from app.data_models.search import Request, Response
 from fastapi import APIRouter
 from haystack import Pipeline
-
-logging.getLogger("haystack").setLevel(LOG_LEVEL)
-logger = logging.getLogger("haystack")
+from loguru import logger
 
 router = APIRouter()
 
