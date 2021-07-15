@@ -1,10 +1,15 @@
 version: '0.7'
 
+# See
+# https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml
+# for how to override from env
+
 components:    # define all the building-blocks for Pipeline
   - name: ElasticsearchDocumentStore
     type: ElasticsearchDocumentStore
     params:
       host: localhost
+      index: esbootstrapdata-wise
   - name: ESRetriever
     type: ElasticsearchRetriever
     params:
@@ -48,4 +53,3 @@ pipelines:
         inputs: [PDFFileConverter, TextFileConverter]
       - name: ElasticsearchDocumentStore
         inputs: [Preprocessor]
-
