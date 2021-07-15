@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel
 
 
-class Request(BaseModel):
+class QA_Request(BaseModel):
     query: str
     filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
     top_k_retriever: Optional[int] = None
