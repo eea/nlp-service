@@ -1,8 +1,9 @@
 from typing import Callable
 
-from app.core.model import MODELS
 from fastapi import FastAPI
 from loguru import logger
+
+from app.core.model import MODELS
 
 
 def _startup_models(app: FastAPI) -> None:

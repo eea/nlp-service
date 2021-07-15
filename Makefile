@@ -1,7 +1,16 @@
-PROJECT=fastapi-ml-scaffolding
+SHELL=/bin/bash
+
 PYTHON_VERSION=3.8.10
+PROJECT=eea-nlp-service
 
 SOURCE_OBJECTS=app tests
+
+RED=`tput setaf 1`
+GREEN=`tput setaf 2`
+RESET=`tput sgr0`
+YELLOW=`tput setaf 3`
+
+all: help
 
 deploy.requirements:
 	poetry export -f requirements.txt -o requirements.txt
@@ -38,8 +47,7 @@ lints: lints.flake8
 
 lints.strict: lints lints.pylint lints.flake8.strict lints.mypy
 
-
-setup: setup.python setup.sysdep.poetry setup.project
+setup: setup.python setup.sysdep.poetry setup.project		## Setup the development environment
 
 setup.uninstall: setup.python
 	poetry env remove ${PYTHON_VERSION} || true
@@ -74,7 +82,7 @@ test:
 
 test.clean:
 	docker-compose down
-	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
+	-docker images -a | grep ${eea-nlp-service} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
 
 test.shell:
@@ -87,9 +95,13 @@ test.local: setup
 	poetry run coverage run -m pytest
 
 .PHONY: run
-run:
+start:		## Start the development server
 	poetry run uvicorn app.main:app
 
 .PHONY: gtop
 gtop:
 	sudo fuser -v /dev/nvidia*
+
+.PHONY: help
+help:		## Show this help.
+	@echo -e "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s :)"

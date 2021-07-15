@@ -3,12 +3,17 @@ import logging
 import time
 from pathlib import Path
 
-from app.core.config import (CONCURRENT_REQUEST_PER_WORKER, LOG_LEVEL,
-                             PIPELINE_YAML_PATH, QUERY_PIPELINE_NAME)
-from app.data_models.search import Request, Response
 from fastapi import APIRouter
 from haystack import Pipeline
 from rest_api.controller.utils import RequestLimiter
+
+from app.core.config import (
+    CONCURRENT_REQUEST_PER_WORKER,
+    LOG_LEVEL,
+    PIPELINE_YAML_PATH,
+    QUERY_PIPELINE_NAME,
+)
+from app.data_models.search import Request, Response
 
 # from pydantic import BaseModel
 # from typing import Any, Dict, List, Optional, Union
@@ -21,7 +26,8 @@ router = APIRouter()
 
 
 PIPELINE = Pipeline.load_from_yaml(
-    Path(PIPELINE_YAML_PATH), pipeline_name=QUERY_PIPELINE_NAME)
+    Path(PIPELINE_YAML_PATH), pipeline_name=QUERY_PIPELINE_NAME
+)
 logger.info(f"Loaded pipeline nodes: {PIPELINE.graph.nodes.keys()}")
 concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
@@ -46,13 +52,22 @@ def _process_request(pipeline, request) -> Response:
                 values = [values]
             filters[key] = values
 
-    result = pipeline.run(query=request.query,
-                          filters=filters,
-                          top_k_retriever=request.top_k_retriever,
-                          top_k_reader=request.top_k_reader)
+    result = pipeline.run(
+        query=request.query,
+        filters=filters,
+        top_k_retriever=request.top_k_retriever,
+        top_k_reader=request.top_k_reader,
+    )
 
     end_time = time.time()
-    logger.info(json.dumps({"request": request.dict(
-    ), "response": result, "time": f"{(end_time - start_time):.2f}"}))
+    logger.info(
+        json.dumps(
+            {
+                "request": request.dict(),
+                "response": result,
+                "time": f"{(end_time - start_time):.2f}",
+            }
+        )
+    )
 
     return result

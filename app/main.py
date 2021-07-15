@@ -23,8 +23,11 @@ def get_app() -> FastAPI:
     # from a browser.
     # For production deployments, it could be made more restrictive.
     fast_app.add_middleware(
-        CORSMiddleware, allow_origins=["*"], allow_credentials=True,
-        allow_methods=["*"], allow_headers=["*"],
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     fast_app.add_exception_handler(HTTPException, http_error_handler)
@@ -35,13 +38,14 @@ def get_app() -> FastAPI:
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
 
     if IS_DEBUG:
+        logger.info("Open http://127.0.0.1:8000/docs to see Swagger API Documentation.")
         logger.info(
-            "Open http://127.0.0.1:8000/docs to see Swagger API Documentation.")
-        logger.info("""
+            """
         Or just try it out directly:
         curl --request POST --url 'http://127.0.0.1:8000/query' \
                 --data '{"query": "Did Albus Dumbledore die?"}'
-        """)
+        """
+        )
 
     return fast_app
 
