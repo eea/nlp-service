@@ -10,6 +10,7 @@ components:    # define all the building-blocks for Pipeline
     params:
       host: localhost
       index: esbootstrapdata-wise
+      create_index: false
   - name: ESRetriever
     type: ElasticsearchRetriever
     params:
