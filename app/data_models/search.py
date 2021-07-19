@@ -7,23 +7,16 @@ class SearchRequest(BaseModel):
     query: str
     filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
     top_k_retriever: Optional[int] = None
-    top_k_reader: Optional[int] = None
 
 
-class Answer(BaseModel):
-    answer: Optional[str]
-    question: Optional[str]
+class Document(BaseModel):
     score: Optional[float] = None
     probability: Optional[float] = None
     context: Optional[str]
-    offset_start: int
-    offset_end: int
-    offset_start_in_doc: Optional[int]
-    offset_end_in_doc: Optional[int]
     document_id: Optional[str] = None
     meta: Optional[Dict[str, Any]]
 
 
 class SearchResponse(BaseModel):
     query: str
-    answers: List[Answer]
+    documents: List[Document]

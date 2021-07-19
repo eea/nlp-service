@@ -7,5 +7,9 @@ from haystack.pipeline import DocumentSearchPipeline
 @register_model("search")
 class SearchModel(Pipeline):
     def __init__(self):
-        retriever = components['ESRetriever']
-        self.pipeline = DocumentSearchPipeline(retriever=retriever)
+        self.retriever = components['ESRetriever']
+        self.pipeline = DocumentSearchPipeline(retriever=self.retriever)
+
+    def predict(self, payload):
+        res = self.pipeline.run(**dict(payload))
+        return res

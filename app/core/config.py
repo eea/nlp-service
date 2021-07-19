@@ -39,6 +39,12 @@ def load_components(data):
     for definition in data["components"]:
         name = definition.pop("name")
         params = definition.get('params', {})
+
+        # loads references to other components
+        for k, v in params.items():
+            if isinstance(v, str) and v in components:
+                params[k] = components[v]
+
         components[name] = BaseComponent.load_from_args(
             definition['type'], **params
         )
