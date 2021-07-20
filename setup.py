@@ -9,5 +9,8 @@ setup(
     author='Tiberiu Ichim',
     author_email='tiberiu.ichim@eaudeweb.ro',
     packages=['app'],
-    install_requires=['venusian']
+    install_requires=[
+        'venusian',
+        'uvicorn',
+    ]
 )

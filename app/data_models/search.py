@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class SearchRequest(BaseModel):
     query: str
-    filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
+    # filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
     top_k_retriever: Optional[int] = None
 
 

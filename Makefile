@@ -1,7 +1,9 @@
+# TODO: also support fish
 SHELL=/bin/bash
 
 PYTHON_VERSION=3.8.10
 PROJECT=eea-nlp-service
+PIP=~/mambaforge/envs/py38/bin/pip
 
 SOURCE_OBJECTS=app tests
 
@@ -49,13 +51,24 @@ lints.strict: lints lints.pylint lints.flake8.strict lints.mypy
 
 setup: setup.python setup.sysdep.poetry setup.project		## Setup the development environment
 
+condaenv:
+	conda activate py38
+
+setup.conda:
+	conda install mamba -n base -c conda-forge
+	conda create -n py38 python=3.8
+	conda init fish
+	conda activate py38
+	mamba install pytorch cudatoolkit=10.2 -c pytorch tensorflow tensorflow-hub
+	pip install https://github.com/deepset-ai/haystack/archive/master.zip
+
 setup.uninstall: setup.python
 	poetry env remove ${PYTHON_VERSION} || true
 
 setup.ci: setup.ci.poetry setup.project
 
 setup.ci.poetry:
-	pip install poetry
+	${PIP} install poetry
 
 setup.project:
 	@poetry env use $$(python -c "import sys; print(sys.executable)")
