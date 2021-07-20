@@ -11,6 +11,7 @@ class QA_Request(BaseModel):
 
 
 class Answer(BaseModel):
+
     answer: Optional[str]
     question: Optional[str]
     score: Optional[float] = None
@@ -21,7 +22,9 @@ class Answer(BaseModel):
     offset_start_in_doc: Optional[int]
     offset_end_in_doc: Optional[int]
     document_id: Optional[str] = None
-    meta: Optional[Dict[str, Any]]
+    id: Optional[str] = None
+    source: Optional[Dict[str, Any]]
+    # meta: Optional[Dict[str, Any]]
 
 
 class Response(BaseModel):

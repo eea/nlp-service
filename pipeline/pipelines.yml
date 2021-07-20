@@ -41,6 +41,8 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: ElasticsearchDocumentStore    # params can reference other components defined in the YAML
       top_k: 5
+  - name: SearchlibAdapter
+    type: SearchlibAdapter
   - name: Reader       # custom-name for the component; helpful for visualization & debugging
     type: FARMReader    # Haystack Class name for the component
     params:
@@ -65,6 +67,8 @@ pipelines:
         inputs: [Query]
       - name: Reader
         inputs: [ESRetriever]
+      - name: SearchlibAdapter
+        inputs: [Reader]
 
   - name: indexing
     type: Indexing
