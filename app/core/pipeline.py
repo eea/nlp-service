@@ -31,7 +31,7 @@ def _process_request(pipeline, request):
 
     end_time = time.time()
     info = {
-        "request": request.dict(),
+        "request": request,
         "response": result,
         "time": f"{(end_time - start_time):.2f}",
     }
@@ -52,7 +52,7 @@ class PipelineModel(object):
             f"Loaded pipeline nodes: {self.pipeline.graph.nodes.keys()}")
 
     def _pre_process(self, payload):
-        return payload
+        return payload.dict()
 
     def _post_process(self, prediction):
         return prediction
