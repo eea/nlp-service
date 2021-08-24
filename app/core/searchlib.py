@@ -1,4 +1,3 @@
-# from app.data_models.qa import Answer
 from haystack import BaseComponent
 
 

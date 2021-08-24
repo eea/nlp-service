@@ -1,4 +1,7 @@
-from typing import Any, Dict, List, Optional, Union
+""" FastAPI data models for Question and Answer
+"""
+
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 

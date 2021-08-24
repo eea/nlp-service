@@ -58,6 +58,16 @@ components:    # define all the building-blocks for Pipeline
       split_length: 1000
   - name: FileTypeClassifier
     type: FileTypeClassifier
+  - name: QueryClassifier
+    type: TransformersQueryClassifier
+  - name: CategoryQuestion
+    type: Category
+    params:
+      category: "question"
+  - name: CategoryStatement
+    type: Category
+    params:
+      category: "statement"
 
 pipelines:
   - name: query    # a sample extractive-qa Pipeline
@@ -70,16 +80,26 @@ pipelines:
       - name: SearchlibAdapter
         inputs: [Reader]
 
-  - name: indexing
-    type: Indexing
+  - name: question    # a sample extractive-qa Pipeline
+    type: Query
     nodes:
-      - name: FileTypeClassifier
-        inputs: [File]
-      - name: TextFileConverter
-        inputs: [FileTypeClassifier.output_1]
-      - name: PDFFileConverter
-        inputs: [FileTypeClassifier.output_2]
-      - name: Preprocessor
-        inputs: [PDFFileConverter, TextFileConverter]
-      - name: ElasticsearchDocumentStore
-        inputs: [Preprocessor]
+      - name: QueryClassifier
+        inputs: [Query]
+      - name: CategoryQuestion
+        inputs: [QueryClassifier.output_1]
+      - name: CategoryStatement
+        inputs: [QueryClassifier.output_2]
+
+  # - name: indexing
+  #   type: Indexing
+  #   nodes:
+  #     - name: FileTypeClassifier
+  #       inputs: [File]
+  #     - name: TextFileConverter
+  #       inputs: [FileTypeClassifier.output_1]
+  #     - name: PDFFileConverter
+  #       inputs: [FileTypeClassifier.output_2]
+  #     - name: Preprocessor
+  #       inputs: [PDFFileConverter, TextFileConverter]
+  #     - name: ElasticsearchDocumentStore
+  #       inputs: [Preprocessor]

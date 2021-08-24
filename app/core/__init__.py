@@ -1,1 +1,1 @@
-from . import searchlib
+from . import category, searchlib  # no-qa

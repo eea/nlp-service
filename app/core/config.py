@@ -18,6 +18,7 @@ IS_DEBUG = os.getenv("DEBUG", True)
 QUERY_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "query")
 SEARCH_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "search")
 INDEXING_PIPELINE_NAME = os.getenv("INDEXING_PIPELINE_NAME", "indexing")
+QUESTION_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "question")
 
 FILE_UPLOAD_PATH = os.getenv("FILE_UPLOAD_PATH", "./file-upload")
 
