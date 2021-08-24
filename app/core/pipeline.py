@@ -11,23 +11,7 @@ from loguru import logger
 def _process_request(pipeline, request):
     start_time = time.time()
 
-    # filters = {}
-    # if request.filters:
-    #     # put filter values into a list and remove filters with null value
-    #     for key, values in request.filters.items():
-    #         if values is None:
-    #             continue
-    #         if not isinstance(values, list):
-    #             values = [values]
-    #         filters[key] = values
-
-    result = pipeline.run(
-        **request
-        # query=request.query,
-        # filters=filters,
-        # top_k_retriever=request.top_k_retriever,
-        # top_k_reader=request.top_k_reader,
-    )
+    result = pipeline.run(**request)
 
     end_time = time.time()
     info = {

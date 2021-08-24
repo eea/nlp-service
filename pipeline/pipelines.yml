@@ -60,6 +60,8 @@ components:    # define all the building-blocks for Pipeline
     type: FileTypeClassifier
   - name: QueryClassifier
     type: TransformersQueryClassifier
+    params:
+      model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
   - name: CategoryQuestion
     type: Category
     params:
