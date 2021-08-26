@@ -72,7 +72,7 @@ components:    # define all the building-blocks for Pipeline
       category: "statement"
 
 pipelines:
-  - name: query    # a sample extractive-qa Pipeline
+  - name: query    # an extractive-qa Pipeline
     type: Query
     nodes:
       - name: ESRetriever
@@ -82,7 +82,7 @@ pipelines:
       - name: SearchlibAdapter
         inputs: [Reader]
 
-  - name: question    # a sample extractive-qa Pipeline
+  - name: question    # classify queries in question/statement classes
     type: Query
     nodes:
       - name: QueryClassifier
@@ -91,6 +91,12 @@ pipelines:
         inputs: [QueryClassifier.output_1]
       - name: CategoryStatement
         inputs: [QueryClassifier.output_2]
+
+  # - name: reindex
+  #   type: Indexing
+  #   nodes:
+  #     - name: ElasticsearchDocumentStore
+  #       inputs: [top]
 
   # - name: indexing
   #   type: Indexing
