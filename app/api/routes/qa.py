@@ -10,6 +10,11 @@ concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 @router.post("/query", response_model=Response)
 def query(payload: QA_Request, request: Request):
-    model = request.app.state.qa
+    if payload.use_dp:
+        model = request.app.state.dp_qa
+    else:
+        model = request.app.state.qa
     with concurrency_limiter.run():
+        import pdb
+        pdb.set_trace()
         return model.predict(payload)

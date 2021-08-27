@@ -8,10 +8,11 @@ from pydantic import BaseModel
 
 class QA_Request(BaseModel):
     query: str
+    use_dp: bool
     custom_query: str
-    # filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
     top_k_retriever: Optional[int] = None
     top_k_reader: Optional[int] = None
+    # filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
 
 
 class Answer(BaseModel):

@@ -30,14 +30,20 @@ components:    # define all the building-blocks for Pipeline
     type: ElasticsearchDocumentStore
     params:
       host: localhost
-      index: global-search
+      index: wise_catalogue_measures
       create_index: false
-      text_field: description
+      text_field: "Measure name"
+      embedding_field: description_embedding
       search_fields:
-        - description
-      name_field: title
+        - "Measure name"
+      name_field: "Measure name"
   - name: ESRetriever
     type: ElasticsearchRetriever
+    params:
+      document_store: ElasticsearchDocumentStore    # params can reference other components defined in the YAML
+      top_k: 5
+  - name: DPRetriever
+    type: DensePassageRetriever
     params:
       document_store: ElasticsearchDocumentStore    # params can reference other components defined in the YAML
       top_k: 5
@@ -91,6 +97,16 @@ pipelines:
         inputs: [QueryClassifier.output_1]
       - name: CategoryStatement
         inputs: [QueryClassifier.output_2]
+
+  - name: dpquery    # an extractive-qa Pipeline
+    type: Query
+    nodes:
+      - name: DPRetriever
+        inputs: [Query]
+      - name: Reader
+        inputs: [DPRetriever]
+      - name: SearchlibAdapter
+        inputs: [Reader]
 
   # - name: reindex
   #   type: Indexing

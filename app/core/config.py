@@ -16,6 +16,7 @@ PIPELINE_YAML_PATH = os.getenv(
 
 IS_DEBUG = os.getenv("DEBUG", True)
 QUERY_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "query")
+DP_QUERY_PIPELINE_NAME = os.getenv("DP_QUERY_PIPELINE_NAME", "dpquery")
 SEARCH_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "search")
 INDEXING_PIPELINE_NAME = os.getenv("INDEXING_PIPELINE_NAME", "indexing")
 QUESTION_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "question")
