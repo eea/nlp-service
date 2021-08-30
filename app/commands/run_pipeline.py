@@ -26,6 +26,7 @@ def dpr_processing_pipeline(index, textfield, embeddingfield, host, port):  # ,
         ElasticsearchDocumentStore
     from haystack.retriever.dense import DensePassageRetriever
     from loguru import logger
+
     elastic = ElasticsearchDocumentStore(
         host=host,
         port=port,
