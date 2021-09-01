@@ -30,12 +30,12 @@ components:    # define all the building-blocks for Pipeline
     type: ElasticsearchDocumentStore
     params:
       host: localhost
-      index: global-search
+      index: global-search-documents
       create_index: false
-      text_field: "SearchableText"
-      embedding_field: "SearchableText_embeddings"
+      text_field: "text"
+      embedding_field: "text_embeddings"
       search_fields:
-      name_field: "Measure name"
+      name_field: "_id"
   - name: ESRetriever
     type: ElasticsearchRetriever
     params:
@@ -107,11 +107,11 @@ pipelines:
       - name: SearchlibAdapter
         inputs: [Reader]
 
-  # - name: reindex
-  #   type: Indexing
-  #   nodes:
-  #     - name: ElasticsearchDocumentStore
-  #       inputs: [top]
+  - name: preprocess
+    type: Indexing
+    nodes:
+      - name: Preprocessor
+        inputs: [File]
 
   # - name: indexing
   #   type: Indexing

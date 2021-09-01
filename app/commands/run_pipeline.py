@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import click
-from elasticsearch import Elasticsearch, RequestsHttpConnection
+from elasticsearch import Elasticsearch  # , RequestsHttpConnection
 
 
 def run_pipeline(pipeline_name, request):

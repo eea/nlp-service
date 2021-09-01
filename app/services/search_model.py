@@ -1,12 +1,12 @@
 from app.core.config import components
 from app.core.model import register_model
-from app.core.pipeline import Pipeline
-from haystack.pipeline import DocumentSearchPipeline
+from app.core.pipeline import PipelineModel
 
 
 @register_model("search")
-class SearchModel(Pipeline):
+class SearchModel(PipelineModel):
     def __init__(self):
+        from haystack.pipeline import DocumentSearchPipeline
         self.retriever = components['ESRetriever']
         self.pipeline = DocumentSearchPipeline(retriever=self.retriever)
 
