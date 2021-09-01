@@ -30,12 +30,11 @@ components:    # define all the building-blocks for Pipeline
     type: ElasticsearchDocumentStore
     params:
       host: localhost
-      index: wise_catalogue_measures
+      index: global-search
       create_index: false
-      text_field: "Measure name"
-      embedding_field: description_embedding
+      text_field: "SearchableText"
+      embedding_field: "SearchableText_embeddings"
       search_fields:
-        - "Measure name"
       name_field: "Measure name"
   - name: ESRetriever
     type: ElasticsearchRetriever

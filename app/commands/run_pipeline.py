@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import click
+from elasticsearch import Elasticsearch, RequestsHttpConnection
 
 
 def run_pipeline(pipeline_name, request):
@@ -21,11 +22,21 @@ def run_pipeline(pipeline_name, request):
 @click.argument('embeddingfield')
 @click.option('--host', default='localhost')
 @click.option('--port', default='9200')
-def dpr_processing_pipeline(index, textfield, embeddingfield, host, port):  # ,
+def dpr_processing_pipeline(index, textfield, embeddingfield, host, port):
     from haystack.document_store.elasticsearch import \
         ElasticsearchDocumentStore
     from haystack.retriever.dense import DensePassageRetriever
     from loguru import logger
+
+    client = Elasticsearch(hosts=[host], scheme='http', timeout=300)
+    client.indices.put_mapping({
+        "properties": {
+            embeddingfield: {
+                "type": "dense_vector",
+                "dims": 768     # default in ElasticsearchDocumentStore
+            }
+        }
+    }, index=index)
 
     elastic = ElasticsearchDocumentStore(
         host=host,
