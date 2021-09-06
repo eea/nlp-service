@@ -19,7 +19,10 @@ def _process_request(pipeline, request):
         "response": result,
         "time": f"{(end_time - start_time):.2f}",
     }
-    logger.info(json.dumps(info))
+    try:
+        logger.info(json.dumps(info))
+    except Exception:
+        pass
 
     return result
 

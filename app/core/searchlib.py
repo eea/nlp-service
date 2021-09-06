@@ -1,7 +1,7 @@
 from haystack import BaseComponent
 
 
-class SearchlibAdapter(BaseComponent):
+class SearchlibQAAdapter(BaseComponent):
 
     def run(self, **kwargs):
         # @(Pdb) pp kwargs['answers'][0]

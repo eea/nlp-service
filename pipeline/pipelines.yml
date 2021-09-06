@@ -46,8 +46,8 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: ElasticsearchDocumentStore    # params can reference other components defined in the YAML
       top_k: 5
-  - name: SearchlibAdapter
-    type: SearchlibAdapter
+  - name: SearchlibQAAdapter
+    type: SearchlibQAAdapter
   - name: Reader       # custom-name for the component; helpful for visualization & debugging
     type: FARMReader    # Haystack Class name for the component
     params:
@@ -75,6 +75,10 @@ components:    # define all the building-blocks for Pipeline
     type: Category
     params:
       category: "statement"
+  - name: Summarizer
+    type: TransformersSummarizer
+    params:
+      generate_single_summary: True
 
 pipelines:
   - name: query    # an extractive-qa Pipeline
@@ -84,7 +88,7 @@ pipelines:
         inputs: [Query]
       - name: Reader
         inputs: [ESRetriever]
-      - name: SearchlibAdapter
+      - name: SearchlibQAAdapter
         inputs: [Reader]
 
   - name: question    # classify queries in question/statement classes
@@ -104,7 +108,7 @@ pipelines:
         inputs: [Query]
       - name: Reader
         inputs: [DPRetriever]
-      - name: SearchlibAdapter
+      - name: SearchlibQAAdapter
         inputs: [Reader]
 
   - name: preprocess
@@ -112,6 +116,12 @@ pipelines:
     nodes:
       - name: Preprocessor
         inputs: [File]
+
+  - name: summarizer
+    type: Query
+    nodes:
+      - name: Summarizer
+        inputs: [Query]
 
   # - name: indexing
   #   type: Indexing

@@ -15,11 +15,16 @@ PIPELINE_YAML_PATH = os.getenv(
 )
 
 IS_DEBUG = os.getenv("DEBUG", True)
+
+
+# pipeline names, can be overriden from env
 QUERY_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "query")
 DP_QUERY_PIPELINE_NAME = os.getenv("DP_QUERY_PIPELINE_NAME", "dpquery")
 SEARCH_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "search")
 INDEXING_PIPELINE_NAME = os.getenv("INDEXING_PIPELINE_NAME", "indexing")
 QUESTION_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "question")
+SUMMARIZER_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "summarizer")
+
 
 FILE_UPLOAD_PATH = os.getenv("FILE_UPLOAD_PATH", "./file-upload")
 

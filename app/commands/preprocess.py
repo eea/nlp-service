@@ -13,6 +13,12 @@ from loguru import logger
 @click.option('--port', default='9200')
 def preprocess(input_index,
                input_text_field, output_index, split_length, host, port):
+    """
+    A pipeline that takes an ElasticSearch index and pipes it to another
+    destination index, converted as Haystack documents with DPR passage
+    embeddings
+    """
+
     from haystack.document_store.elasticsearch import \
         ElasticsearchDocumentStore
     from haystack.preprocessor import PreProcessor
