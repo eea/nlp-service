@@ -4,7 +4,7 @@ version: '0.7'
 
 services:    # define all the building-blocks for Pipeline
   - qa
-  # - question-classifier
-  # - question-generation
-  # - preprocessor
-  # - summarizer
+  - question-classifier
+  - question-generation
+  - preprocessor
+  - summarizer
