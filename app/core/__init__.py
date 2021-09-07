@@ -1,1 +1,1 @@
-from . import category, searchlib  # no-qa
+from . import components  # no-qa

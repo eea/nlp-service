@@ -42,8 +42,6 @@ def make_pipeline(pipeline_config, yaml_conf):
         definitions[name] = definition
 
     pipeline = Pipeline()
-    # import pdb
-    # pdb.set_trace()
 
     components: dict = {}  # instances of component objects.
     for node_config in pipeline_config["nodes"]:
@@ -65,6 +63,9 @@ class PipelineModel(object):
         pipeline_config, yaml_conf = PIPELINES[pipeline or self.pipeline_name]
         self.pipeline = make_pipeline(pipeline_config, yaml_conf)
 
+        self.pipeline_config = pipeline_config
+        self.yaml_config = yaml_conf
+
         logger.info(
             f"Loaded pipeline nodes: {self.pipeline.graph.nodes.keys()}")
 
@@ -82,7 +83,11 @@ class PipelineModel(object):
             raise ValueError(NO_VALID_PAYLOAD.format(payload))
 
         pre_processed_payload = self._pre_process(payload)
+
+        import pdb
+        pdb.set_trace()
         prediction = self._predict(pre_processed_payload)
+
         logger.info(prediction)
         post_processed_result = self._post_process(prediction)
 

@@ -1,4 +1,15 @@
-from haystack import BaseComponent
+from haystack.schema import BaseComponent
+
+
+class TransformersPipeline(BaseComponent):
+    def __init__(self, *args, **kwargs):
+        from transformers import pipeline
+        self.pipeline = pipeline(*args, **kwargs)
+
+    def run(self, *args, **kwargs):
+        payload = kwargs.get('payload', {})
+        result = self.pipeline(**payload)
+        return result, 'output_1'
 
 
 class SearchlibQAAdapter(BaseComponent):
@@ -19,3 +30,12 @@ class SearchlibQAAdapter(BaseComponent):
             doc['id'] = doc['document_id']
 
         return output, 'output_1'
+
+
+class Category(BaseComponent):
+
+    def __init__(self, *args, **kwargs):
+        self.category = kwargs.get('category', 'untitled')
+
+    def run(self, **kwargs):
+        return {"category": self.category}, 'output_1'

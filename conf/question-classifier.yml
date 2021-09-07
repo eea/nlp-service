@@ -1,6 +1,8 @@
 version: '1.0'
 
 package: app.api.services.question
+tags:
+  - classifier
 
 components:    # define all the building-blocks for Pipeline
   - name: CategoryQuestion

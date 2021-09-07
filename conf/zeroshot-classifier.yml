@@ -1,0 +1,20 @@
+version: '1.0'
+
+package: app.api.services.zeroshot
+prefix: /zeroshot
+tags:
+  - classifier
+
+components:
+  - name: ZeroShotClassifier
+    type: TransformersPipeline
+    params:
+      task: zero-shot-classification
+      model: cross-encoder/nli-roberta-base
+
+pipelines:
+  - name: zeroshot
+    type: Query
+    nodes:
+      - name: ZeroShotClassifier
+        inputs: [Query]
