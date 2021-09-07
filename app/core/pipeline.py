@@ -84,8 +84,6 @@ class PipelineModel(object):
 
         pre_processed_payload = self._pre_process(payload)
 
-        import pdb
-        pdb.set_trace()
         prediction = self._predict(pre_processed_payload)
 
         logger.info(prediction)

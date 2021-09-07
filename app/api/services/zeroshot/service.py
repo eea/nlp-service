@@ -14,8 +14,16 @@ class ZeroShotClassifierModel(PipelineModel):
 
     def _post_process(self, prediction):
         # {'labels': ['technology', 'politics', 'sports'],
-        #  'scores': [0.9663877487182617, 0.017997432500123978, 0.015614871867001057],
+        #  'scores': [0.9663877487182617, 0.017997432500123978,
+        #             0.015614871867001057],
         #  'sequence': 'Apple just announced the newest iPhone X'}
-        import pdb
-        pdb.set_trace()
-        return prediction
+
+        threshold = self.pipeline_config.get('threshold', 0.5)
+
+        scores = dict(zip(prediction['labels'], prediction['scores']))
+        result = []
+        for label, score in scores.items():
+            if score > threshold:
+                result.append({"label": label, "score": score})
+
+        return {"labels": list(sorted(result, key=lambda x: x['score']))}

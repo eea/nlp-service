@@ -15,6 +15,7 @@ components:
 pipelines:
   - name: zeroshot
     type: Query
+    threshold: 0.1
     nodes:
       - name: ZeroShotClassifier
         inputs: [Query]

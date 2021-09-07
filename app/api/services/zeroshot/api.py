@@ -9,17 +9,17 @@ from pydantic import BaseModel
 
 
 class ZeroShotRequest(BaseModel):
-    text: str
-    candidate_labels: List[str]
+    text: str = "Apple just announced the newest iPhone X"
+    candidate_labels: List[str] = ["technology", "sports", "politics"]
 
 
-# class Label(BaseModel):
-#     question: str
-#     answer: str
+class Label(BaseModel):
+    label: str
+    score: float
 
 
 class ZeroShotResponse(BaseModel):
-    labels: List[str]
+    labels: List[Label]
 
     # text: str
     # questions: List[Label]
