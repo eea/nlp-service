@@ -13,10 +13,5 @@ concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 def query(payload: SummaryRequest, request: Request):
     model = request.app.state.summarizer_model
 
-    def _post_process(self, prediction):
-        # output_1 is Question
-        # output_2 is Keyword
-        return {"answer": prediction['category']}
-
     with concurrency_limiter.run():
         return model.predict(payload)

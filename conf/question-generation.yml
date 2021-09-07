@@ -1,0 +1,7 @@
+version: '1.0'
+
+package: app.api.services.questiongeneration
+prefix: /questiongeneration
+
+tags:
+  - qa

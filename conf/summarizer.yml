@@ -1,0 +1,16 @@
+version: '0.7'
+
+package: app.api.services.summarizer
+
+components:    # define all the building-blocks for Pipeline
+  - name: Summarizer
+    type: TransformersSummarizer
+    params:
+      generate_single_summary: True
+
+pipelines:
+  - name: summarizer
+    type: Query
+    nodes:
+      - name: Summarizer
+        inputs: [Query]

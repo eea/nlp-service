@@ -1,0 +1,16 @@
+package: app.api.services.preprocess
+
+components:
+  - name: Preprocessor
+    type: PreProcessor
+    params:
+      split_by: word
+      split_length: 1000
+
+pipelines:
+  - name: preprocess
+    type: Indexing
+    nodes:
+      - name: Preprocessor
+        inputs: [File]
+

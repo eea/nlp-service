@@ -1,0 +1,28 @@
+version: '1.0'
+
+package: app.api.services.question
+
+components:    # define all the building-blocks for Pipeline
+  - name: CategoryQuestion
+    type: Category
+    params:
+      category: "question"
+  - name: CategoryStatement
+    type: Category
+    params:
+      category: "statement"
+  - name: QueryClassifier
+    type: TransformersQueryClassifier
+    params:
+      model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
+
+pipelines:
+  - name: question    # classify queries in question/statement classes
+    type: Query
+    nodes:
+      - name: QueryClassifier
+        inputs: [Query]
+      - name: CategoryQuestion
+        inputs: [QueryClassifier.output_1]
+      - name: CategoryStatement
+        inputs: [QueryClassifier.output_2]
