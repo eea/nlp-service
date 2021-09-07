@@ -1,7 +1,8 @@
 from app.core.config import CONCURRENT_REQUEST_PER_WORKER
 from app.core.utils import RequestLimiter
-from app.data_models.search import SearchRequest, SearchResponse
 from fastapi import APIRouter, Request
+
+from .api import SearchRequest, SearchResponse
 
 router = APIRouter()
 

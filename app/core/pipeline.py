@@ -1,11 +1,16 @@
+import copy
 import json
 import time
-from pathlib import Path
 
-from app.core.config import PIPELINE_YAML_PATH
 from app.core.messages import NO_VALID_PAYLOAD
-from haystack import Pipeline
+from haystack.pipeline import Pipeline
 from loguru import logger
+
+PIPELINES = {}
+
+
+def add_pipeline(name, pipeline):
+    PIPELINES[name] = pipeline
 
 
 def _process_request(pipeline, request):
@@ -27,14 +32,39 @@ def _process_request(pipeline, request):
     return result
 
 
+def make_pipeline(pipeline_config, yaml_conf):
+    definitions = {}  # definitions of each component from the YAML.
+    component_definitions = copy.deepcopy(yaml_conf.get("components", []))
+
+    for definition in component_definitions:
+        Pipeline._overwrite_with_env_variables(definition)
+        name = definition.pop("name")
+        definitions[name] = definition
+
+    pipeline = Pipeline()
+    # import pdb
+    # pdb.set_trace()
+
+    components: dict = {}  # instances of component objects.
+    for node_config in pipeline_config["nodes"]:
+        name = node_config["name"]
+        component = Pipeline._load_or_get_component(
+            name=name, definitions=definitions, components=components)
+        pipeline.add_node(
+            component=component, name=node_config["name"],
+            inputs=node_config.get("inputs", []))
+
+    return pipeline
+
+
 class PipelineModel(object):
     pipeline = None
     pipeline_name = None
 
-    def __init__(self):
-        self.pipeline = Pipeline.load_from_yaml(
-            Path(PIPELINE_YAML_PATH), pipeline_name=self.pipeline_name
-        )
+    def __init__(self, pipeline=None):
+        pipeline_config, yaml_conf = PIPELINES[pipeline or self.pipeline_name]
+        self.pipeline = make_pipeline(pipeline_config, yaml_conf)
+
         logger.info(
             f"Loaded pipeline nodes: {self.pipeline.graph.nodes.keys()}")
 

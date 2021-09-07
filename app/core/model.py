@@ -1,5 +1,6 @@
 import venusian
 
+# This is a singleton that holds references to all the model loaders
 MODELS = {}
 
 

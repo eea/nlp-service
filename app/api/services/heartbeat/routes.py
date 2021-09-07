@@ -1,6 +1,5 @@
-from fastapi import APIRouter
-
 from app.data_models.heartbeat import HearbeatResult
+from fastapi import APIRouter
 
 router = APIRouter()
 

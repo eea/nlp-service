@@ -1,7 +1,8 @@
 from app.core.config import DP_QUERY_PIPELINE_NAME, QUERY_PIPELINE_NAME
 from app.core.model import register_model
 from app.core.pipeline import PipelineModel
-from app.data_models.qa import QA_Request, Response
+
+from .api import QA_Request, Response
 
 
 @register_model("qa")

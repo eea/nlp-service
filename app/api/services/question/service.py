@@ -2,7 +2,8 @@ from app.core.config import QUESTION_PIPELINE_NAME
 from app.core.messages import NO_VALID_PAYLOAD
 from app.core.model import register_model
 from app.core.pipeline import PipelineModel
-from app.data_models.question import QuestionRequest, QuestionResponse
+
+from .api import QuestionRequest, QuestionResponse
 
 
 @register_model("QUESTION_CLASSIFIER")

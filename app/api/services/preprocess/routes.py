@@ -1,7 +1,8 @@
 from app.core.config import CONCURRENT_REQUEST_PER_WORKER
 from app.core.utils import RequestLimiter
-from app.data_models.preprocess import PreprocessRequest, Response
 from fastapi import APIRouter, Request
+
+from .api import PreprocessRequest, Response
 
 router = APIRouter()
 
