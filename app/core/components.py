@@ -12,6 +12,34 @@ class TransformersPipeline(BaseComponent):
         return result, 'output_1'
 
 
+class SentenceTransformer(BaseComponent):
+    def __init__(self, *args, **kwargs):
+        # from sentence_transformers import SentenceTransformer
+        # self.model = SentenceTransformer(kwargs['model'])
+        import torch
+
+        self.torch = torch
+        from transformers import AutoModel, AutoTokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained(kwargs['model'])
+        self.model = AutoModel.from_pretrained(kwargs['model'])
+
+    def run(self, *args, **kwargs):
+        sentences = kwargs.get('sentences', [])
+        encoded_input = self.tokenizer(sentences, padding=True,
+                                       truncation=True, return_tensors='pt')
+        with self.torch.no_grad():
+            model_output = self.model(**encoded_input)
+
+        embeddings = self._cls_pooling(
+            model_output, encoded_input['attention_mask'])
+
+        result = list(zip(sentences, embeddings))
+        return result, 'output_1'
+
+    def _cls_pooling(self, model_output, attention_mask):
+        return model_output[0][:, 0]
+
+
 class SearchlibQAAdapter(BaseComponent):
 
     def run(self, **kwargs):

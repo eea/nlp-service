@@ -1,0 +1,19 @@
+version: '1.0'
+
+package: app.api.services.similarity
+prefix: /similarity
+tags:
+  - classifier
+
+components:
+  - name: SentenceSimilarity
+    type: SentenceTransformer
+    params:
+      model: 'sentence-transformers/facebook-dpr-ctx_encoder-multiset-base'
+
+pipelines:
+  - name: similarity
+    type: Query
+    nodes:
+      - name: SentenceSimilarity
+        inputs: [Query]

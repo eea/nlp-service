@@ -13,7 +13,7 @@ def add_pipeline(name, pipeline):
     PIPELINES[name] = pipeline
 
 
-def _process_request(pipeline, request):
+def process_request(pipeline, request):
     start_time = time.time()
 
     result = pipeline.run(**request)
@@ -76,7 +76,7 @@ class PipelineModel(object):
         return prediction
 
     def _predict(self, payload):
-        return _process_request(self.pipeline, payload)
+        return process_request(self.pipeline, payload)
 
     def predict(self, payload):
         if payload is None:
