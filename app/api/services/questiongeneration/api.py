@@ -17,5 +17,5 @@ class QA(BaseModel):
 
 
 class QuestionGenerationResponse(BaseModel):
-    test: str
+    text: str
     questions: List[QA]
