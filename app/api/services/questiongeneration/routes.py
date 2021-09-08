@@ -14,4 +14,5 @@ def query(payload: QuestionGenerationRequest, request: Request):
     model = request.app.state.question_generation_model_b
 
     with concurrency_limiter.run():
-        return model.predict(payload)
+        result = model.predict(payload)
+        return result
