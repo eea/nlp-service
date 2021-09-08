@@ -12,6 +12,33 @@ class TransformersPipeline(BaseComponent):
         return result, 'output_1'
 
 
+class NERTransformersPipeline(TransformersPipeline):
+    def __init__(self, *args, **kwargs):
+        super(NERTransformersPipeline, self).__init__(*args, **kwargs)
+
+        from transformers import AutoTokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained(kwargs['model'])
+
+    def run(self, *args, **kwargs):
+        result, output = super(NERTransformersPipeline,
+                               self).run(*args, **kwargs)
+        # Result is like:
+        # [{'end': 5,
+        #     'entity': 'B-ORG',
+        #     'index': 1,
+        #     'score': 0.9973650574684143,
+        #     'start': 1,
+        #     'word': 'ĠApple'}]
+        for entry in result:
+            entry['word'] = self.tokenizer\
+                .convert_tokens_to_string([entry['word']]).strip()
+            entry['score'] = float(entry['score'])
+            entry['start'] = int(entry['start'])
+            entry['end'] = int(entry['end'])
+
+        return result, output
+
+
 class SentenceTransformer(BaseComponent):
     def __init__(self, *args, **kwargs):
         # from sentence_transformers import SentenceTransformer

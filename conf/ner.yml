@@ -1,0 +1,23 @@
+version: '1.0'
+
+package: app.api.services.ner
+prefix: /ner
+tags:
+  - classifier
+
+components:
+  - name: NERClassifier
+    type: NERTransformersPipeline
+    params:
+      task: ner
+      model: philschmid/distilroberta-base-ner-wikiann-conll2003-3-class
+      # model: cross-encoder/nli-roberta-base
+
+pipelines:
+  - name: ner
+    type: Query
+    threshold: 0.1
+    nodes:
+      - name: NERClassifier
+        inputs: [Query]
+
