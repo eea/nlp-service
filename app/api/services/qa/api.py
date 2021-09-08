@@ -7,11 +7,11 @@ from pydantic import BaseModel
 
 
 class QA_Request(BaseModel):
-    query: str
-    use_dp: bool
+    query: str = "where to go on holiday"
+    use_dp: bool = True
     custom_query: str
-    top_k_retriever: Optional[int] = None
-    top_k_reader: Optional[int] = None
+    top_k_retriever: Optional[int] = 10
+    top_k_reader: Optional[int] = 10
     # filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
 
 
