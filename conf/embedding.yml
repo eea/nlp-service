@@ -1,0 +1,19 @@
+version: '1.0'
+
+package: app.api.services.embedding
+prefix: /embedding
+tags:
+  - classifier
+
+components:
+  - name: EmbeddingModel
+    type: EmbeddingModel
+    params:
+      document_store:
+
+pipelines:
+  - name: embedding
+    type: Query
+    nodes:
+      - name: EmbeddingModel
+        inputs: [Query]

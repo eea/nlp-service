@@ -13,4 +13,4 @@ COPY . /app
 EXPOSE 8000
 
 # define the default command to run when starting the container
-CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "app.main:app"]
+CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "app.main:app"]
