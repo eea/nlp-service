@@ -1,16 +1,13 @@
-FROM python:3.6.13 as base
-
-# copy our project code
-COPY ./requirements.txt /app/requirements.txt
-
-WORKDIR /app
-# install our dependencies
-RUN pip3 install -r requirements.txt
+FROM python:3.8.10
 
 COPY . /app
 
-# expose the port 8000
-EXPOSE 8000
+RUN curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+RUN bash Mambaforge-$(uname)-$(uname -m).sh -b
 
-# define the default command to run when starting the container
-CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "app.main:app"]
+RUN ~/mambaforge/bin/mamba install pytorch cudatoolkit=10.2 tensorflow tensorflow-hub -c pytorch -y
+
+RUN pip install https://github.com/deepset-ai/haystack/archive/master.zip
+
+WORKDIR /app
+RUN pip install -r requirements.txt

@@ -1,94 +1,12 @@
-version: '3.5'
+version: '2'
 
 services:
-  weaviate:
-    image: semitechnologies/weaviate:1.6.0
-    # restart: on-failure:0
+  nlp:
+#    image: python:3.8.10
+    build: .
     ports:
-     - "8090:8080"
-    environment:
-      QUERY_DEFAULTS_LIMIT: 20
-      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
-      PERSISTENCE_DATA_PATH: "./data"
-      DEFAULT_VECTORIZER_MODULE: text2vec-transformers
-      ENABLE_MODULES: text2vec-transformers
-      TRANSFORMERS_INFERENCE_API: http://t2v-transformers:8080
-
-  t2v-transformers:
-    image: semitechnologies/transformers-inference:sentence-transformers-msmarco-distilroberta-base-v2
-    environment:
-      ENABLE_CUDA: 0 # set to 1 to enable
-      # NVIDIA_VISIBLE_DEVICES: all # enable if running with CUDA
-
-  contextionary:
-    environment:
-      OCCURRENCE_WEIGHT_LINEAR_FACTOR: 0.75
-      EXTENSIONS_STORAGE_MODE: weaviate
-      EXTENSIONS_STORAGE_ORIGIN: http://weaviate:8080
-      NEIGHBOR_OCCURRENCE_IGNORE_PERCENTILE: 5
-      ENABLE_COMPOUND_SPLITTING: 'false'
-    image: semitechnologies/contextionary:en0.16.0-v1.0.2
-
-  # python:
-  #   # container_name: ml-api-service
-  #   restart: always
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     ports:
-  #       - "4000:4000"
-  #     command: ["poetry", "run", "uvicorn", "app.main:app", "--host=0.0.0.0", "--port=4000", "--workers=10"]
-
-  # etcd:
-  #   container_name: milvus-etcd
-  #   image: quay.io/coreos/etcd:v3.5.0
-  #   volumes:
-  #     - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
-  #   command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
-  #
-  # minio:
-  #   container_name: milvus-minio
-  #   image: minio/minio:RELEASE.2020-12-03T00-03-10Z
-  #   environment:
-  #     MINIO_ACCESS_KEY: minioadmin
-  #     MINIO_SECRET_KEY: minioadmin
-  #   volumes:
-  #     - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
-  #   command: minio server /minio_data
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-  #     interval: 30s
-  #     timeout: 20s
-  #     retries: 3
-  #
-  # standalone:
-  #   container_name: milvus-standalone
-  #   image: milvusdb/milvus:v2.0.0-rc4-20210811-bdb8396
-  #   command: ["milvus", "run", "standalone"]
-  #   environment:
-  #     ETCD_ENDPOINTS: etcd:2379
-  #     MINIO_ADDRESS: minio:9000
-  #   volumes:
-  #     - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
-  #   ports:
-  #     - "19530:19530"
-  #   depends_on:
-  #     - "etcd"
-  #     - "minio"
-
-networks:
-  default:
-    name: milvus
-
-  # unit-tests:
-  #   image: fastapi-ml-scaffolding-unittests
-  #   build:
-  #     dockerfile: tests/Dockerfile
-  #     context: .
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     - DEFAULT_MODEL_PATH=/sample_model/lin_reg_california_housing_model.joblib
-  #   volumes:
-  #     - .:/app
-
+      - "8000:8000"
+    volumes:
+      - .:/nlp
+      - ./cache:/root/.cache
+    command: bash -c "tail -f /dev/null"
