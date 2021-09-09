@@ -41,8 +41,12 @@ def load_components(config):
 def get_app() -> FastAPI:
     """FastAPI app controller"""
 
-    with open(config.CONFIG_YAML_PATH, "r", encoding='utf-8') as stream:
-        conf = yaml.safe_load(stream)
+    if os.environ.get('NLP_SERVICES'):
+        service_names = os.environ['NLP_SERVICES'].strip().split(',')
+    else:
+        with open(config.CONFIG_YAML_PATH, "r", encoding='utf-8') as stream:
+            conf = yaml.safe_load(stream)
+            service_names = conf.get('services', [])
 
     fast_app = FastAPI(title=config.APP_NAME,
                        version=config.APP_VERSION, debug=config.IS_DEBUG)
@@ -61,7 +65,7 @@ def get_app() -> FastAPI:
     fast_app.add_exception_handler(HTTPException, http_error_handler)
     router = APIRouter()
 
-    for name in conf.get('services', []):
+    for name in service_names:
         logger.info(f"Loading service <{name}> started")
         with open(os.path.join(config.CONFIG_PATH, f"{name}.yml"), "r",
                   encoding='utf-8') as stream:

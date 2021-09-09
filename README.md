@@ -21,6 +21,12 @@ By default it would operate the following endpoints (go to
   provided text
 - **summarizer**: Automatically summarize text
 
+You can customize which services to start via an environment variable:
+
+```bash
+export NLP_SERVICES="embedding,ner,summarizer"
+```
+
 <!-- ## Installation/Setup -->
 <!-- Makefile provided to get you up and going quickly. -->
 <!-- ```bash -->
