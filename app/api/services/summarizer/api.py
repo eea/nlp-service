@@ -19,6 +19,8 @@ The joint report assesses the current state of emerging maritime transport susta
 
 “This joint report gives us an excellent overview of the present and future challenges related to maritime transport. The message is clear: maritime transport is expected to increase in the coming years and unless we act now, the sector will produce more and more greenhouse gas emissions, air pollutants and underwater noise. A smooth but rapid transition of the sector is crucial to meet the objectives of the European Green Deal and move towards carbon neutrality. This will also create new economic opportunities for the European transport industry as part of the necessary transition to a sustainable blue economy. The challenge is immense, but we have the technologies, the resources and the will to tackle it, said Virginijus Sinkevičius, European Commissioner for Environment, Oceans and Fisheries.
 """
+    # max_length: int = 250
+    # min_length: int = 5
 
 
 class SummaryResponse(BaseModel):

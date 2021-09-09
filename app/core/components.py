@@ -1,6 +1,23 @@
 from haystack.schema import BaseComponent
 
 
+class EmbeddingModel(BaseComponent):
+    def __init__(self, *args, **kwargs):
+        from haystack import Document
+        from haystack.retriever.dense import DensePassageRetriever
+
+        self.Document = Document
+        self.model = DensePassageRetriever(**kwargs)
+
+    def run(self, *args, **kwargs):
+        payload = kwargs.get('payload', [])
+        method = payload['is_passage'] \
+            and self.model.embed_passages or self.model.embed_queries
+        # documents = [self.Document(s) for s in payload['snippets']]
+        embeddings = method(payload['snippets'])
+        return embeddings, 'output_1'
+
+
 class TransformersPipeline(BaseComponent):
     def __init__(self, *args, **kwargs):
         from transformers import pipeline
@@ -65,6 +82,18 @@ class SentenceTransformer(BaseComponent):
 
     def _cls_pooling(self, model_output, attention_mask):
         return model_output[0][:, 0]
+
+    # Mean Pooling - Take attention mask into account for correct averaging
+    # def mean_pooling(self, model_output, attention_mask):
+    #     # First element of model_output contains all token embeddings
+    #     token_embeddings = model_output[0]
+    #     input_mask_expanded = attention_mask.unsqueeze(-1)\
+    #         .expand(token_embeddings.size()).float()
+    #     sum_embeddings = self.torch.sum(
+    #         token_embeddings * input_mask_expanded, 1)
+    #     sum_mask = self.torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+    #
+    #     return sum_embeddings / sum_mask
 
 
 class SearchlibQAAdapter(BaseComponent):

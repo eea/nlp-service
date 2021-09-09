@@ -7,6 +7,8 @@ components:    # define all the building-blocks for Pipeline
     type: TransformersSummarizer
     params:
       generate_single_summary: True
+      max_length: 500
+      min_length: 20
 
 pipelines:
   - name: summarizer
