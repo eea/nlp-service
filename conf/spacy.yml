@@ -1,0 +1,17 @@
+components:
+  - name: SpacyNER
+    type: SpacyModel
+    params:
+      model: en_core_web_trf
+      disable:
+        - tagger
+        - parser
+        - attribute_ruler
+        - lemmatizer
+
+pipelines:
+  - name: spacy_ner
+    type: Query
+    nodes:
+      - name: SpacyNER
+        inputs: [Query]

@@ -8,6 +8,9 @@ RUN bash Mambaforge-$(uname)-$(uname -m).sh -b
 RUN ~/mambaforge/bin/mamba install pytorch cudatoolkit=10.2 tensorflow tensorflow-hub -c pytorch -y
 
 RUN pip install https://github.com/deepset-ai/haystack/archive/master.zip
+RUN pip install spacy
+
+RUN python -m spacy download en_core_web_sm en_core_web_trf
 
 WORKDIR /app
 RUN pip install -r requirements.txt

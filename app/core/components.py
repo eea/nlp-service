@@ -1,6 +1,21 @@
 from haystack.schema import BaseComponent
 
 
+class SpacyModel(BaseComponent):
+    def __init__(self, *args, **kwargs):
+        import spacy
+        self.spacy = spacy
+        model = kwargs.get('model', 'en_core_web_trf')  # Transformers model
+        # for NER pipeline set disable to:
+        # ["tagger", "parser", "attribute_ruler", "lemmatizer"]
+        disable = kwargs.get('disable', [])
+        self.nlp = spacy.load(model, disable=disable)
+
+    def run(self, *args, **kwargs):
+        sentences = kwargs.get('texts', [])
+        return [self.nlp(text) for text in sentences], 'output_1'
+
+
 class EmbeddingModel(BaseComponent):
     def __init__(self, *args, **kwargs):
         from haystack import Document
