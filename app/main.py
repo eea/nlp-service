@@ -71,6 +71,8 @@ def get_app() -> FastAPI:
                   encoding='utf-8') as stream:
             service_conf = yaml.safe_load(stream)
 
+        service_conf = config.overwrite_with_env_variables(service_conf, name)
+
         load_components(service_conf)
         for pipeline_def in service_conf.get('pipelines', []):
             pipeline_name = pipeline_def['name']

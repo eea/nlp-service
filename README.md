@@ -15,6 +15,7 @@ By default it would operate the following endpoints (go to
 - **similarity**: Compute similarity between sentences
 - **zeroshot-classifier**: Classifiy text according to provided possible
   categories
+- **qa**: Question and answer model
 - **question-classifier**: Classify phrases in two categories:
   question/statement
 - **question-generation**: Generate questions and possible answers based on

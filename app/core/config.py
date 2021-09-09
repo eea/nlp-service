@@ -1,3 +1,4 @@
+import copy
 import os
 
 import pkg_resources
@@ -40,3 +41,19 @@ CONCURRENT_REQUEST_PER_WORKER = int(
 
 
 # components = load_components(conf)
+
+def overwrite_with_env_variables(conf: dict, component: str):
+    """
+    Overwrite the YAML configuration with environment variables.
+    Ex: QA_ELASTICSEARCHDOCUMENTSTORE_PARAMS_HOST=elastic
+    """
+    config = copy.deepcopy(conf)
+    definitions = config.get('components', [])
+    for definition in definitions:
+        env_prefix = f"{component}_{definition['name']}_params_".upper()
+        for key, value in os.environ.items():
+            if key.startswith(env_prefix):
+                param_name = key.replace(env_prefix, "").lower()
+                definition["params"][param_name] = value
+
+    return config
