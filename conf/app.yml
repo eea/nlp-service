@@ -11,4 +11,4 @@ services:    # define all the building-blocks for Pipeline
   - question-classifier
   - question-generation
   - summarizer
-  - preprocessor
+  # - preprocessor

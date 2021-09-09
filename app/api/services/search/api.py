@@ -9,7 +9,7 @@ from pydantic import BaseModel
 class SearchRequest(BaseModel):
     query: str
     # filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
-    top_k_retriever: Optional[int] = None
+    top_k_retriever: Optional[int] = 10
 
 
 class Document(BaseModel):
