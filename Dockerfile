@@ -1,4 +1,4 @@
-FROM python:3.8.10
+FROM deepset/haystack-gpu:0.9.0
 
 COPY . /app
 
