@@ -1,4 +1,4 @@
-""" FastAPI data models for similarity computation model
+""" FastAPI data models for sentence embeddings model
 """
 
 from typing import List
