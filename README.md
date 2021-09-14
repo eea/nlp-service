@@ -1,4 +1,4 @@
-# EEA SemanticSearch NLP Service
+# EEA AI NLP Service
 
 ## Requirements
 
@@ -56,3 +56,14 @@ export NLP_SERVICES="embedding,ner,summarizer"
 <!-- ```bash -->
 <!-- make format -->
 <!-- ``` -->
+
+## Copyright and license
+
+The Initial Owner of the Original Code is European Environment Agency (EEA).
+All Rights Reserved.
+
+See [LICENSE.md](https://github.com/eea/nlp-service/blob/master/LICENSE.md) for details.
+
+## Funding
+
+[European Environment Agency (EU)](http://eea.europa.eu)
