@@ -4,7 +4,7 @@ import os
 import pkg_resources
 
 APP_VERSION = "0.0.1"
-APP_NAME = "EEA SemanticSearch NLPService"
+APP_NAME = "EEA AI NLP Services"
 API_PREFIX = "/api"
 
 # haystack config
