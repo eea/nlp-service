@@ -6,5 +6,6 @@ from app.core.pipeline import PipelineModel
 class SpacyNERModel(PipelineModel):
     pipeline_name = 'spacy_ner'
 
-    def _post_process(self, documents):
+    def _post_process(self, prediction):
+        documents = prediction['documents']
         return {"documents": [doc.to_json() for doc in documents]}
