@@ -9,12 +9,12 @@ COPY . /app
 
 RUN pip install https://github.com/deepset-ai/haystack/archive/master.zip
 RUN pip install spacy[cuda102]
+WORKDIR /app
 RUN pip install -r requirements.txt
 
 RUN python -m spacy download en_core_web_sm
 RUN python -m spacy download en_core_web_trf
 
-WORKDIR /app
 
 # define the default command to run when starting the container
 CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "app.main:app"]
