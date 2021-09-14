@@ -9,9 +9,9 @@ from pydantic import BaseModel
 class EmbeddingRequest(BaseModel):
     is_passage: bool = False
     snippets: List[str] = [
-        "Where Is The Best APPLE JUST ANNOUNCED A NEW IPHONE?",
-        "27 Ways To Improve your stance",
-        "Avoid The Top 10 Mistakes Made By Beginning photographer"
+        "Maritime transport plays and will continue to play an essential role in global and European trade and economy.",
+        "The European Environment Agency provides sound, independent information on the environment for those involved in developing, adopting, implementing and evaluating environmental policy, and also the general public.",
+        "Climate-friendly practices for sourcing raw materials hold significant potential to cut greenhouse gas emissions in Europe and globally."
     ]
 
 
