@@ -62,7 +62,7 @@ export NLP_SERVICES="embedding,ner,summarizer"
 The Initial Owner of the Original Code is European Environment Agency (EEA).
 All Rights Reserved.
 
-See [LICENSE.md](https://github.com/eea/nlp-service/blob/master/LICENSE.md) for details.
+See [LICENSE](https://github.com/eea/nlp-service/blob/master/LICENSE) for details.
 
 ## Funding
 
