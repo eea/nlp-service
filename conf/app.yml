@@ -1,13 +1,13 @@
-vesion: '0.7'
+vesion: '1.0'
 
 # Add conf yml filenames here to bootstrap those processes
 
 services:    # define all the building-blocks for Pipeline
   # - embedding
-  - ner
+  # - ner
   # - qa
   # - question-classifier
-  # - question-generation
+  - question-generation
   # - similarity
   # - spacy
   # - summarizer

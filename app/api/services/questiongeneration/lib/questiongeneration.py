@@ -4,7 +4,7 @@ import json
 import random
 import re
 
-import en_core_web_sm
+import en_core_web_trf
 import numpy as np
 import torch
 from transformers import (AutoModelForSeq2SeqLM,
@@ -156,7 +156,7 @@ class QuestionGenerator:
 
     def _prepare_qg_inputs_MC(self, sentences):
 
-        spacy_nlp = en_core_web_sm.load()
+        spacy_nlp = en_core_web_trf.load()
         docs = list(spacy_nlp.pipe(sentences, disable=["parser"]))
         inputs_from_text = []
         answers_from_text = []
