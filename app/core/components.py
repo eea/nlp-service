@@ -90,9 +90,7 @@ class SentenceTransformer(BaseComponent):
         self.model = AutoModel.from_pretrained(kwargs['model'])
 
     def run(self, documents):
-        import pdb
-        pdb.set_trace()
-        sentences = params.get('sentences', [])
+        sentences = [doc.text for doc in documents]
         encoded_input = self.tokenizer(sentences, padding=True,
                                        truncation=True, return_tensors='pt')
         with self.torch.no_grad():
@@ -101,8 +99,10 @@ class SentenceTransformer(BaseComponent):
         embeddings = self._cls_pooling(
             model_output, encoded_input['attention_mask'])
 
-        result = list(zip(sentences, embeddings))
-        return {'result': result}, 'output_1'
+        for doc, embedding in zip(documents, embeddings):
+            doc.embedding = embedding
+
+        return {'documents': documents}, 'output_1'
 
     def _cls_pooling(self, model_output, attention_mask):
         return model_output[0][:, 0]

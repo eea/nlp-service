@@ -1,6 +1,7 @@
 import torch
 from app.core.model import register_model
 from app.core.pipeline import PipelineModel, process_request
+from haystack import Document
 from torch import Tensor
 
 
@@ -33,15 +34,19 @@ class SimilarityModel(PipelineModel):
     def _predict(self, payload):
         # See https://www.sbert.net/docs/usage/semantic_textual_similarity.html
         sentences = [payload['base']] + payload['candidates']
+        documents = [Document(text) for text in sentences]
+
         output = process_request(
-            self.pipeline, {'params': {'sentences': sentences}})
-        embeddings = output['result']
-        (base_text, base_embedding) = embeddings[0]
-        del embeddings[0]
+            self.pipeline, {'documents': documents})
+
+        documents = output['documents']
+
+        base_doc = documents[0]
+        del documents[0]
 
         predictions = []
-        for i, (text, emb) in enumerate(embeddings):
-            score = self.cos_sim(base_embedding, emb)
-            predictions.append({'score': score, "text": text})
+        for i, doc in enumerate(documents):
+            score = self.cos_sim(base_doc.embedding, doc.embedding)
+            predictions.append({'score': score, "text": doc.text})
 
-        return {"base": base_text, "predictions": predictions}
+        return {"base": base_doc.text, "predictions": predictions}
