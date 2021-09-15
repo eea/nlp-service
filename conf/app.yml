@@ -3,9 +3,9 @@ vesion: '0.7'
 # Add conf yml filenames here to bootstrap those processes
 
 services:    # define all the building-blocks for Pipeline
-  - spacy
+  # - spacy
   # - embedding
-  # - ner
+  - ner
   # - similarity
   # - zeroshot-classifier
   # - qa

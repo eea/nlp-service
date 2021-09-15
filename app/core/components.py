@@ -13,7 +13,8 @@ class SpacyModel(BaseComponent):
 
     def run(self, meta):
         sentences = meta.get('texts', [])
-        return {"documents": [self.nlp(text) for text in sentences]}, 'output_1'
+        return {"documents":
+                [self.nlp(text) for text in sentences]}, 'output_1'
 
 
 class EmbeddingModel(BaseComponent):
@@ -37,10 +38,9 @@ class TransformersPipeline(BaseComponent):
         from transformers import pipeline
         self.pipeline = pipeline(*args, **kwargs)
 
-    def run(self, *args, **kwargs):
-        payload = kwargs.get('payload', {})
+    def run(self, payload):
         result = self.pipeline(**payload)
-        return result, 'output_1'
+        return {"result": result}, 'output_1'
 
 
 class NERTransformersPipeline(TransformersPipeline):
@@ -50,9 +50,10 @@ class NERTransformersPipeline(TransformersPipeline):
         from transformers import AutoTokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(kwargs['model'])
 
-    def run(self, *args, **kwargs):
-        result, output = super(NERTransformersPipeline,
-                               self).run(*args, **kwargs)
+    def run(self, meta):
+        payload = {"inputs": [meta['text']]}
+
+        result, output = super(NERTransformersPipeline, self).run(payload)
         # Result is like:
         # [{'end': 5,
         #     'entity': 'B-ORG',
@@ -60,14 +61,14 @@ class NERTransformersPipeline(TransformersPipeline):
         #     'score': 0.9973650574684143,
         #     'start': 1,
         #     'word': 'ĠApple'}]
-        for entry in result:
+        for entry in result['result']:
             entry['word'] = self.tokenizer\
                 .convert_tokens_to_string([entry['word']]).strip()
             entry['score'] = float(entry['score'])
             entry['start'] = int(entry['start'])
             entry['end'] = int(entry['end'])
 
-        return result, output
+        return {"result": result['result']}, output
 
 
 class SentenceTransformer(BaseComponent):

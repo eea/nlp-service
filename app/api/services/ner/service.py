@@ -6,10 +6,6 @@ from app.core.pipeline import PipelineModel
 class NERClassifierModel(PipelineModel):
     pipeline_name = "ner"
 
-    def _pre_process(self, payload):
-        # See https://huggingface.co/transformers/usage.html#named-entity-recognition
-        return {'payload': {"inputs": [payload.text]}}
-
     def _post_process(self, prediction):
         # prediction is like:
         # [{'end': 5,
@@ -18,4 +14,4 @@ class NERClassifierModel(PipelineModel):
         # 'score': 0.9973650574684143,
         # 'start': 1,
         #   'word': ''}]
-        return {'entities': prediction}
+        return {'entities': prediction['result']}
