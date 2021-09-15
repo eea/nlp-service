@@ -115,7 +115,9 @@ class SentenceTransformer(BaseComponent):
 
 class SearchlibQAAdapter(BaseComponent):
 
-    def run(self, **kwargs):
+    def run(self, query, documents, answers):
+        import pdb
+        pdb.set_trace()
         # @(Pdb) pp kwargs['answers'][0]
         # {'answer': 'global warming and a rapidly evolving world economy',
         #  'context': 't local level are exacerbated by threats by global '

@@ -11,7 +11,8 @@ concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 @router.post("/query", response_model=Response)
 def query(payload: QA_Request, request: Request):
-    if payload.use_dp:
+    params = dict(dict(payload).get('params', {}))
+    if params.get('use_dp'):
         model = request.app.state.dp_qa
     else:
         model = request.app.state.qa

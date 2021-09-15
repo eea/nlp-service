@@ -6,7 +6,7 @@ tags:
 prefix: /qa
 
 components:    # define all the building-blocks for Pipeline
-  - name: ElasticsearchDocumentStore
+  - name: DocumentStore
     type: ElasticsearchDocumentStore
     params:
       host: localhost
@@ -14,19 +14,19 @@ components:    # define all the building-blocks for Pipeline
       create_index: false
       text_field: "text"
       embedding_field: "text_embeddings"
-      search_fields:
+      search_fields: "*"
       name_field: "_id"
 
   - name: ESRetriever
     type: ElasticsearchRetriever
     params:
-      document_store: ElasticsearchDocumentStore    # params can reference other components defined in the YAML
+      document_store: DocumentStore    # params can reference other components defined in the YAML
       top_k: 5
 
   - name: DPRetriever
     type: DensePassageRetriever
     params:
-      document_store: ElasticsearchDocumentStore    # params can reference other components defined in the YAML
+      document_store: DocumentStore    # params can reference other components defined in the YAML
       top_k: 5
 
   - name: SearchlibQAAdapter
@@ -45,8 +45,8 @@ pipelines:
         inputs: [Query]
       - name: Reader
         inputs: [ESRetriever]
-      - name: SearchlibQAAdapter
-        inputs: [Reader]
+      # - name: SearchlibQAAdapter
+      #   inputs: [Reader]
 
   - name: dpquery    # an extractive-qa Pipeline
     type: Query
@@ -55,8 +55,8 @@ pipelines:
         inputs: [Query]
       - name: Reader
         inputs: [DPRetriever]
-      - name: SearchlibQAAdapter
-        inputs: [Reader]
+      # - name: SearchlibQAAdapter
+      #   inputs: [Reader]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml

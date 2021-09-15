@@ -14,8 +14,6 @@ from app.core import config
 from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.core.pipeline import add_pipeline
 
-# from .routes import heartbeat
-
 
 def load_components(config):
     from haystack.schema import BaseComponent
@@ -65,7 +63,7 @@ def get_app() -> FastAPI:
     fast_app.add_exception_handler(HTTPException, http_error_handler)
     router = APIRouter()
 
-    for name in service_names:
+    for name in (service_names or []):
         logger.info(f"Loading service <{name}> started")
         with open(os.path.join(config.CONFIG_PATH, f"{name}.yml"), "r",
                   encoding='utf-8') as stream:
@@ -90,6 +88,8 @@ def get_app() -> FastAPI:
 
         logger.info(f"Loading service <{name}> completed")
 
+    # fast_app.include_router(hay.router)
+    # fast_app.include_router(api_router)
     fast_app.include_router(router, prefix=config.API_PREFIX)
 
     fast_app.add_event_handler("startup", start_app_handler(fast_app))
