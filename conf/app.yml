@@ -8,8 +8,8 @@ services:    # define all the building-blocks for Pipeline
   # - qa
   # - question-classifier
   # - question-generation
-  - similarity
+  # - similarity
   # - spacy
-  # - summarizer
+  - summarizer
   # - zeroshot-classifier
   # - preprocessor

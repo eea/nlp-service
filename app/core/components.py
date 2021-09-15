@@ -11,10 +11,9 @@ class SpacyModel(BaseComponent):
         disable = kwargs.get('disable', [])
         self.nlp = spacy.load(model, disable=disable)
 
-    def run(self, meta):
-        sentences = meta.get('texts', [])
-        return {"documents":
-                [self.nlp(text) for text in sentences]}, 'output_1'
+    def run(self, documents):
+        return {"spacy_documents":
+                [self.nlp(doc.text) for doc in documents]}, 'output_1'
 
 
 class EmbeddingModel(BaseComponent):
