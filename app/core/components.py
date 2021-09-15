@@ -26,11 +26,15 @@ class EmbeddingModel(BaseComponent):
         self.model = DensePassageRetriever(**kwargs)
 
     def run(self, payload):
-        method = payload['is_passage'] \
-            and self.model.embed_passages or self.model.embed_queries
-        # documents = [self.Document(s) for s in payload['snippets']]
-        embeddings = method(payload['snippets'])
-        return {"embeddings": embeddings}, 'output_1'
+        result = None
+
+        if payload['is_passage']:
+            documents = [self.Document(s) for s in payload['snippets']]
+            result = self.model.embed_passages(documents)
+        else:
+            result = self.model.embed_queries(payload['snippets'])
+
+        return {"embeddings": result}, 'output_1'
 
 
 class TransformersPipeline(BaseComponent):
