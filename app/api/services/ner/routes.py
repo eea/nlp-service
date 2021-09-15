@@ -9,7 +9,7 @@ router = APIRouter()
 concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 
-@router.post("/query", response_model=NERResponse)
+@router.post("", response_model=NERResponse)
 def query(payload: NERRequest, request: Request):
     model = request.app.state.ner_model
 

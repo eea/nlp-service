@@ -9,7 +9,7 @@ router = APIRouter()
 concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 
-@router.post("/query", response_model=SummaryResponse)
+@router.post("", response_model=SummaryResponse)
 def query(payload: SummaryRequest, request: Request):
     model = request.app.state.summarizer_model
 

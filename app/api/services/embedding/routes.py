@@ -9,7 +9,7 @@ router = APIRouter()
 concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 
-@router.post("/query", response_model=EmbeddingResponse)
+@router.post("", response_model=EmbeddingResponse)
 def query(payload: EmbeddingRequest, request: Request):
     model = request.app.state.embedding_model
 

@@ -9,7 +9,7 @@ router = APIRouter()
 concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 
-@router.post("/query", response_model=SimilarityResponse)
+@router.post("", response_model=SimilarityResponse)
 def query(payload: SimilarityRequest, request: Request):
     model = request.app.state.similarity_model
 

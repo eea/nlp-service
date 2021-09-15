@@ -45,8 +45,6 @@ pipelines:
         inputs: [Query]
       - name: Reader
         inputs: [ESRetriever]
-      # - name: SearchlibQAAdapter
-      #   inputs: [Reader]
 
   - name: dpquery    # an extractive-qa Pipeline
     type: Query

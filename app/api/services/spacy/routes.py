@@ -9,7 +9,7 @@ router = APIRouter()
 concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 
-@router.post("/query", response_model=SpacyNERResponse)
+@router.post("", response_model=SpacyNERResponse)
 def query(payload: SpacyNERRequest, request: Request):
     model = request.app.state.spacy_ner_model
 
