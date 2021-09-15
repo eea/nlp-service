@@ -38,7 +38,8 @@ class TransformersPipeline(BaseComponent):
         from transformers import pipeline
         self.pipeline = pipeline(*args, **kwargs)
 
-    def run(self, payload):
+    def run(self, meta):
+        payload = meta['payload']
         result = self.pipeline(**payload)
         return {"result": result}, 'output_1'
 

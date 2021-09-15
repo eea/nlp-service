@@ -12,7 +12,8 @@ class ZeroShotClassifierModel(PipelineModel):
         return {'payload': {'sequences': payload.text,
                             'candidate_labels': payload.candidate_labels}}
 
-    def _post_process(self, prediction):
+    def _post_process(self, result):
+        prediction = result['result']
         # {'labels': ['technology', 'politics', 'sports'],
         #  'scores': [0.9663877487182617, 0.017997432500123978,
         #             0.015614871867001057],
