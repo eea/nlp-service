@@ -55,11 +55,12 @@ class NERTransformersPipeline(TransformersPipeline):
         from transformers import AutoTokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(kwargs['model'])
 
-    def run(self, meta):
+    def run(self, documents):
         # See https://huggingface.co/transformers/usage.html#named-entity-recognition
-        payload = {"inputs": [meta['text']]}
+        payload = {"inputs": [doc.text for doc in documents]}
 
-        result, output = super(NERTransformersPipeline, self).run(payload)
+        result, output = super(NERTransformersPipeline,
+                               self).run({'payload': payload})
         # Result is like:
         # [{'end': 5,
         #     'entity': 'B-ORG',
