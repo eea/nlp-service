@@ -9,8 +9,8 @@ class ZeroShotClassifierModel(PipelineModel):
     def _pre_process(self, payload):
         # See
         # https://huggingface.co/transformers/main_classes/pipelines.html#zeroshotclassificationpipeline
-        return {'payload': {'sequences': payload.text,
-                            'candidate_labels': payload.candidate_labels}}
+        return {'params': {'sequences': payload.text,
+                           'candidate_labels': payload.candidate_labels}}
 
     def _post_process(self, result):
         prediction = result['result']
