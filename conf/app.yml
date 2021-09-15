@@ -5,8 +5,8 @@ vesion: '0.7'
 services:    # define all the building-blocks for Pipeline
   # - spacy
   # - embedding
-  - ner
-  # - similarity
+  # - ner
+  - similarity
   # - zeroshot-classifier
   # - qa
   # - question-classifier

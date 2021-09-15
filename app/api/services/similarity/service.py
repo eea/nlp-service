@@ -33,7 +33,9 @@ class SimilarityModel(PipelineModel):
     def _predict(self, payload):
         # See https://www.sbert.net/docs/usage/semantic_textual_similarity.html
         sentences = [payload['base']] + payload['candidates']
-        embeddings = process_request(self.pipeline, {'sentences': sentences})
+        output = process_request(
+            self.pipeline, {'params': {'sentences': sentences}})
+        embeddings = output['result']
         (base_text, base_embedding) = embeddings[0]
         del embeddings[0]
 
