@@ -9,7 +9,7 @@ router = APIRouter()
 concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 
-@router.post("/query", response_model=ZeroShotResponse)
+@router.post("", response_model=ZeroShotResponse)
 def query(payload: ZeroShotRequest, request: Request):
     model = request.app.state.zeroshot_classifier_model
 

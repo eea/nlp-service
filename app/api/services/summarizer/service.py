@@ -9,10 +9,10 @@ class SummarizerModel(PipelineModel):
     pipeline_name = SUMMARIZER_PIPELINE_NAME
 
     def _pre_process(self, payload):
-        return {"documents": [Document(payload.query)]}
+        return {"documents": [Document(text) for text in payload.documents]}
 
-    def _post_process(self, prediction):
-        docs = prediction['documents']
-        answer = "\n".join(doc.text for doc in docs)
-
-        return {"answer": answer}
+    # def _post_process(self, prediction):
+    #     docs = prediction['documents']
+    #     answer = "\n".join(doc.text for doc in docs)
+    #
+    #     return {"answer": answer}

@@ -76,7 +76,7 @@ class PipelineModel(object):
         return prediction
 
     def _predict(self, payload):
-        return process_request(self.pipeline, {"meta": payload})
+        return process_request(self.pipeline, payload)  # {"meta": payload}
 
     def predict(self, payload):
         if payload is None:

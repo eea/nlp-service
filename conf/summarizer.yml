@@ -1,6 +1,11 @@
-version: '0.7'
+version: '1.0'
 
 package: app.api.services.summarizer
+
+# You can use any model that has been fine-tuned on a summarization task. For example:
+# '`bart-large-cnn`', '`t5-small`', '`t5-base`', '`t5-large`', '`t5-3b`', '`t5-11b`'.
+# See the up-to-date list of available models on
+# `huggingface.co/models <https://huggingface.co/models?filter=summarization>`__
 
 components:    # define all the building-blocks for Pipeline
   - name: Summarizer
@@ -9,6 +14,7 @@ components:    # define all the building-blocks for Pipeline
       generate_single_summary: True
       max_length: 500
       min_length: 20
+      model_name_or_path: google/pegasus-xsum
 
 pipelines:
   - name: summarizer
