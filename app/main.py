@@ -1,7 +1,9 @@
 import copy
 import importlib
+import os
 import os.path
 
+import fastapi_chameleon
 import uvicorn
 import venusian
 import yaml
@@ -9,10 +11,19 @@ from fastapi import APIRouter, FastAPI, HTTPException
 from loguru import logger
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.errors.http_error import http_error_handler
 from app.core import config
+from app.core.errors.http_error import http_error_handler
 from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.core.pipeline import add_pipeline
+from app.views import router as views_router
+
+dev_mode = True
+
+folder = os.path.dirname(__file__)
+template_folder = os.path.join(folder, 'templates')
+template_folder = os.path.abspath(template_folder)
+
+fastapi_chameleon.global_init(template_folder, auto_reload=dev_mode)
 
 
 def load_components(config):
@@ -61,7 +72,7 @@ def get_app() -> FastAPI:
     )
 
     fast_app.add_exception_handler(HTTPException, http_error_handler)
-    router = APIRouter()
+    api_router = APIRouter()
 
     for name in (service_names or []):
         logger.info(f"Loading service <{name}> started")
@@ -84,13 +95,13 @@ def get_app() -> FastAPI:
         scanner = venusian.Scanner()
         scanner.scan(module)
 
-        router.include_router(module.routes.router, tags=tags, prefix=prefix)
+        api_router.include_router(
+            module.routes.router, tags=tags, prefix=prefix)
 
         logger.info(f"Loading service <{name}> completed")
 
-    # fast_app.include_router(hay.router)
-    # fast_app.include_router(api_router)
-    fast_app.include_router(router, prefix=config.API_PREFIX)
+    fast_app.include_router(views_router, prefix='')
+    fast_app.include_router(api_router, prefix=config.API_PREFIX)
 
     fast_app.add_event_handler("startup", start_app_handler(fast_app))
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))

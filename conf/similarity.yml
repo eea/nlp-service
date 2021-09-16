@@ -1,6 +1,6 @@
 version: '1.0'
 
-package: app.api.services.similarity
+package: app.api.similarity
 prefix: /similarity
 tags:
   - classifier

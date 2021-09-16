@@ -1,6 +1,6 @@
 version: '1.0'
 
-package: app.api.services.ner
+package: app.api.ner
 prefix: /ner
 tags:
   - classifier

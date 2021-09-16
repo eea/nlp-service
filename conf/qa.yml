@@ -1,6 +1,6 @@
 version: '1.0'
 
-package: app.api.services.qa
+package: app.api.qa
 tags:
   - qa
 prefix: /qa

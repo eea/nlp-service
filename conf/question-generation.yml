@@ -1,6 +1,6 @@
 version: '1.0'
 
-package: app.api.services.questiongeneration
+package: app.api.questiongeneration
 prefix: /questiongeneration
 
 tags:

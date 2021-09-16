@@ -1,4 +1,4 @@
-package: app.api.services.preprocess
+package: app.api.preprocess
 
 components:
   - name: Preprocessor

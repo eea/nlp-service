@@ -1,6 +1,11 @@
 version: '1.0'
 
-package: app.api.services.embedding
+title: Sentence Embedding
+description: |
+  A sentence or passage embedding service. It uses two models, one suitable
+  for long text (passages) and one for short text (queries).
+
+package: app.api.embedding
 prefix: /embedding
 tags:
   - classifier
