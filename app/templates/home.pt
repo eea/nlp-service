@@ -1,1 +1,16 @@
-<h1>Hello world</h1>
+<h1>${app_name}</h1>
+<h2>Enabled models:</h2>
+<table>
+    <tr>
+        <th style="text-align:left">Name</th>
+        <th style="text-align:left">Title</th>
+        <th style="text-align:left">Description</th>
+    </tr>
+    <tr tal:repeat="service services">
+        <td>${service.name}</td>
+        <td>${service.conf.title}</td>
+        <td>${service.conf.description}</td>
+    </tr>
+</table>
+<br/>
+<a href="/docs">Go to the API</a>
