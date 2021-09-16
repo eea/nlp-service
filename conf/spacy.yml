@@ -1,3 +1,10 @@
+version: '1.0'
+
+package: app.api.spacy
+prefix: /spacy
+tags:
+  - classifier
+
 components:
   - name: SpacyNER
     type: SpacyModel

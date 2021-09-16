@@ -1,6 +1,6 @@
 version: '1.0'
 
-package: app.api.services.zeroshot
+package: app.api.zeroshot
 prefix: /zeroshot
 tags:
   - classifier

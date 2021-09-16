@@ -1,6 +1,6 @@
 version: '1.0'
 
-package: app.api.services.summarizer
+package: app.api.summarizer
 
 # You can use any model that has been fine-tuned on a summarization task. For example:
 # '`bart-large-cnn`', '`t5-small`', '`t5-base`', '`t5-large`', '`t5-3b`', '`t5-11b`'.

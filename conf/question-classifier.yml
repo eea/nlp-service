@@ -1,6 +1,10 @@
 version: '1.0'
 
-package: app.api.services.question
+title: Question classifier
+description: |
+  TBD
+
+package: app.api.question
 tags:
   - classifier
 
