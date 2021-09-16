@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  nlp:
+    build:
+      context: .
+      dockerfile: Dockerfile_cpu
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ../nlp-cache/cache:/root/.cache
+    environment:
+      - QA_ELASTICSEARCHDOCUMENTSTORE_PARAMS_HOST=elastic
+      - NLP_SERVICES=ner
+    command: bash -c "tail -f /dev/null"

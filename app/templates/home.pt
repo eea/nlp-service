@@ -1,16 +1,22 @@
-<h1>${app_name}</h1>
-<h2>Enabled models:</h2>
-<table>
-    <tr>
-        <th style="text-align:left">Name</th>
-        <th style="text-align:left">Title</th>
-        <th style="text-align:left">Description</th>
-    </tr>
-    <tr tal:repeat="service services">
-        <td>${service.name}</td>
-        <td>${service.conf.title}</td>
-        <td>${service.conf.description}</td>
-    </tr>
+<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css">
+<link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
+<h2>${app_name}</h2>
+<h3>Enabled models:</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th style="text-align:left">Name</th>
+            <th style="text-align:left">Title</th>
+            <th style="text-align:left">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr tal:repeat="service services">
+            <td>${service.name}</td>
+            <td><tal tal:condition="exists:service.conf.title">${service.conf.title}</tal></td>
+            <td><tal tal:condition="exists:service.conf.description">${service.conf.description}</tal></td>
+        </tr>
+    </tbody>
 </table>
 <br/>
 <a href="/docs">Go to the API</a>
