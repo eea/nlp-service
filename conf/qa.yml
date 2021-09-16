@@ -3,7 +3,7 @@ version: '1.0'
 package: app.api.qa
 tags:
   - qa
-prefix: /qa
+prefix: /query
 
 components:    # define all the building-blocks for Pipeline
   - name: DocumentStore
