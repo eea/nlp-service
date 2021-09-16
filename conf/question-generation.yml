@@ -1,5 +1,9 @@
 version: '1.0'
 
+title: Question generation
+description: |
+  TBD
+
 package: app.api.questiongeneration
 prefix: /questiongeneration
 

@@ -74,6 +74,8 @@ def get_app() -> FastAPI:
     fast_app.add_exception_handler(HTTPException, http_error_handler)
     api_router = APIRouter()
 
+    service_descriptions = []
+
     for name in (service_names or []):
         logger.info(f"Loading service <{name}> started")
         with open(os.path.join(config.CONFIG_PATH, f"{name}.yml"), "r",
@@ -99,11 +101,16 @@ def get_app() -> FastAPI:
             module.routes.router, tags=tags, prefix=prefix)
 
         logger.info(f"Loading service <{name}> completed")
+        service_descriptions.append({'name': name, 'conf': service_conf})
 
     fast_app.include_router(views_router, prefix='')
     fast_app.include_router(api_router, prefix=config.API_PREFIX)
 
+    def startup():
+        app.state.services = service_descriptions
+
     fast_app.add_event_handler("startup", start_app_handler(fast_app))
+    fast_app.add_event_handler("startup", startup)
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
 
     if config.IS_DEBUG:
