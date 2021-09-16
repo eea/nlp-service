@@ -29,9 +29,6 @@ components:    # define all the building-blocks for Pipeline
       document_store: DocumentStore    # params can reference other components defined in the YAML
       top_k: 5
 
-  - name: SearchlibQAAdapter
-    type: SearchlibQAAdapter
-
   - name: Reader       # custom-name for the component; helpful for visualization & debugging
     type: FARMReader    # Haystack Class name for the component
     params:
