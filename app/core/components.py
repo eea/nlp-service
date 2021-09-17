@@ -57,8 +57,7 @@ class NERTransformersPipeline(TransformersPipeline):
         # See https://huggingface.co/transformers/usage.html#named-entity-recognition
         payload = {"inputs": [doc.text for doc in documents]}
 
-        result, output = super(NERTransformersPipeline,
-                               self).run({'payload': payload})
+        result, output = super(NERTransformersPipeline, self).run(payload)
         # Result is like:
         # [{'end': 5,
         #     'entity': 'B-ORG',
