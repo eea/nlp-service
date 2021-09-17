@@ -1,7 +1,11 @@
 <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css">
 <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
+<div class="container">
+<header class="d-flex flex-wrap justify-content-left py-3 mb-4 border-bottom">
 <h2>${app_name}</h2>
+</header>
 <h3>Enabled models:</h3>
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -20,3 +24,4 @@
 </table>
 <br/>
 <a href="/docs">Go to the API</a>
+</div>
