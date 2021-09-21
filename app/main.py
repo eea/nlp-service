@@ -109,8 +109,18 @@ def get_app() -> FastAPI:
     def startup():
         app.state.services = service_descriptions
 
+    def startup_tests():
+        for service in (app.state.services or []):
+            name = service.get('name')
+            logger.info(f"Starting runtime test for <{name}> service")
+            pkg = service.get('conf',{}).get('package', f"app.api.{name}")
+            module = importlib.import_module(pkg)
+            module.runtimetest.runtimetest(app)
+            logger.info(f"Runtime test for <{name}> completed")
+
     fast_app.add_event_handler("startup", start_app_handler(fast_app))
     fast_app.add_event_handler("startup", startup)
+    fast_app.add_event_handler("startup", startup_tests)
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
 
     if config.IS_DEBUG:
