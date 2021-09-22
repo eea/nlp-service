@@ -1,25 +1,31 @@
-""" FastAPI data models for simple search in a data store
+""" FastAPI data models for semantic search in a data store
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
 
+class SearchRequestParams(BaseModel):
+    filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = {}
+    top_k: Optional[int] = 10
+
+
 class SearchRequest(BaseModel):
+    """ A search request
+    """
     query: str
-    # filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
-    top_k_retriever: Optional[int] = 10
+    params: Optional[SearchRequestParams] = None
 
 
 class Document(BaseModel):
+    text: str
+    id: str
     score: Optional[float] = None
-    probability: Optional[float] = None
-    context: Optional[str]
-    document_id: Optional[str] = None
     meta: Optional[Dict[str, Any]]
 
 
 class SearchResponse(BaseModel):
-    query: str
-    documents: List[Document]
+    """ A search response
+    """
+    documents: List

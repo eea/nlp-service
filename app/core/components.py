@@ -1,5 +1,7 @@
 from haystack.schema import BaseComponent
 
+import haystack.ranker      # noqa // register these components
+
 
 class SpacyModel(BaseComponent):
     def __init__(self, *args, **kwargs):
