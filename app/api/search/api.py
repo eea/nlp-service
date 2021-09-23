@@ -1,21 +1,26 @@
 """ FastAPI data models for semantic search in a data store
 """
 
-from typing import Any, Dict, List, Optional, Union
-
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 
 
 class SearchRequestParams(BaseModel):
-    filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = {}
+    custom_query: Optional[Dict]
     top_k: Optional[int] = 10
+
+    # filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = {}
 
 
 class SearchRequest(BaseModel):
     """ A search request
     """
-    query: Optional[str] = 'water quality'
-    params: Optional[SearchRequestParams] = None
+    query: Optional[Dict]
+    aggs: Optional[Dict]
+    highlight: Optional[Dict]
+    size: Optional[int] = 0
+    sort: Optional[List]
+    track_total_hits: Optional[int] = True
 
 
 class Document(BaseModel):
@@ -28,4 +33,4 @@ class Document(BaseModel):
 class SearchResponse(BaseModel):
     """ A search response
     """
-    documents: List
+    # documents: List

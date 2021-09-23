@@ -12,11 +12,11 @@ components:    # define all the building-blocks for Pipeline
   - name: CategoryQuestion
     type: Category
     params:
-      category: "question"
+      category: "question/statement"
   - name: CategoryStatement
     type: Category
     params:
-      category: "statement"
+      category: "keyword"
   - name: QueryClassifier
     type: TransformersQueryClassifier
     params:

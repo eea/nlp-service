@@ -10,10 +10,10 @@ prefix: /_search
 
 components:    # define all the building-blocks for Pipeline
   - name: FacetedDocumentStore
-    type: ElasticsearchDocumentStore
+    type: SearchlibElasticsearchDocumentStore
     params:
       host: localhost
-      index: global-search-documents
+      index: global-search
       create_index: false
       text_field: "text"
       embedding_field: "text_embeddings"
@@ -32,26 +32,27 @@ components:    # define all the building-blocks for Pipeline
       name_field: "_id"
 
   - name: RawRetriever
-    type: ElasticsearchRetriever
+    type: RawElasticsearchRetriever
     params:
-      document_store: FacetedDocumentStore    # params can reference other components defined in the YAML
+      document_store: FacetedDocumentStore
 
   - name: DPRRetriever
     type: ElasticsearchRetriever
     params:
-      document_store: HaystackDocumentStore    # params can reference other components defined in the YAML
+      document_store: SearchlibElasticsearchDocumentStore
 
   - name: Ranker
     type: FARMRanker
     params:
       model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
 
+  - name: SearchQueryClassifier
+    type: SearchQueryClassifier
+
   # - name: Ranker
   #   type: SentenceTransformersRanker
   #   params:
   #     model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
-  - name: SearchQueryClassifier
-    type: SearchQueryClassifier
 
 pipelines:
   - name: search
