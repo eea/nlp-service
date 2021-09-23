@@ -1,6 +1,5 @@
 from haystack.schema import BaseComponent
 from haystack.retriever import ElasticsearchRetriever
-import json
 from haystack.document_store import ElasticsearchDocumentStore
 from typing import List, Optional
 from haystack.schema import MultiLabel, Document
@@ -54,6 +53,43 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         return result
 
 
+class RawElasticsearchRetriever(ElasticsearchRetriever):
+    """ An ElasticSearch retriever variant that just passes ES queries to ES
+
+    Note: document_store needs to be an instance of
+    SearchlibElasticsearchDocumentStore
+    """
+
+    def run(self, root_node: str, aggs: Optional[dict] = None,
+            highlight: Optional[dict] = None, query: Optional[dict] = None,
+            size: Optional[int] = None,
+            track_total_hits: Optional[bool] = True, index: str = None):
+
+        if root_node == "Query":
+            self.query_count += 1
+            run_query_timed = self.timing(self.retrieve, "query_time")
+            output = run_query_timed(
+                query=query, aggs=aggs, highlight=highlight,
+                size=size, track_total_hits=track_total_hits,
+                index=index
+            )
+            return output, 'output_1'
+        else:
+            raise Exception(f"Invalid root_node '{root_node}'.")
+
+    def retrieve(self, **kwargs):
+
+        index = kwargs.get('index')
+
+        if index is None:
+            index = self.document_store.index
+
+        args = kwargs.copy()
+        args['index'] = index
+
+        return self.document_store.query(**args)
+
+
 class Category(BaseComponent):
 
     def __init__(self, *args, **kwargs):
@@ -89,40 +125,3 @@ class SearchQueryClassifier(BaseComponent):
             return {}, 'output_2'
 
         return {}, 'output_1'
-
-
-class RawElasticsearchRetriever(ElasticsearchRetriever):
-    """ An ElasticSearch retriever variant that just passes ES queries to ES
-
-    Note: document_store needs to be an instance of
-    SearchlibElasticsearchDocumentStore
-    """
-
-    def run(self, root_node: str, aggs: Optional[dict],
-            highlight: Optional[dict], query: Optional[dict],
-            size: Optional[int] = None,
-            track_total_hits: Optional[bool] = True, index: str = None):
-
-        if root_node == "Query":
-            self.query_count += 1
-            run_query_timed = self.timing(self.retrieve, "query_time")
-            output = run_query_timed(
-                query=query, aggs=aggs, highlight=highlight,
-                size=size, track_total_hits=track_total_hits,
-                index=index
-            )
-            return output, 'output_1'
-        else:
-            raise Exception(f"Invalid root_node '{root_node}'.")
-
-    def retrieve(self, **kwargs):
-
-        index = kwargs.get('index')
-
-        if index is None:
-            index = self.document_store.index
-
-        args = kwargs.copy()
-        args['index'] = index
-
-        return self.document_store.query(**args)

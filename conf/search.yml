@@ -37,9 +37,9 @@ components:    # define all the building-blocks for Pipeline
       document_store: FacetedDocumentStore
 
   - name: DPRRetriever
-    type: ElasticsearchRetriever
+    type: RawElasticsearchRetriever
     params:
-      document_store: SearchlibElasticsearchDocumentStore
+      document_store: FacetedDocumentStore
 
   - name: Ranker
     type: FARMRanker
@@ -67,8 +67,8 @@ pipelines:
       - name: DPRRetriever
         inputs: [SearchQueryClassifier.output_2]
 
-      - name: Ranker
-        inputs: [DPRRetriever]
+      # - name: Ranker
+      #   inputs: [DPRRetriever]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml
