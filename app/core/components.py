@@ -1,4 +1,6 @@
-from haystack.schema import BaseComponent
+from typing import List, Optional, Dict, Union, Any
+
+from haystack.schema import BaseComponent, MultiLabel, Document
 
 import haystack.ranker      # noqa // register these components
 
@@ -7,7 +9,9 @@ class SpacyModel(BaseComponent):
     def __init__(self, *args, **kwargs):
         import spacy
         self.spacy = spacy
-        model = kwargs.get('model', 'en_core_web_trf')  # Transformers model
+
+        model = kwargs.get('model_name_or_path', 'en_core_web_trf')
+
         # for NER pipeline set disable to:
         # ["tagger", "parser", "attribute_ruler", "lemmatizer"]
         disable = kwargs.get('disable', [])
@@ -124,27 +128,22 @@ class Category(BaseComponent):
     def __init__(self, *args, **kwargs):
         self.category = kwargs.get('category', 'untitled')
 
-    def run(self, **kwargs):
+    def run(self,
+            ):
         return {"category": self.category}, 'output_1'
 
 
-# class SearchlibQAAdapter(BaseComponent):
-#
-#     def run(self, query, documents, answers):
-#         import pdb
-#         pdb.set_trace()
-#         # @(Pdb) pp kwargs['answers'][0]
-#         # {'answer': 'global warming and a rapidly evolving world economy',
-#         #  'context': 't local level are exacerbated by threats by global '
-#         #  'document_id': 'http://www.eea.europa.eu/themes/challenges',
-#         #  'meta': {'SearchableText':
-#
-#         answers = kwargs.pop('answers', [])
-#         output = {**kwargs, "answers": answers}
-#
-#         for doc in answers:     # in-place mutation
-#             meta = doc.pop('meta', {})
-#             doc['source'] = meta
-#             doc['id'] = doc['document_id']
-#
-#         return output, 'output_1'
+class SearchQueryClassifier(BaseComponent):
+    outgoing_edges = 2
+
+    def run(self,
+            query: Optional[str] = None,
+            file_paths: Optional[List[str]] = None,
+            labels: Optional[MultiLabel] = None,
+            documents: Optional[List[Document]] = None,
+            meta: Optional[dict] = None,
+            params: Optional[dict] = None,
+            ):
+        import pdb
+        pdb.set_trace()
+        return {}, 'output_1'

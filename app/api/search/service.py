@@ -7,5 +7,7 @@ class SearchModel(PipelineModel):
     pipeline_name = "search"
 
     def predict(self, payload):
+
         res = self.pipeline.run(**payload.dict())
+
         return {"documents": res['documents']}

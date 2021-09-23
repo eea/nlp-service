@@ -14,7 +14,7 @@ class SearchRequestParams(BaseModel):
 class SearchRequest(BaseModel):
     """ A search request
     """
-    query: str
+    query: Optional[str] = 'water quality'
     params: Optional[SearchRequestParams] = None
 
 
