@@ -1,8 +1,8 @@
 import pytest
-from starlette.config import environ
+# from starlette.config import environ
 from starlette.testclient import TestClient
 
-environ["DEFAULT_MODEL_PATH"] = "./sample_model/lin_reg_california_housing_model.joblib"
+# environ["DEFAULT_MODEL_PATH"] = "./sample_model/lin_reg_california_housing_model.joblib"
 
 from app.main import get_app  # noqa: E402
 

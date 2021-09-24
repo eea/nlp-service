@@ -37,7 +37,7 @@ components:    # define all the building-blocks for Pipeline
       document_store: FacetedDocumentStore
 
   - name: DPRRetriever
-    type: RawElasticsearchRetriever
+    type: RawDensePassageRetriever
     params:
       document_store: FacetedDocumentStore
 
