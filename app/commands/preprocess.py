@@ -21,6 +21,7 @@ def preprocess(input_index,
 
     from haystack.document_store.elasticsearch import \
         ElasticsearchDocumentStore
+    from haystack.schema import Document
     from haystack.preprocessor import PreProcessor
 
     preprocessor = PreProcessor(split_length=split_length)
@@ -35,6 +36,8 @@ def preprocess(input_index,
     )
 
     to_index = []
+    BLACKLIST = ['id']
+
     for doc in input_store.get_all_documents_generator():
         logger.info(f"Indexing {doc.id}")
 
@@ -44,17 +47,15 @@ def preprocess(input_index,
         #     text = ""
         # else:
         #     text = doc.text
-        text = doc.meta['meta'][input_text_field]
+        text = doc.meta[input_text_field]
+        meta = {k: v
+                for k, v in doc.meta.items() if k not in BLACKLIST}
 
-        inputdoc = {
-            # "id": doc.id,
-            "text": text,
-            "meta": doc.meta
-        }
+        inputdoc = {"text": text}
         res = preprocessor.process(inputdoc)
         for d in res:
             # d['id'] = f"{d['meta']['about']}#{d['meta']['_split_id']}"
-            # d['meta'] = doc.meta
+            d.update(meta)
             to_index.append(d)
 
     output_store = ElasticsearchDocumentStore(
