@@ -44,8 +44,6 @@ def preprocess(input_index,
             text = "\n".join(text)
         elif text is None:
             text = ""
-        else:
-            text = doc.text
 
         meta = {k: v
                 for k, v in doc.meta.items() if k not in BLACKLIST}
