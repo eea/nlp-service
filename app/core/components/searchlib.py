@@ -20,6 +20,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         aggs: Optional[dict] = None,
         highlight: Optional[dict] = None,
         size: Optional[int] = None,
+        sort: Optional[Any] = None,
         track_total_hits: Optional[bool] = True,
         index: str = None
     ) -> List[Document]:
@@ -49,6 +50,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
         if self.excluded_meta_data:
             body["_source"] = {"excludes": self.excluded_meta_data}
+
+        if sort is not None:
+            body['sort'] = sort
 
         # print(json.dumps(body))
         logger.debug(f"Retriever query: {body}")
@@ -81,8 +85,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             "script_score": {
                 # "query": {"match_all": {}},
                 "script": {
-                    # offset score to ensure a positive range as required by Elasticsearch
-                    "source": f"{similarity_fn_name}(params.query_vector,'{self.embedding_field}') + 1000",
+                    # offset score to ensure a positive range as required by ES
+                    "source": f"{similarity_fn_name}(params.query_vector,"
+                    f"'{self.embedding_field}') + 1000",
                     "params": {"query_vector": query_emb.tolist()},
                 },
             }
@@ -99,6 +104,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
                            index: Optional[str] = None,
                            query: Optional[dict] = None,
                            size: Optional[int] = None,
+                           sort: Optional[Any] = None,
                            track_total_hits: Optional[bool] = True,
                            ) \
             -> List[Document]:
@@ -136,6 +142,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
                 body["_source"] = {"excludes": self.excluded_meta_data}
 
                 excluded_meta_data: Optional[list] = None
+
+            if size is not None:
+                body['size'] = size
 
             if self.excluded_meta_data:
                 excluded_meta_data = deepcopy(self.excluded_meta_data)
@@ -182,18 +191,18 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
     SearchlibElasticsearchDocumentStore
     """
 
-    def run(self, root_node: str, aggs: Optional[dict] = None,
-            highlight: Optional[dict] = None, query: Optional[dict] = None,
-            size: Optional[int] = None,
-            track_total_hits: Optional[bool] = True, index: str = None):
+    def run(self, root_node: str, params: dict, index: str = None):
+        # aggs: Optional[dict] = None,
+        # highlight: Optional[dict] = None, query: Optional[dict] = None,
+        # size: Optional[int] = None,
+        # track_total_hits: Optional[bool] = True,
+        body = params['payload']
 
         if root_node == "Query":
             self.query_count += 1
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(
-                query=query, aggs=aggs, highlight=highlight,
-                size=size, track_total_hits=track_total_hits,
-                index=index
+                index=index, **body
             )
             return output, 'output_1'
         else:
@@ -221,22 +230,23 @@ class RawDensePassageRetriever(DensePassageRetriever):
 
     def run(self,
             root_node: str,
-            aggs: Optional[dict] = None,
-            highlight: Optional[dict] = None,
-            index: str = None,
-            query: Optional[dict] = None,
-            size: Optional[int] = None,
-            track_total_hits: Optional[bool] = True,
+            # aggs: Optional[dict] = None,
+            # highlight: Optional[dict] = None,
+            # query: Optional[dict] = None,
+            # size: Optional[int] = None,
+            # track_total_hits: Optional[bool] = True,
             params: Optional[dict] = {},
+            index: str = None,
             ):
+
+        body = params['payload']
 
         if root_node == "Query":
             self.query_count += 1
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(
-                query=query, aggs=aggs, highlight=highlight,
-                size=size, track_total_hits=track_total_hits,
-                index=index
+                index=index,
+                **body,
             )
             return output, 'output_1'
         else:
@@ -295,9 +305,10 @@ class ElasticSearchRequestClassifier(BaseComponent):
             params: Optional[dict] = None,
             ):
 
-        if (params or {}).get('size', 0) > 0:
-            search_term = get_search_term(params['query'])
+        payload = params['payload']
+        if (payload or {}).get('size', 0) > 0:
+            search_term = get_search_term(payload['query'])
             if search_term:
-                return {}, 'output_2'
+                return {"query": search_term}, 'output_2'
 
         return {}, 'output_1'

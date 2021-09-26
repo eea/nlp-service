@@ -31,19 +31,20 @@ def preprocess(input_index,
         host=host,
         port=port,
         index=input_index,
-        create_index=False,
+        create_index=True,
     )
 
     to_index = []
     for doc in input_store.get_all_documents_generator():
         logger.info(f"Indexing {doc.id}")
 
-        if (isinstance(doc.text, list)):
-            text = "\n".join(doc.text)
-        elif doc.text is None:
-            text = ""
-        else:
-            text = doc.text
+        # if (isinstance(doc.text, list)):
+        #     text = "\n".join(doc.text)
+        # elif doc.text is None:
+        #     text = ""
+        # else:
+        #     text = doc.text
+        text = doc.meta['meta'][input_text_field]
 
         inputdoc = {
             # "id": doc.id,
@@ -52,8 +53,8 @@ def preprocess(input_index,
         }
         res = preprocessor.process(inputdoc)
         for d in res:
-            d['id'] = f"{d['meta']['about']}#{d['meta']['_split_id']}"
-            d['meta'] = {}
+            # d['id'] = f"{d['meta']['about']}#{d['meta']['_split_id']}"
+            # d['meta'] = doc.meta
             to_index.append(d)
 
     output_store = ElasticsearchDocumentStore(

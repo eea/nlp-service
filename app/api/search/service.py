@@ -8,4 +8,4 @@ class SearchModel(PipelineModel):
 
     def predict(self, payload):
         params = payload.dict()
-        return self.pipeline.run(params=params)
+        return self.pipeline.run(params={'payload': params})

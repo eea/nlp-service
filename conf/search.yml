@@ -33,58 +33,53 @@ components:    # define all the building-blocks for Pipeline
       search_fields: "*"
       name_field: "_id"
 
+  - name: RequestClassifier
+    type: ElasticSearchRequestClassifier
+
   - name: RawRetriever
     type: RawElasticsearchRetriever
     params:
       document_store: FacetedDocumentStore
 
-  - name: RawRetrieverWithQuery
-    type: RawElasticsearchRetriever
-    params:
-      document_store: FacetedDocumentStore
-
-  - name: RawRetriever2
-    type: RawElasticsearchRetriever
-    params:
-      document_store: FacetedDocumentStore
-
+  # - name: RawRetrieverWithQuery
+  #   type: RawElasticsearchRetriever
+  #   params:
+  #     document_store: FacetedDocumentStore
+  #
   - name: DPRRetriever
     type: RawDensePassageRetriever
     params:
       document_store: FacetedDocumentStore
-
-  - name: Ranker
-    type: FARMRanker
-    params:
-      model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
-
-  - name: RequestClassifier
-    type: ElasticSearchRequestClassifier
-
-  - name: CategoryDeclarativeQuery
-    type: Category
-    params:
-      category: "declarative_query"
-
-  - name: CategoryInterrogativeQuery
-    type: Category
-    params:
-      category: "interrogative query"
-
-  - name: CategoryKeyword
-    type: Category
-    params:
-      category: "keyword"
-
-  - name: QueryClassifier
-    type: TransformersQueryClassifier
-    params:
-      model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
-
-  - name: Ranker
-    type: SentenceTransformersRanker
-    params:
-      model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
+  #
+  # - name: Ranker
+  #   type: FARMRanker
+  #   params:
+  #     model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
+  #
+  # - name: CategoryDeclarativeQuery
+  #   type: Category
+  #   params:
+  #     category: "declarative_query"
+  #
+  # - name: CategoryInterrogativeQuery
+  #   type: Category
+  #   params:
+  #     category: "interrogative query"
+  #
+  # - name: CategoryKeyword
+  #   type: Category
+  #   params:
+  #     category: "keyword"
+  #
+  # - name: QueryClassifier
+  #   type: TransformersQueryClassifier
+  #   params:
+  #     model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
+  #
+  # - name: Ranker
+  #   type: SentenceTransformersRanker
+  #   params:
+  #     model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
 
 pipelines:
   - name: search
@@ -93,20 +88,23 @@ pipelines:
       - name: RequestClassifier
         inputs: [Query]
 
-      - name: RawRetriever
+      - name: DPRRetriever
         inputs: [RequestClassifier.output_1]
 
-      - name: QueryClassifier
+      - name: DPRRetriever
         inputs: [RequestClassifier.output_2]
 
-      - name: DPRRetriever
-        inputs: [QueryClassifier.output_2]
-
-      - name: RawRetrieverWithQuery
-        inputs: [QueryClassifier.output_1]
-
-      - name: Ranker
-        inputs: [RawRetrieverWithQuery]
+      # - name: QueryClassifier
+      #   inputs: [RequestClassifier.output_2]
+      #
+      # - name: DPRRetriever
+      #   inputs: [QueryClassifier.output_2]
+      #
+      # - name: RawRetrieverWithQuery
+      #   inputs: [QueryClassifier.output_1]
+      #
+      # - name: Ranker
+      #   inputs: [RawRetrieverWithQuery]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml
