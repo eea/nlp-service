@@ -1,7 +1,9 @@
 version: '1.0'
 
 title: Semantically Re-ranked ElasticSearch queries
-description: A drop-in replacement of an ElasticSearch endpoint that can re-rank normal full-text queries.
+description: |
+  A drop-in replacement of an ElasticSearch endpoint that can re-rank normal
+  full-text queries.
 
 package: app.api.search
 tags:
@@ -36,6 +38,11 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: FacetedDocumentStore
 
+  - name: RawRetrieverWithQuery
+    type: RawElasticsearchRetriever
+    params:
+      document_store: FacetedDocumentStore
+
   - name: RawRetriever2
     type: RawElasticsearchRetriever
     params:
@@ -51,29 +58,55 @@ components:    # define all the building-blocks for Pipeline
     params:
       model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
 
-  - name: SearchQueryClassifier
-    type: SearchQueryClassifier
+  - name: RequestClassifier
+    type: ElasticSearchRequestClassifier
 
-  # - name: Ranker
-  #   type: SentenceTransformersRanker
-  #   params:
-  #     model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
+  - name: CategoryDeclarativeQuery
+    type: Category
+    params:
+      category: "declarative_query"
+
+  - name: CategoryInterrogativeQuery
+    type: Category
+    params:
+      category: "interrogative query"
+
+  - name: CategoryKeyword
+    type: Category
+    params:
+      category: "keyword"
+
+  - name: QueryClassifier
+    type: TransformersQueryClassifier
+    params:
+      model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
+
+  - name: Ranker
+    type: SentenceTransformersRanker
+    params:
+      model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
 
 pipelines:
   - name: search
     type: Query
     nodes:
-      - name: SearchQueryClassifier
+      - name: RequestClassifier
         inputs: [Query]
 
       - name: RawRetriever
-        inputs: [SearchQueryClassifier.output_1]
+        inputs: [RequestClassifier.output_1]
+
+      - name: QueryClassifier
+        inputs: [RequestClassifier.output_2]
 
       - name: DPRRetriever
-        inputs: [SearchQueryClassifier.output_2]
+        inputs: [QueryClassifier.output_2]
 
-      # - name: Ranker
-      #   inputs: [DPRRetriever]
+      - name: RawRetrieverWithQuery
+        inputs: [QueryClassifier.output_1]
+
+      - name: Ranker
+        inputs: [RawRetrieverWithQuery]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml

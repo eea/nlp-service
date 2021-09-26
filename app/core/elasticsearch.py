@@ -4,17 +4,20 @@
 import jq
 
 QUERY_MATCH_ALL = jq.compile('.function_score.query.bool.must[].match_all')
+QUERY_MATCH_TEXT = jq.compile(
+    '.function_score.query.bool.must[].multi_match.query')
 
 
 def get_search_term(body):
     """ Extract the text search term from an ES query
     """
 
-    strategies = [QUERY_MATCH_ALL]
+    strategies = [QUERY_MATCH_TEXT, QUERY_MATCH_ALL]
     search_term = ""
+
     for compiled in strategies:
         try:
-            search_term = compiled.input(body)
+            search_term = compiled.input(body).first()
         except Exception as e:
             print(e)
         if search_term:
@@ -25,5 +28,3 @@ def get_search_term(body):
         return ""
 
     return search_term
-    # q['function_score']['query'][
-    #     'bool']['must'][0]['multi_match']['query']

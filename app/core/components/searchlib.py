@@ -273,7 +273,7 @@ class Category(BaseComponent):
         return {"category": self.category}, 'output_1'
 
 
-class SearchQueryClassifier(BaseComponent):
+class ElasticSearchRequestClassifier(BaseComponent):
     """ A classifier and search query adapter for incoming requests from ES
 
     - output_1: Aggregation queries, they go to "raw index"
