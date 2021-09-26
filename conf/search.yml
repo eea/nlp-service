@@ -13,7 +13,7 @@ components:    # define all the building-blocks for Pipeline
     type: SearchlibElasticsearchDocumentStore
     params:
       host: localhost
-      index: global-search
+      index: data_searchui
       create_index: false
       text_field: "text"
       embedding_field: "text_embeddings"
@@ -24,7 +24,7 @@ components:    # define all the building-blocks for Pipeline
     type: ElasticsearchDocumentStore
     params:
       host: localhost
-      index: global-search-documents
+      index: data_searchui
       create_index: false
       text_field: "text"
       embedding_field: "text_embeddings"
@@ -32,6 +32,11 @@ components:    # define all the building-blocks for Pipeline
       name_field: "_id"
 
   - name: RawRetriever
+    type: RawElasticsearchRetriever
+    params:
+      document_store: FacetedDocumentStore
+
+  - name: RawRetriever2
     type: RawElasticsearchRetriever
     params:
       document_store: FacetedDocumentStore

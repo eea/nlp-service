@@ -8,6 +8,7 @@ import numpy as np
 import logging
 from elasticsearch.exceptions import RequestError
 import json
+from app.core.elasticsearch import get_search_term
 
 logger = logging.getLogger(__name__)
 
@@ -67,11 +68,11 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             similarity_fn_name = "dotProduct"
         else:
             raise Exception(
-                "Invalid value for similarity in ElasticSearchDocumentStore constructor. Choose between \'cosine\' and \'dot_product\'")
+                "Invalid value for similarity in ElasticSearchDocumentStore "
+                "constructor. Choose between \'cosine\' and \'dot_product\'"
+            )
 
         query = deepcopy(body)
-        import pdb
-        pdb.set_trace()
         if query.get('function_score', {}).get(
                 'query', {}).get('bool', {}).get('must'):
             del query['function_score']['query']['bool']['must']
@@ -253,9 +254,10 @@ class RawDensePassageRetriever(DensePassageRetriever):
 
         # Hardcoded for ES
         q = kwargs['query']
-        search_term = q['function_score']['query'][
-            'bool']['must'][0]['multi_match']['query']
-
+        print(q)
+        # import pdb
+        # pdb.set_trace()
+        search_term = get_search_term(q)
         query_emb = self.embed_queries(texts=[search_term])[0]
         args['query_emb'] = query_emb
 
@@ -294,6 +296,8 @@ class SearchQueryClassifier(BaseComponent):
             ):
 
         if (params or {}).get('size', 0) > 0:
-            return {}, 'output_2'
+            search_term = get_search_term(params['query'])
+            if search_term:
+                return {}, 'output_2'
 
         return {}, 'output_1'
