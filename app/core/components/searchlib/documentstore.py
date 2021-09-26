@@ -166,7 +166,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             try:
                 result = self.client.search(
                     index=index,
-                    body=body, request_timeout=300)["hits"]["hits"]
+                    body=body, request_timeout=300)
             except RequestError as e:
                 if e.error == "search_phase_execution_exception":
                     error_message: str = (

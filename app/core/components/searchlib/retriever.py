@@ -73,7 +73,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
                 index=index,
                 **body,
             )
-            return {'result': output}, 'output_1'
+            return output, 'output_1'
         else:
             raise Exception(f"Invalid root_node '{root_node}'.")
 

@@ -23,10 +23,10 @@ components:    # define all the building-blocks for Pipeline
       name_field: "_id"
 
   - name: HaystackDocumentStore
-    type: ElasticsearchDocumentStore
+    type: SearchlibElasticsearchDocumentStore
     params:
       host: localhost
-      index: data_searchui
+      index: data_searchui-documents
       create_index: false
       text_field: "text"
       embedding_field: "text_embeddings"
@@ -49,7 +49,7 @@ components:    # define all the building-blocks for Pipeline
   - name: DPRRetriever
     type: RawDensePassageRetriever
     params:
-      document_store: FacetedDocumentStore
+      document_store: HaystackDocumentStore
 
   - name: Ranker
     type: FARMRanker
