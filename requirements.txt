@@ -177,4 +177,7 @@ venusian==3.0.0; python_version >= "3.5" \
 win32-setctime==1.0.3; sys_platform == "win32" and python_version >= "3.5" \
     --hash=sha256:dc925662de0a6eb987f0b01f599c01a8236cb8c62831c22d9cada09ad958243e \
     --hash=sha256:4e88556c32fdf47f64165a2180ba4552f8bb32c1103a2fafd05723a0bd42bd4b
-fastapi-chameleon
+Chameleon==3.9.1 \
+    --hash=sha256:52e0922702798486419c4d8bcb7d0b9d3e0629ee305c459180c688eb03ba445f
+fastapi-chameleon==0.1.11 \
+    --hash=sha256:6c8d1b9b0126ae7e5da543ad47d8df04cd9daa8dcbbee0a44c465c52d5187bbc \

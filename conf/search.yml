@@ -1,0 +1,132 @@
+version: '1.0'
+
+title: Semantically Re-ranked ElasticSearch queries
+description: |
+  A drop-in replacement of an ElasticSearch endpoint that can re-rank normal
+  full-text queries.
+
+package: app.api.search
+tags:
+  - semanticsearch
+prefix: /_search
+
+components:    # define all the building-blocks for Pipeline
+  - name: FacetedDocumentStore
+    type: SearchlibElasticsearchDocumentStore
+    params:
+      host: localhost
+      index: data_searchui
+      create_index: false
+      text_field: "text"
+      embedding_field: "text_embeddings"
+      search_fields: "*"
+      name_field: "_id"
+
+  - name: HaystackDocumentStore
+    type: ElasticsearchDocumentStore
+    params:
+      host: localhost
+      index: data_searchui
+      create_index: false
+      text_field: "text"
+      embedding_field: "text_embeddings"
+      search_fields: "*"
+      name_field: "_id"
+
+  - name: RequestClassifier
+    type: ElasticSearchRequestClassifier
+
+  - name: RawRetriever
+    type: RawElasticsearchRetriever
+    params:
+      document_store: FacetedDocumentStore
+
+  # - name: RawRetrieverWithQuery
+  #   type: RawElasticsearchRetriever
+  #   params:
+  #     document_store: FacetedDocumentStore
+  #
+  - name: DPRRetriever
+    type: RawDensePassageRetriever
+    params:
+      document_store: FacetedDocumentStore
+  #
+  # - name: Ranker
+  #   type: FARMRanker
+  #   params:
+  #     model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
+  #
+  # - name: CategoryDeclarativeQuery
+  #   type: Category
+  #   params:
+  #     category: "declarative_query"
+  #
+  # - name: CategoryInterrogativeQuery
+  #   type: Category
+  #   params:
+  #     category: "interrogative query"
+  #
+  # - name: CategoryKeyword
+  #   type: Category
+  #   params:
+  #     category: "keyword"
+  #
+  # - name: QueryClassifier
+  #   type: TransformersQueryClassifier
+  #   params:
+  #     model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
+  #
+  # - name: Ranker
+  #   type: SentenceTransformersRanker
+  #   params:
+  #     model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
+
+pipelines:
+  - name: search
+    type: Query
+    nodes:
+      - name: RequestClassifier
+        inputs: [Query]
+
+      - name: DPRRetriever
+        inputs: [RequestClassifier.output_1]
+
+      - name: DPRRetriever
+        inputs: [RequestClassifier.output_2]
+
+      # - name: QueryClassifier
+      #   inputs: [RequestClassifier.output_2]
+      #
+      # - name: DPRRetriever
+      #   inputs: [QueryClassifier.output_2]
+      #
+      # - name: RawRetrieverWithQuery
+      #   inputs: [QueryClassifier.output_1]
+      #
+      # - name: Ranker
+      #   inputs: [RawRetrieverWithQuery]
+
+# See
+# https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml
+# for how to override from env
+#
+# ES document store options:
+# `index`: the ES index name, by default "document"
+#
+# `text_field`: Name of field that might contain the answer and will therefore be
+# passed to the Reader Model (e.g. "full_text"). If no Reader is used (e.g. in
+# FAQ-Style QA) the plain content of this field will just be returned.
+#
+# `name_field`: Name of field that contains the title of the the doc
+#
+# `embedding_field`: per text field embeddings, default: "embedding". Name of
+# field containing an embedding vector (Only needed when using a dense
+# retriever (e.g. DensePassageRetriever, EmbeddingRetriever) on top)
+#
+# `label_index`: Name of index in elasticsearch to use for storing labels. If
+# not existing yet, we will create one.
+#
+# faq_question_field:
+#
+# See the rest at:
+# https://github.com/deepset-ai/haystack/blob/master/haystack/document_store/elasticsearch.py

@@ -47,10 +47,12 @@ def make_pipeline(pipeline_config, yaml_conf):
     for node_config in pipeline_config["nodes"]:
         name = node_config["name"]
         component = Pipeline._load_or_get_component(
-            name=name, definitions=definitions, components=components)
+            name=name, definitions=definitions, components=components
+        )
         pipeline.add_node(
             component=component, name=node_config["name"],
-            inputs=node_config.get("inputs", []))
+            inputs=node_config.get("inputs", [])
+        )
 
     return pipeline
 

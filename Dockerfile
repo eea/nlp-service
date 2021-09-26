@@ -7,7 +7,7 @@ COPY . /app
 
 #RUN ~/mambaforge/bin/mamba install pytorch cudatoolkit=10.2 tensorflow tensorflow-hub -c pytorch -y
 
-RUN pip install https://github.com/deepset-ai/haystack/archive/da5ed437342e68c36ff68b1459462ae460382487.zip
+RUN pip install https://github.com/deepset-ai/haystack/archive/refs/tags/v0.10.0.zip
 RUN pip install spacy[cuda102]
 WORKDIR /app
 RUN pip install -r requirements.txt

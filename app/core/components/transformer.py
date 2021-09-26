@@ -1,41 +1,6 @@
 from haystack.schema import BaseComponent
 
 
-class SpacyModel(BaseComponent):
-    def __init__(self, *args, **kwargs):
-        import spacy
-        self.spacy = spacy
-        model = kwargs.get('model', 'en_core_web_trf')  # Transformers model
-        # for NER pipeline set disable to:
-        # ["tagger", "parser", "attribute_ruler", "lemmatizer"]
-        disable = kwargs.get('disable', [])
-        self.nlp = spacy.load(model, disable=disable)
-
-    def run(self, documents):
-        return {"spacy_documents":
-                [self.nlp(doc.text) for doc in documents]}, 'output_1'
-
-
-class EmbeddingModel(BaseComponent):
-    def __init__(self, *args, **kwargs):
-        from haystack import Document
-        from haystack.retriever.dense import DensePassageRetriever
-
-        self.Document = Document
-        self.model = DensePassageRetriever(**kwargs)
-
-    def run(self, payload):
-        result = None
-
-        if payload['is_passage']:
-            documents = [self.Document(s) for s in payload['snippets']]
-            result = self.model.embed_passages(documents)
-        else:
-            result = self.model.embed_queries(payload['snippets'])
-
-        return {"embeddings": result}, 'output_1'
-
-
 class TransformersPipeline(BaseComponent):
     def __init__(self, *args, **kwargs):
         from transformers import pipeline
@@ -57,8 +22,7 @@ class NERTransformersPipeline(TransformersPipeline):
         # See https://huggingface.co/transformers/usage.html#named-entity-recognition
         payload = {"inputs": [doc.text for doc in documents]}
 
-        result, output = super(NERTransformersPipeline,
-                               self).run({'payload': payload})
+        result, output = super(NERTransformersPipeline, self).run(payload)
         # Result is like:
         # [{'end': 5,
         #     'entity': 'B-ORG',
@@ -116,34 +80,3 @@ class SentenceTransformer(BaseComponent):
     #     sum_mask = self.torch.clamp(input_mask_expanded.sum(1), min=1e-9)
     #
     #     return sum_embeddings / sum_mask
-
-
-class Category(BaseComponent):
-
-    def __init__(self, *args, **kwargs):
-        self.category = kwargs.get('category', 'untitled')
-
-    def run(self, **kwargs):
-        return {"category": self.category}, 'output_1'
-
-
-# class SearchlibQAAdapter(BaseComponent):
-#
-#     def run(self, query, documents, answers):
-#         import pdb
-#         pdb.set_trace()
-#         # @(Pdb) pp kwargs['answers'][0]
-#         # {'answer': 'global warming and a rapidly evolving world economy',
-#         #  'context': 't local level are exacerbated by threats by global '
-#         #  'document_id': 'http://www.eea.europa.eu/themes/challenges',
-#         #  'meta': {'SearchableText':
-#
-#         answers = kwargs.pop('answers', [])
-#         output = {**kwargs, "answers": answers}
-#
-#         for doc in answers:     # in-place mutation
-#             meta = doc.pop('meta', {})
-#             doc['source'] = meta
-#             doc['id'] = doc['document_id']
-#
-#         return output, 'output_1'

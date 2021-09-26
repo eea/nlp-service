@@ -1,7 +1,7 @@
 version: '1.0'
 
 package: app.api.spacy
-prefix: /spacy
+prefix: /ner-spacy
 tags:
   - classifier
 
@@ -9,7 +9,7 @@ components:
   - name: SpacyNER
     type: SpacyModel
     params:
-      model: en_core_web_trf
+      model_name_or_path: en_core_web_trf
       disable:
         - tagger
         - parser

@@ -2,7 +2,36 @@ version: '1.0'
 
 title: Question classifier
 description: |
-  TBD
+  Common Query types
+
+  Keyword Queries:
+
+  Such queries don't have semantic meaning, merely consist of keywords and the
+  order of words does not matter:
+
+  arya stark father
+  jon snow country
+  arya stark younger brothers
+
+  Questions (Interrogative Queries):
+
+  In such queries users ask a question in a complete, "natural" sentence.
+  Regardless of the presence of "?" in the query the goal here is to detect the
+  intent of the user whether any question is asked or not in the query:
+
+  who is the father of arya stark?
+  which country was jon snow filmed in
+  who are the younger brothers of arya stark?
+
+  Statements (Declarative Queries):
+
+  Such queries consist also of a regular, natural sentence with semantic
+  relations between the words. However, they are rather a statement than
+  a question:
+
+  Arya stark was a daughter of a lord.
+  Show countries that Jon snow was filmed in.
+  List all brothers of Arya.
 
 package: app.api.question
 tags:
@@ -12,11 +41,11 @@ components:    # define all the building-blocks for Pipeline
   - name: CategoryQuestion
     type: Category
     params:
-      category: "question"
+      category: "question/statement"
   - name: CategoryStatement
     type: Category
     params:
-      category: "statement"
+      category: "keyword"
   - name: QueryClassifier
     type: TransformersQueryClassifier
     params:
