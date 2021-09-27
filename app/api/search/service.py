@@ -8,4 +8,7 @@ class SearchModel(PipelineModel):
 
     def predict(self, payload):
         params = payload.dict()
-        return self.pipeline.run(params={'payload': params})
+        result = self.pipeline.run(params={'payload': params})
+        es = result.pop('elasticsearch_result')
+        result.update(es)
+        return result

@@ -17,7 +17,7 @@ components:    # define all the building-blocks for Pipeline
       host: localhost
       index: data_searchui
       create_index: false
-      text_field: "text"
+      text_field: "description"
       embedding_field: "text_embeddings"
       search_fields: "*"
       name_field: "_id"
@@ -55,6 +55,7 @@ components:    # define all the building-blocks for Pipeline
     type: RawFARMRanker
     params:
       model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
+      document_store: FacetedDocumentStore
 
   - name: CategoryDeclarativeQuery
     type: Category

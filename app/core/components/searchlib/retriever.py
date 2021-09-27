@@ -15,10 +15,6 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
     """
 
     def run(self, root_node: str, params: dict, index: str = None):
-        # aggs: Optional[dict] = None,
-        # highlight: Optional[dict] = None, query: Optional[dict] = None,
-        # size: Optional[int] = None,
-        # track_total_hits: Optional[bool] = True,
         body = params['payload']
 
         if root_node == "Query":
@@ -27,9 +23,7 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             output = run_query_timed(
                 index=index, **body
             )
-            if isinstance(output, list):
-                output = {'result': output}
-            return output, 'output_1'
+            return {'elasticsearch_result': output}, 'output_1'
         else:
             raise Exception(f"Invalid root_node '{root_node}'.")
 
@@ -55,11 +49,6 @@ class RawDensePassageRetriever(DensePassageRetriever):
 
     def run(self,
             root_node: str,
-            # aggs: Optional[dict] = None,
-            # highlight: Optional[dict] = None,
-            # query: Optional[dict] = None,
-            # size: Optional[int] = None,
-            # track_total_hits: Optional[bool] = True,
             params: Optional[dict] = {},
             index: str = None,
             ):
@@ -73,7 +62,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
                 index=index,
                 **body,
             )
-            return output, 'output_1'
+            return {'elasticsearch_result': output}, 'output_1'
         else:
             raise Exception(f"Invalid root_node '{root_node}'.")
 
