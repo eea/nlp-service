@@ -9,7 +9,7 @@
       <header class="d-flex flex-wrap justify-content-left py-3 mb-4 border-bottom">
         <h2>${app_name}</h2>
       </header>
-      <h3>Enabled models:</h3>
+      <h3>Available models on this server:</h3>
 
       <table class="table table-striped">
         <thead>
@@ -21,13 +21,17 @@
         </thead>
         <tbody>
           <tr tal:repeat="service services">
-            <td>${service.name}</td>
-            <td><tal tal:condition="exists:service.conf.title">${service.conf.title}</tal></td>
+            <td>
+              <h5 tal:condition="exists:service.conf.title">${service.name}</h5>
+              ${service.conf.title}
+            </td>
             <td><tal tal:condition="exists:service.conf.description">${service.conf.description}</tal></td>
             <td>
               <div tal:repeat="pair get_pipelines(service.name)">
-                <h5>${pair[0]}</h5>
-                <img tal:replace="structure pair[1]" />
+                <strong>Pipeline: ${pair[0]}</strong>
+                <p>
+                  <img tal:replace="structure pair[1]" />
+                </p>
               </div>
             </td>
           </tr>

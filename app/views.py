@@ -19,6 +19,7 @@ def get_pipelines(app, service_name):
             graph = pipeline_graphs[pipeline_name]
             img = '<img src="data:image/svg+xml;base64,' + \
                 graph.decode('ascii') + '" />'
+            # print('img', img)
             out.append((pipeline_name, img))
 
     return out
