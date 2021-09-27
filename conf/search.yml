@@ -52,7 +52,7 @@ components:    # define all the building-blocks for Pipeline
       document_store: HaystackDocumentStore
 
   - name: Ranker
-    type: FARMRanker
+    type: RawFARMRanker
     params:
       model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
 
@@ -111,7 +111,7 @@ pipelines:
         inputs: [CategoryQueryRequest]
 
       - name: CategoryKeywordQuery
-        inputs: [QueryClassifier.output_1]
+        inputs: [QueryClassifier.output_2]
 
       - name: RawRetrieverWithQuery
         inputs: [CategoryKeywordQuery]
@@ -120,13 +120,13 @@ pipelines:
         inputs: [RawRetrieverWithQuery]
 
       - name: SemanticQueryClassifier
-        inputs: [QueryClassifier.output_2]
+        inputs: [QueryClassifier.output_1]
 
       - name: CategoryInterrogativeQuery
-        inputs: [SemanticQueryClassifier.output_1]
+        inputs: [SemanticQueryClassifier.output_2]
 
       - name: CategoryDeclarativeQuery
-        inputs: [SemanticQueryClassifier.output_2]
+        inputs: [SemanticQueryClassifier.output_1]
 
       - name: DPRRetriever
         inputs: [CategoryInterrogativeQuery]
