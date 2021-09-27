@@ -1,28 +1,43 @@
-<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css">
-<link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
-<div class="container">
-<header class="d-flex flex-wrap justify-content-left py-3 mb-4 border-bottom">
-<h2>${app_name}</h2>
-</header>
-<h3>Enabled models:</h3>
+<html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" />
+    <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png" />
+  </head>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
+  <body>
+    <div class="container">
+      <header class="d-flex flex-wrap justify-content-left py-3 mb-4 border-bottom">
+        <h2>${app_name}</h2>
+      </header>
+      <h3>Enabled models:</h3>
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
             <th style="text-align:left">Name</th>
             <th style="text-align:left">Title</th>
             <th style="text-align:left">Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr tal:repeat="service services">
+          </tr>
+        </thead>
+        <tbody>
+          <tr tal:repeat="service services">
             <td>${service.name}</td>
             <td><tal tal:condition="exists:service.conf.title">${service.conf.title}</tal></td>
             <td><tal tal:condition="exists:service.conf.description">${service.conf.description}</tal></td>
-            <!-- <td><img tal:attributes="src python: service.conf.prefix + '/graph'" /></td> -->
-        </tr>
-    </tbody>
-</table>
-<br/>
-<a href="/docs">Go to the API</a>
-</div>
+            <td>
+              <div tal:repeat="pair get_pipelines(service.name)">
+                <h5>${pair[0]}</h5>
+                <img tal:replace="structure pair[1]" />
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        <a href="/docs">Go to the API</a>
+      </p>
+
+    </div>
+  </body>
+</html>

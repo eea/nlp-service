@@ -1,6 +1,7 @@
 from app.core.config import CONCURRENT_REQUEST_PER_WORKER
 from app.core.utils import RequestLimiter
 from fastapi import APIRouter, Request
+from starlette.routing import Router
 
 from .api import SearchRequest
 

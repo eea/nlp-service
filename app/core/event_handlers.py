@@ -9,7 +9,16 @@ from app.core.model import MODELS
 def _startup_models(app: FastAPI) -> None:
     for name, Model in MODELS.items():
         logger.info(f"Init model: {name}")
-        setattr(app.state, name, Model())
+        model = Model()
+        setattr(app.state, name, model)
+
+        if not getattr(app.state, 'pipelines', None):
+            app.state.pipelines = {}
+
+        pipeline = getattr(model, 'pipeline_name', None)
+        if pipeline:
+            graph = model.graph_pipeline()
+            app.state.pipelines[pipeline] = graph
 
 
 def _shutdown_model(app: FastAPI) -> None:
