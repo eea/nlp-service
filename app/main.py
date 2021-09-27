@@ -40,9 +40,13 @@ def load_components(config):
             if isinstance(v, str) and v in components:
                 params[k] = components[v]
 
-        components[name] = BaseComponent.load_from_args(
-            copied['type'], **params
-        )
+        try:
+            components[name] = BaseComponent.load_from_args(
+                copied['type'], **params
+            )
+        except Exception:
+            print(f"Error in loading component: ${params}")
+            raise
 
     return components
 
@@ -92,6 +96,7 @@ def get_app() -> FastAPI:
         pkg = service_conf.get('package', f"app.api.services.{name}")
         tags = service_conf.get('tags', [name])
         prefix = service_conf.get('prefix', f"/{name}")
+        service_descriptions.append({'name': name, 'conf': service_conf})
 
         module = importlib.import_module(pkg)
         scanner = venusian.Scanner()
@@ -101,7 +106,6 @@ def get_app() -> FastAPI:
             module.routes.router, tags=tags, prefix=prefix)
 
         logger.info(f"Loading service <{name}> completed")
-        service_descriptions.append({'name': name, 'conf': service_conf})
 
     fast_app.include_router(views_router, prefix='')
     fast_app.include_router(api_router, prefix=config.API_PREFIX)
@@ -113,7 +117,7 @@ def get_app() -> FastAPI:
         for service in (app.state.services or []):
             name = service.get('name')
             logger.info(f"Starting runtime test for <{name}> service")
-            pkg = service.get('conf',{}).get('package', f"app.api.{name}")
+            pkg = service.get('conf', {}).get('package', f"app.api.{name}")
             module = importlib.import_module(pkg)
             module.runtimetest.runtimetest(app)
             logger.info(f"Runtime test for <{name}> completed")

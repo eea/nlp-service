@@ -8,12 +8,13 @@ logger = logging.getLogger(__name__)
 
 
 class Category(BaseComponent):
+    outgoing_edges = 1
 
     def __init__(self, *args, **kwargs):
         self.category = kwargs.get('category', 'untitled')
 
     def run(self):
-        return {"category": self.category}, 'output_1'
+        return {"query_type": self.category}, 'output_1'
 
 
 class ElasticSearchRequestClassifier(BaseComponent):

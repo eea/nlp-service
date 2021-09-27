@@ -64,17 +64,32 @@ components:    # define all the building-blocks for Pipeline
   - name: CategoryInterrogativeQuery
     type: Category
     params:
-      category: "interrogative query"
+      category: "interrogative_query"
 
-  - name: CategoryKeyword
+  - name: CategoryKeywordQuery
     type: Category
     params:
-      category: "keyword"
+      category: "keyword_query"
+
+  - name: CategoryMetadataRequest
+    type: Category
+    params:
+      category: "metadata_request"
+
+  - name: CategoryQueryRequest
+    type: Category
+    params:
+      category: "query_request"
 
   - name: QueryClassifier
     type: TransformersQueryClassifier
     params:
       model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
+
+  - name: SemanticQueryClassifier
+    type: TransformersQueryClassifier
+    params:
+      model_name_or_path: shahrukhx01/question-vs-statement-classifier
 
 pipelines:
   - name: search
@@ -83,20 +98,41 @@ pipelines:
       - name: RequestClassifier
         inputs: [Query]
 
-      - name: RawRetriever
+      - name: CategoryMetadataRequest
         inputs: [RequestClassifier.output_1]
 
-      - name: QueryClassifier
+      - name: CategoryQueryRequest
         inputs: [RequestClassifier.output_2]
 
-      - name: RawRetrieverWithQuery
+      - name: RawRetriever
+        inputs: [CategoryMetadataRequest]
+
+      - name: QueryClassifier
+        inputs: [CategoryQueryRequest]
+
+      - name: CategoryKeywordQuery
         inputs: [QueryClassifier.output_1]
 
-      - name: DPRRetriever
-        inputs: [QueryClassifier.output_2]
+      - name: RawRetrieverWithQuery
+        inputs: [CategoryKeywordQuery]
 
       - name: Ranker
         inputs: [RawRetrieverWithQuery]
+
+      - name: SemanticQueryClassifier
+        inputs: [QueryClassifier.output_2]
+
+      - name: CategoryInterrogativeQuery
+        inputs: [SemanticQueryClassifier.output_1]
+
+      - name: CategoryDeclarativeQuery
+        inputs: [SemanticQueryClassifier.output_2]
+
+      - name: DPRRetriever
+        inputs: [CategoryInterrogativeQuery]
+
+      - name: DPRRetriever
+        inputs: [CategoryDeclarativeQuery]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml

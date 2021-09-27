@@ -19,6 +19,7 @@
             <td>${service.name}</td>
             <td><tal tal:condition="exists:service.conf.title">${service.conf.title}</tal></td>
             <td><tal tal:condition="exists:service.conf.description">${service.conf.description}</tal></td>
+            <!-- <td><img tal:attributes="src python: service.conf.prefix + '/graph'" /></td> -->
         </tr>
     </tbody>
 </table>
