@@ -58,7 +58,7 @@ class RawFARMRanker(FARMRanker):
                 adapt_score_for_embedding=True, return_embedding=False)
             for hit in hits
         ]
-        hit_map = {hit['id']: hit for hit in hits}
+        hit_map = {hit['_id']: hit for hit in hits}
 
         query_and_docs = [{"text": (query, doc.text)} for doc in documents]
 
@@ -75,9 +75,9 @@ class RawFARMRanker(FARMRanker):
             key=lambda similarity_document_tuple: similarity_document_tuple[
                 0],
             reverse=True)
-        sorted_documents = [doc for _, doc in sorted_scores_and_documents]
-        sorted_hits = [hit_map[doc.id] for doc in sorted_documents]
-        for i, (score, _) in enumerate(sorted_documents):
+        sorted_hits = [hit_map[doc.id]
+                       for _, doc in sorted_scores_and_documents]
+        for i, (score, _) in enumerate(sorted_scores_and_documents):
             sorted_hits[i]['ranked_score'] = score
 
         return sorted_hits
