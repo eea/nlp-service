@@ -48,7 +48,18 @@ def dpr_processing_pipeline(index, textfield, embeddingfield, host, port):
         # index="global-search", create_index=False,
         # text_field="description",
     )
-    retriever = DensePassageRetriever(elastic)
+    retriever = DensePassageRetriever(
+        elastic,
+        query_embedding_model="facebook/dpr-question_encoder-single-nq-base",
+        passage_embedding_model="facebook/dpr-ctx_encoder-single-nq-base",
+        max_seq_len_query=64,
+        max_seq_len_passage=256,
+        batch_size=16,
+        use_gpu=True,
+        embed_title=False,
+        use_fast_tokenizers=True
+    )
+
     elastic.update_embeddings(retriever=retriever)
 
     logger.info("Done updating embeddings")

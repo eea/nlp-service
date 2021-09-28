@@ -22,8 +22,8 @@
         <tbody>
           <tr tal:repeat="service services">
             <td>
-              <h5 tal:condition="exists:service.conf.title">${service.name}</h5>
-              ${service.conf.title}
+              <h5 tal:condition="exists:service.conf.get('title', '')">${service.name}</h5>
+              ${service.conf.get('title', '')}
             </td>
             <td><tal tal:condition="exists:service.conf.description">${service.conf.description}</tal></td>
             <td>

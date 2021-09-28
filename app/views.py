@@ -7,7 +7,7 @@ router = APIRouter()
 def get_pipelines(app, service_name):
     services = app.state.services
     service = [s for s in services if s['name'] == service_name][0]
-    pipelines = service['conf']['pipelines']
+    pipelines = service['conf'].get('pipelines', [])
 
     pipeline_graphs = app.state.pipelines
 

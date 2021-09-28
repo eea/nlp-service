@@ -4,13 +4,13 @@ vesion: '1.0'
 
 services:    # define all the building-blocks for Pipeline
   - search
-  # - embedding
-  # - ner
-  # - qa
-  # - question-classifier
-  # - question-generation
-  # - similarity
-  # - spacy
-  # - summarizer
-  # - zeroshot-classifier
+  - embedding
+  - ner
+  - qa
+  - question-classifier
+  - question-generation
+  - similarity
+  - spacy
+  - summarizer
+  - zeroshot-classifier
   # - preprocessor

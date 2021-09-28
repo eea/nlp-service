@@ -46,10 +46,10 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: FacetedDocumentStore
 
-  - name: DPRRetriever
-    type: RawDensePassageRetriever
-    params:
-      document_store: HaystackDocumentStore
+  # - name: DPRRetriever
+  #   type: RawDensePassageRetriever
+  #   params:
+  #     document_store: HaystackDocumentStore
 
   - name: Ranker
     type: RawFARMRanker
@@ -129,10 +129,10 @@ pipelines:
       - name: CategoryDeclarativeQuery
         inputs: [SemanticQueryClassifier.output_2]
 
-      - name: DPRRetriever
+      - name: RawRetrieverWithQuery
         inputs: [CategoryInterrogativeQuery]
 
-      - name: DPRRetriever
+      - name: RawRetrieverWithQuery
         inputs: [CategoryDeclarativeQuery]
 
 # See
@@ -165,3 +165,112 @@ pipelines:
 #   params:
 #     model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
 
+# TODO: update query, to be like:
+# {"size": 4,
+# "_source": {
+#     "excludes": [
+#       "text_embeddings"
+#     ]
+#     },
+#     "query": {
+#
+#     "function_score": {
+#   "query": {
+#
+#
+#
+#
+#
+#
+#
+#     "script_score": {
+#       "query": {
+#
+#
+#
+#       	"bool": {
+#           "filter": [
+#             {
+#               "bool": {
+#                 "should": [
+#                   {
+#                     "term": {
+#                       "language": "en"
+#                     }
+#                   }
+#                 ],
+#                 "minimum_should_match": 1
+#               }
+#             },
+#             {
+#               "bool": {
+#                 "should": [
+#                   {
+#                     "range": {
+#                       "readingTime": {}
+#                     }
+#                   }
+#                 ],
+#                 "minimum_should_match": 1
+#               }
+#             },
+#             {
+#               "term": {
+#                 "hasWorkflowState": "published"
+#               }
+#             },
+#             {
+#               "constant_score": {
+#                 "filter": {
+#                   "bool": {
+#                     "should": [
+#                       {
+#                         "bool": {
+#                           "must_not": {
+#                             "exists": {
+#                               "field": "expires"
+#                             }
+#                           }
+#                         }
+#                       },
+#                       {
+#                         "range": {
+#                           "expires": {
+#                             "gte": "2021-09-28T10:15:55Z"
+#                           }
+#                         }
+#                       }
+#                     ]
+#                   }
+#                 }
+#               }
+#             }
+#           ]
+#         }
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#       },
+#       "script": {
+#         "source": "dotProduct(params.query_vector,'text_embeddings') + 1000",
+#           "params": {
+#             "query_vector": [
+#               0.17094166576862335,
+#             0.22060824930667877,
+#           -0.25065118074417114
+#               ]
+#           }
+#       }
+#     }
+#   }
+#     }
+#   }
+# }
