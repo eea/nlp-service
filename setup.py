@@ -47,5 +47,6 @@ setuptools.setup(
         'uvicorn',
         'fastapi_chameleon',
         'pygraphviz',
+        'jq',
     ]
 )

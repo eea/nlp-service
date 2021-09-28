@@ -18,7 +18,7 @@ components:    # define all the building-blocks for Pipeline
       index: data_searchui
       create_index: false
       text_field: "description"
-      embedding_field: "text_embeddings"
+      embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
 
@@ -29,7 +29,7 @@ components:    # define all the building-blocks for Pipeline
       index: data_searchui-documents
       create_index: false
       text_field: "text"
-      embedding_field: "text_embeddings"
+      embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
 
@@ -46,10 +46,10 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: FacetedDocumentStore
 
-  # - name: DPRRetriever
-  #   type: RawDensePassageRetriever
-  #   params:
-  #     document_store: HaystackDocumentStore
+  - name: DPRRetriever
+    type: RawDensePassageRetriever
+    params:
+      document_store: HaystackDocumentStore
 
   - name: Ranker
     type: RawFARMRanker
@@ -129,10 +129,10 @@ pipelines:
       - name: CategoryDeclarativeQuery
         inputs: [SemanticQueryClassifier.output_2]
 
-      - name: RawRetrieverWithQuery
+      - name: DPRRetriever
         inputs: [CategoryInterrogativeQuery]
 
-      - name: RawRetrieverWithQuery
+      - name: DPRRetriever
         inputs: [CategoryDeclarativeQuery]
 
 # See
