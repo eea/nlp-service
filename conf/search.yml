@@ -124,10 +124,10 @@ pipelines:
         inputs: [QueryClassifier.output_1]
 
       - name: CategoryInterrogativeQuery
-        inputs: [SemanticQueryClassifier.output_2]
+        inputs: [SemanticQueryClassifier.output_1]
 
       - name: CategoryDeclarativeQuery
-        inputs: [SemanticQueryClassifier.output_1]
+        inputs: [SemanticQueryClassifier.output_2]
 
       - name: DPRRetriever
         inputs: [CategoryInterrogativeQuery]
