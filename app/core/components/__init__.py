@@ -6,7 +6,7 @@ from .searchlib.documentstore import SearchlibElasticsearchDocumentStore
 from .searchlib.question import Category, ElasticSearchRequestClassifier
 from .searchlib.retriever import (
     RawElasticsearchRetriever, RawDensePassageRetriever)
-from .searchlib.ranker import RawFARMRanker
+# from .searchlib.ranker import RawFARMRanker
 
 from .transformer import (TransformersPipeline, NERTransformersPipeline,
                           SentenceTransformer)
@@ -18,7 +18,7 @@ __all__ = [
     NERTransformersPipeline,
     RawDensePassageRetriever,
     RawElasticsearchRetriever,
-    RawFARMRanker,
+    # RawFARMRanker,
     SearchlibElasticsearchDocumentStore,
     SentenceTransformer,
     SpacyModel,

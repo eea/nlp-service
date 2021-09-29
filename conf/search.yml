@@ -51,11 +51,11 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: HaystackDocumentStore
 
-  - name: Ranker
-    type: RawFARMRanker
-    params:
-      model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
-      document_store: FacetedDocumentStore
+  # - name: Ranker
+  #   type: RawFARMRanker
+  #   params:
+  #     model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
+  #     document_store: FacetedDocumentStore
 
   - name: CategoryDeclarativeQuery
     type: Category
@@ -87,7 +87,7 @@ components:    # define all the building-blocks for Pipeline
     params:
       model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
 
-  - name: SemanticQueryClassifier
+  - name: QuestionStatementQueryClassifier
     type: TransformersQueryClassifier
     params:
       model_name_or_path: shahrukhx01/question-vs-statement-classifier
@@ -117,17 +117,17 @@ pipelines:
       - name: RawRetrieverWithQuery
         inputs: [CategoryKeywordQuery]
 
-      - name: Ranker
-        inputs: [RawRetrieverWithQuery]
+      # - name: Ranker
+      #   inputs: [RawRetrieverWithQuery]
 
-      - name: SemanticQueryClassifier
+      - name: QuestionStatementQueryClassifier
         inputs: [QueryClassifier.output_1]
 
       - name: CategoryInterrogativeQuery
-        inputs: [SemanticQueryClassifier.output_1]
+        inputs: [QuestionStatementQueryClassifier.output_1]
 
       - name: CategoryDeclarativeQuery
-        inputs: [SemanticQueryClassifier.output_2]
+        inputs: [QuestionStatementQueryClassifier.output_2]
 
       - name: DPRRetriever
         inputs: [CategoryInterrogativeQuery]

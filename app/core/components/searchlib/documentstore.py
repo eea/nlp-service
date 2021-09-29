@@ -61,6 +61,86 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
     def _get_vector_similarity_query(self, body: dict, query_emb: np.ndarray):
         """
         Generate Elasticsearch query for vector similarity.
+
+The original query looks like:
+
+query = {
+    'function_score': {
+        'functions': [],
+        'query': {
+            'bool': {
+                'filter': [
+                    {'bool': {'minimum_should_match': 1, 'should': [ {'term': {'language': 'en'}}]}},
+                    {'bool': {'minimum_should_match': 1, 'should': [ {'range': {'readingTime': {}}}]}},
+                    {'term': {'hasWorkflowState': 'published'}},
+                    {'constant_score': {'filter': {'bool': {'should': [{'bool': {'must_not': {'exists': { 'field': 'expires'}}}}, {'range': {'expires': {'gte': '2021-09-29T12:16:09Z'}}}]}}}}
+                ],
+                # 'must': [
+                #     {'multi_match':
+                #      {'fields': ['title^2',
+                #                  'subject^1.5',
+                #                  'description^1.5',
+                #                  'searchable_spatial^1.2',
+                #                  'searchable_places^1.2',
+                #                  'searchable_objectProvides^1.4',
+                #                  'searchable_topics^1.2',
+                #                  'searchable_time_coverage^10',
+                #                  'searchable_organisation^2',
+                #                  'label',
+                #                  'all_fields_for_freetext'],
+                #       'query': 'what '
+                #       'is '
+                #       'the '
+                #       'best '
+                #       'country '
+                #       'at '
+                #       'reducing '
+                #       'polution?'
+                #       }}]
+              }
+          },
+    'score_mode': 'sum'
+    }
+}
+
+
+We want to get to a state where the query looks like:
+
+{
+  "size":4,
+  "_source":{
+    "excludes":[
+      "embedding"
+    ]
+  },
+  "query": {
+    "function_score":{
+      "query":{
+        "script_score":{
+          "query":{
+            "bool":{
+              "filter":[
+                { "bool":{ "should":[ { "term":{ "language":"en" } } ], "minimum_should_match":1 } },
+                { "bool":{ "should":[ { "range":{ "readingTime":{ } } } ], "minimum_should_match":1 } },
+                { "term":{ "hasWorkflowState":"published" } },
+                { "constant_score":{ "filter":{ "bool":{ "should":[ { "bool":{ "must_not":{ "exists":{ "field":"expires" } } } }, { "range":{ "expires":{ "gte":"2021-09-28T10:15:55Z" } } } ] } } } }
+              ]
+            }
+          },
+          "script":{
+            "source":"dotProduct(params.query_vector,'embedding') + 1000",
+            "params":{
+              "query_vector":[
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
         """
 
         if self.similarity == "cosine":
@@ -74,13 +154,22 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             )
 
         query = deepcopy(body)
+        # QUERY_MATCH_ALL = jq.compile(
+        #     '.function_score.query.bool.must[].match_all')
+        # QUERY_MATCH_TEXT = jq.compile(
+        #     '.function_score.query.bool.must[].multi_match.query')
+        # search_term = compiled.input(body).first()
+
         if query.get('function_score', {}).get(
                 'query', {}).get('bool', {}).get('must'):
+            # TODO: might not be enough, might be too much
             del query['function_score']['query']['bool']['must']
+
+        filterquery = query.get('function_score', {}).get('query')
 
         script = {
             "script_score": {
-                # "query": {"match_all": {}},
+                "query": filterquery or {"match_all": {}},
                 "script": {
                     # offset score to ensure a positive range as required by ES
                     "source": f"{similarity_fn_name}(params.query_vector,"
@@ -89,7 +178,10 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
                 },
             }
         }
-        query['function_score']['functions'].append(script)
+        query['function_score']['query'] = script
+        print('---------')
+        print(query)
+        print('---------')
         return query
 
     def query_by_embedding(self,
