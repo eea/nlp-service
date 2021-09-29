@@ -51,7 +51,10 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         if sort is not None:
             body['sort'] = sort
 
-        # print(json.dumps(body))
+        print('-------')
+        print(json.dumps(body))
+        print('-------')
+
         logger.debug(f"Retriever query: {body}")
 
         result = self.client.search(index=index, body=body)

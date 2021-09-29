@@ -20,7 +20,7 @@ class SearchRequest(BaseModel):
     highlight: Optional[Dict]
     size: Optional[int] = 0
     sort: Optional[List]
-    track_total_hits: Optional[int] = True
+    track_total_hits: Optional[bool] = True
 
 
 class Document(BaseModel):
