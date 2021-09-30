@@ -11,15 +11,17 @@
       </header>
       <h3>Available models on this server:</h3>
 
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th style="text-align:left">Name</th>
-            <th style="text-align:left">Pipelines</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tal:rep tal:repeat="service services">
+
+
+      <tal:rep tal:repeat="service services">
+        <table class="table table-striped" style="margin-bottom: 4em">
+          <thead>
+            <tr>
+              <th style="text-align:left">Name</th>
+              <th style="text-align:left">Pipelines</th>
+            </tr>
+          </thead>
+          <tbody>
             <tr>
               <td>
                 <h5 tal:condition="exists:service.conf.get('title', '')">${service.name}</h5>
@@ -37,9 +39,9 @@
             <tr tal:condition="exists:service.conf.description">
               <td colspan="2">${service.conf.description}</td>
             </tr>
-          </tal:rep>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </tal:rep>
 
       <p>
         <a href="/docs">Go to the API</a>
