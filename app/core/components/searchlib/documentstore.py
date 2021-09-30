@@ -275,17 +275,27 @@ We want to get to a state where the query looks like:
 class ESHit2HaystackDoc(BaseComponent):
     """ A component that converts raw elasticsearch hits to Haystack Documents
     """
+    outgoing_edges = 1
+
+    def __init__(self, document_store=None):
+        self.document_store = document_store
 
     def run(
-        self,
-        query: Optional[str] = None,
-        file_paths: Optional[List[str]] = None,
-        labels: Optional[MultiLabel] = None,
-        documents: Optional[List[Document]] = None,
-        meta: Optional[dict] = None,
-        hits: Optional[List[any]] = [],
-        params: Optional[dict] = None,
-    ):
-        import pdb
-        pdb.set_trace()
-        pass
+            self,
+            query: Optional[str] = None,
+            file_paths: Optional[List[str]] = None,
+            labels: Optional[MultiLabel] = None,
+            documents: Optional[List[Document]] = None,
+            meta: Optional[dict] = None,
+            hits: Optional[List[any]] = [],
+            params: Optional[dict] = None,
+            elasticsearch_result: Any = None):
+
+        hits = elasticsearch_result.get('hits', {}).get('hits', [])
+        documents = [
+            self.document_store._convert_es_hit_to_document(
+                hit, return_embedding=False) for hit in hits
+        ]
+
+        # TODO: query might come as full ES body
+        return {'documents': documents, 'query': query}, 'output_1'

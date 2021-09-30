@@ -15,9 +15,12 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
     """
 
     def run(self, root_node: str, params: dict, index: str = None):
-        import pdb
-        pdb.set_trace()
         body = params['payload']
+
+        # Support for QA-type
+        query = body.get('query', None)
+        if isinstance(query, str):
+            body['query'] = {"match": {'text': body['query']}}
 
         if root_node == "Query":
             self.query_count += 1
@@ -25,7 +28,7 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             output = run_query_timed(
                 index=index, **body
             )
-            return {'elasticsearch_result': output}, 'output_1'
+            return {'elasticsearch_result': output, 'query': query}, 'output_1'
         else:
             raise Exception(f"Invalid root_node '{root_node}'.")
 
@@ -56,6 +59,11 @@ class RawDensePassageRetriever(DensePassageRetriever):
             ):
 
         body = params['payload']
+        query = body.get('query', None)
+
+        # Support for QA-type
+        if isinstance(query, str):
+            body['query'] = {"match": {'text': body['query']}}
 
         if root_node == "Query":
             self.query_count += 1
@@ -64,7 +72,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
                 index=index,
                 **body,
             )
-            return {'elasticsearch_result': output}, 'output_1'
+            return {'elasticsearch_result': output, 'query': query}, 'output_1'
         else:
             raise Exception(f"Invalid root_node '{root_node}'.")
 

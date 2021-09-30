@@ -29,11 +29,16 @@ components:    # define all the building-blocks for Pipeline
 
   - name: ESHit2HaystackDoc
     type: ESHit2HaystackDoc
+    params:
+      document_store: DocumentStore
 
-  # - name: Reader       # custom-name for the component; helpful for visualization & debugging
-  #   type: FARMReader    # Haystack Class name for the component
-  #   params:
-  #     model_name_or_path: deepset/roberta-base-squad2
+  - name: Reader       # custom-name for the component; helpful for visualization & debugging
+    type: FARMReader    # Haystack Class name for the component
+    params:
+      model_name_or_path: deepset/roberta-base-squad2
+
+  - name: SearchlibQAAdapter
+    type: SearchlibQAAdapter
 
 pipelines:
   - name: query    # an extractive-qa Pipeline
@@ -54,8 +59,11 @@ pipelines:
       - name: ESHit2HaystackDoc
         inputs: [RawRetriever]
 
-      # - name: SearchlibQAAdapter
-      #   inputs: [Reader]
+      - name: Reader
+        inputs: [ESHit2HaystackDoc]
+
+      - name: SearchlibQAAdapter
+        inputs: [Reader]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml
