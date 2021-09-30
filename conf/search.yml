@@ -60,27 +60,27 @@ components:    # define all the building-blocks for Pipeline
   - name: CategoryDeclarativeQuery
     type: Category
     params:
-      category: "declarative_query"
+      category: "query:declarative"
 
   - name: CategoryInterrogativeQuery
     type: Category
     params:
-      category: "interrogative_query"
+      category: "query:interrogative"
 
   - name: CategoryKeywordQuery
     type: Category
     params:
-      category: "keyword_query"
+      category: "query:keyword"
 
   - name: CategoryMetadataRequest
     type: Category
     params:
-      category: "metadata_request"
+      category: "request:metadata"
 
   - name: CategoryQueryRequest
     type: Category
     params:
-      category: "query_request"
+      category: "request:query"
 
   - name: QueryClassifier
     type: TransformersQueryClassifier
