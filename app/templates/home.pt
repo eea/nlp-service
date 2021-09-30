@@ -15,26 +15,29 @@
         <thead>
           <tr>
             <th style="text-align:left">Name</th>
-            <th style="text-align:left">Title</th>
-            <th style="text-align:left">Description</th>
+            <th style="text-align:left">Pipelines</th>
           </tr>
         </thead>
         <tbody>
-          <tr tal:repeat="service services">
-            <td>
-              <h5 tal:condition="exists:service.conf.get('title', '')">${service.name}</h5>
-              ${service.conf.get('title', '')}
-            </td>
-            <td><tal tal:condition="exists:service.conf.description">${service.conf.description}</tal></td>
-            <td>
-              <div tal:repeat="pair get_pipelines(service.name)">
-                <strong>Pipeline: ${pair[0]}</strong>
-                <p>
-                  <img tal:replace="structure pair[1]" />
-                </p>
-              </div>
-            </td>
-          </tr>
+          <tal:rep tal:repeat="service services">
+            <tr>
+              <td>
+                <h5 tal:condition="exists:service.conf.get('title', '')">${service.name}</h5>
+                ${service.conf.get('title', '')}
+              </td>
+              <td>
+                <div tal:repeat="pair get_pipelines(service.name)">
+                  <strong>Pipeline: ${pair[0]}</strong>
+                  <p>
+                    <img tal:replace="structure pair[1]" />
+                  </p>
+                </div>
+              </td>
+            </tr>
+            <tr tal:condition="exists:service.conf.description">
+              <td colspan="2">${service.conf.description}</td>
+            </tr>
+          </tal:rep>
         </tbody>
       </table>
 
