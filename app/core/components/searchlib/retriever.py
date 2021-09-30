@@ -15,6 +15,8 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
     """
 
     def run(self, root_node: str, params: dict, index: str = None):
+        import pdb
+        pdb.set_trace()
         body = params['payload']
 
         if root_node == "Query":

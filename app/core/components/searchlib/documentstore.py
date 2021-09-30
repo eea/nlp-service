@@ -1,5 +1,6 @@
 from copy import deepcopy
 from haystack.document_store import ElasticsearchDocumentStore
+from haystack.schema import BaseComponent, MultiLabel
 from typing import List, Optional, Any       # , Dict
 from haystack.schema import Document
 import numpy as np
@@ -157,11 +158,6 @@ We want to get to a state where the query looks like:
             )
 
         query = deepcopy(body)
-        # QUERY_MATCH_ALL = jq.compile(
-        #     '.function_score.query.bool.must[].match_all')
-        # QUERY_MATCH_TEXT = jq.compile(
-        #     '.function_score.query.bool.must[].multi_match.query')
-        # search_term = compiled.input(body).first()
 
         if query.get('function_score', {}).get(
                 'query', {}).get('bool', {}).get('must'):
@@ -254,9 +250,9 @@ We want to get to a state where the query looks like:
                 body["_source"] = {"excludes": excluded_meta_data}
 
             logger.debug(f"Retriever query: {body}")
-            print("query body")
-            with open('/tmp/1.json', 'w') as f:
-                f.write(json.dumps(body))
+            # print("query body")
+            # with open('/tmp/1.json', 'w') as f:
+            #     f.write(json.dumps(body))
             print(body)
             try:
                 result = self.client.search(
@@ -274,3 +270,22 @@ We want to get to a state where the query looks like:
                     raise e
 
             return result
+
+
+class ESHit2HaystackDoc(BaseComponent):
+    """ A component that converts raw elasticsearch hits to Haystack Documents
+    """
+
+    def run(
+        self,
+        query: Optional[str] = None,
+        file_paths: Optional[List[str]] = None,
+        labels: Optional[MultiLabel] = None,
+        documents: Optional[List[Document]] = None,
+        meta: Optional[dict] = None,
+        hits: Optional[List[any]] = [],
+        params: Optional[dict] = None,
+    ):
+        import pdb
+        pdb.set_trace()
+        pass

@@ -11,8 +11,6 @@
       </header>
       <h3>Available models on this server:</h3>
 
-
-
       <tal:rep tal:repeat="service services">
         <table class="table table-striped" style="margin-bottom: 4em">
           <thead>
