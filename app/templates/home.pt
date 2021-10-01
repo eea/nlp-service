@@ -9,7 +9,7 @@
       <header class="d-flex flex-wrap justify-content-left py-3 mb-4 border-bottom">
         <h2>${app_name}</h2>
       </header>
-      <h3>Available models on this server:</h3>
+      <h3>Available services on this deployment:</h3>
 
       <tal:rep tal:repeat="service services">
         <table class="table table-striped" style="margin-bottom: 4em">
