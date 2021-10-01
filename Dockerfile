@@ -8,7 +8,7 @@ COPY . /app
 #RUN ~/mambaforge/bin/mamba install pytorch cudatoolkit=10.2 tensorflow tensorflow-hub -c pytorch -y
 
 RUN apt update
-RUN apt install libgraphviz-dev graphviz
+RUN apt install libgraphviz-dev graphviz -y
 
 RUN pip install https://github.com/deepset-ai/haystack/archive/refs/tags/v0.10.0.zip
 RUN pip install spacy[cuda102]
