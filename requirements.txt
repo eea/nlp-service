@@ -180,7 +180,7 @@ win32-setctime==1.0.3; sys_platform == "win32" and python_version >= "3.5" \
 Chameleon==3.9.1 \
     --hash=sha256:52e0922702798486419c4d8bcb7d0b9d3e0629ee305c459180c688eb03ba445f
 fastapi-chameleon==0.1.11 \
-    --hash=sha256:6c8d1b9b0126ae7e5da543ad47d8df04cd9daa8dcbbee0a44c465c52d5187bbc \
+    --hash=sha256:6c8d1b9b0126ae7e5da543ad47d8df04cd9daa8dcbbee0a44c465c52d5187bbc
 jq==1.2.1 \
     --hash=sha256:00a4ecc32f6c322dd3595e7cd983bf2af95f728bd9edef62c7302e771c416d18 \
     --hash=sha256:077ab6cf7d44483f052804d088229882940ba6b1c4f48bcf289ee62f7f957115 \
