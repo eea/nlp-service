@@ -34,7 +34,7 @@ components:
     params:
       document_store: DocumentStore
 
-  - name: Reader
+  - name: AnswerExtraction
     type: FARMReader
     params:
       model_name_or_path: deepset/roberta-base-squad2
@@ -52,11 +52,11 @@ pipelines:
       - name: ESHit2HaystackDoc
         inputs: [RawRetriever]
 
-      - name: Reader
+      - name: AnswerExtraction
         inputs: [ESHit2HaystackDoc]
 
       - name: SearchlibQAAdapter
-        inputs: [Reader]
+        inputs: [AnswerExtraction]
 
   - name: dpquery
     type: Query
@@ -67,11 +67,11 @@ pipelines:
       - name: ESHit2HaystackDoc
         inputs: [DensePassageRetriever]
 
-      - name: Reader
+      - name: AnswerExtraction
         inputs: [ESHit2HaystackDoc]
 
       - name: SearchlibQAAdapter
-        inputs: [Reader]
+        inputs: [AnswerExtraction]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml
