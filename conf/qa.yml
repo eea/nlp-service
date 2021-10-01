@@ -4,8 +4,10 @@ package: app.api.qa
 tags:
   - qa
 prefix: /query
+description: |
+  Based on the search term query, it extracts answers from the ES results
 
-components:    # define all the building-blocks for Pipeline
+components:
   - name: DocumentStore
     type: SearchlibElasticsearchDocumentStore
     params:
@@ -22,18 +24,18 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: DocumentStore
 
-  # - name: DPRRetriever
-  #   type: RawDensePassageRetriever
-  #   params:
-  #     document_store: DocumentStore
+  - name: DensePassageRetriever
+    type: RawDensePassageRetriever
+    params:
+      document_store: DocumentStore
 
   - name: ESHit2HaystackDoc
     type: ESHit2HaystackDoc
     params:
       document_store: DocumentStore
 
-  - name: Reader       # custom-name for the component; helpful for visualization & debugging
-    type: FARMReader    # Haystack Class name for the component
+  - name: Reader
+    type: FARMReader
     params:
       model_name_or_path: deepset/roberta-base-squad2
 
@@ -41,7 +43,7 @@ components:    # define all the building-blocks for Pipeline
     type: SearchlibQAAdapter
 
 pipelines:
-  - name: query    # an extractive-qa Pipeline
+  - name: query
     type: Query
     nodes:
       - name: RawRetriever
@@ -50,14 +52,20 @@ pipelines:
       - name: ESHit2HaystackDoc
         inputs: [RawRetriever]
 
-  - name: dpquery    # an extractive-qa Pipeline
+      - name: Reader
+        inputs: [ESHit2HaystackDoc]
+
+      - name: SearchlibQAAdapter
+        inputs: [Reader]
+
+  - name: dpquery
     type: Query
     nodes:
-      - name: RawRetriever
+      - name: DensePassageRetriever
         inputs: [Query]
 
       - name: ESHit2HaystackDoc
-        inputs: [RawRetriever]
+        inputs: [DensePassageRetriever]
 
       - name: Reader
         inputs: [ESHit2HaystackDoc]

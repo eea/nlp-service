@@ -3,6 +3,7 @@
 
 import jq
 
+QUERY_SIMPLE_MATCH = jq.compile('.match.text')
 QUERY_MATCH_ALL = jq.compile('.function_score.query.bool.must[].match_all')
 QUERY_MATCH_TEXT = jq.compile(
     '.function_score.query.bool.must[].multi_match.query')
@@ -12,7 +13,7 @@ def get_search_term(body):
     """ Extract the text search term from an ES query
     """
 
-    strategies = [QUERY_MATCH_TEXT, QUERY_MATCH_ALL]
+    strategies = [QUERY_MATCH_TEXT, QUERY_MATCH_ALL, QUERY_SIMPLE_MATCH]
     search_term = ""
 
     for compiled in strategies:

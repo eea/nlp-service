@@ -1,3 +1,4 @@
+import jq
 from copy import deepcopy
 from haystack.document_store import ElasticsearchDocumentStore
 from haystack.schema import BaseComponent, MultiLabel
@@ -177,6 +178,11 @@ We want to get to a state where the query looks like:
                 },
             }
         }
+
+        # support simple QA style queries
+        if jq.compile('.match.text').input(query).first():
+            query = {'function_score': {}}
+
         query['function_score']['query'] = script
         print('---------')
         print(query)

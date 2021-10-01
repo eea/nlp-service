@@ -19,6 +19,8 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
 
         # Support for QA-type
         query = body.get('query', None)
+        body.pop('params', None)
+
         if isinstance(query, str):
             body['query'] = {"match": {'text': body['query']}}
 
@@ -33,11 +35,7 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             raise Exception(f"Invalid root_node '{root_node}'.")
 
     def retrieve(self, **kwargs):
-
-        index = kwargs.get('index')
-
-        if index is None:
-            index = self.document_store.index
+        index = kwargs.get('index', self.document_store.index)
 
         args = kwargs.copy()
         args['index'] = index
@@ -60,8 +58,9 @@ class RawDensePassageRetriever(DensePassageRetriever):
 
         body = params['payload']
         query = body.get('query', None)
+        body.pop('params', None)
 
-        # Support for QA-type
+        # Support for QA-type simple query
         if isinstance(query, str):
             body['query'] = {"match": {'text': body['query']}}
 
@@ -78,10 +77,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
 
     def retrieve(self, **kwargs):
 
-        index = kwargs.get('index')
-
-        if index is None:
-            index = self.document_store.index
+        index = kwargs.get('index', self.document_store.index)
 
         args = kwargs.copy()
         args['index'] = index
