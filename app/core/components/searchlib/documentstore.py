@@ -16,6 +16,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
     def query(
         self,
         query: Optional[dict],
+        custom_query: Optional[dict],
         aggs: Optional[dict] = None,
         highlight: Optional[dict] = None,
         size: Optional[int] = None,
@@ -26,6 +27,8 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         """
         ES Docstore replacement that supports native ES queries
         """
+
+        # TODO: use custom_query
 
         if index is None:
             index = self.index
@@ -63,7 +66,11 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
         return result
 
-    def _get_vector_similarity_query(self, body: dict, query_emb: np.ndarray):
+    def _get_vector_similarity_query(
+        self, body: dict,
+        query_emb: np.ndarray,
+        custom_query: Optional[dict] = None
+    ):
         """
         Generate Elasticsearch query for vector similarity.
 
@@ -144,8 +151,6 @@ We want to get to a state where the query looks like:
     }
   }
 }
-
-
         """
 
         if self.similarity == "cosine":
@@ -158,7 +163,9 @@ We want to get to a state where the query looks like:
                 "constructor. Choose between \'cosine\' and \'dot_product\'"
             )
 
-        query = deepcopy(body)
+        if custom_query:
+            custom_query = custom_query.get('query', {})
+        query = deepcopy(custom_query or body)
 
         if query.get('function_score', {}).get(
                 'query', {}).get('bool', {}).get('must'):
@@ -192,6 +199,7 @@ We want to get to a state where the query looks like:
     def query_by_embedding(self,
                            query_emb: np.ndarray,
                            return_embedding: Optional[bool] = None,
+                           custom_query: Optional[dict] = None,
 
                            aggs: Optional[dict] = None,
                            highlight: Optional[dict] = None,
@@ -215,7 +223,8 @@ We want to get to a state where the query looks like:
             )
         else:
             # +1 in similarity to avoid negative numbers (for cosine sim)
-            emb_query = self._get_vector_similarity_query(query, query_emb)
+            emb_query = self._get_vector_similarity_query(
+                body=query, query_emb=query_emb, custom_query=custom_query)
             body = {}
             if emb_query:
                 body['query'] = emb_query

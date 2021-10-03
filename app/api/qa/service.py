@@ -18,4 +18,6 @@ class QADPModel(PipelineModel):
     def _pre_process(self, payload):
         body = payload.dict()
         params = body.pop('params') or {}
-        return {'params': {'payload': body}}
+        if not params.get('query'):
+            params['query'] = body['query']
+        return {'params': {'payload': params}}

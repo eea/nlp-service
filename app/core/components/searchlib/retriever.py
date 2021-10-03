@@ -16,6 +16,7 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
 
     def run(self, root_node: str, params: dict, index: str = None):
         body = params['payload']
+        # custom_query = params.get('custom_query', None)
 
         # Support for QA-type
         query = body.get('query', None)
@@ -28,7 +29,9 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             self.query_count += 1
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(
-                index=index, **body
+                index=index,
+                # custom_query=custom_query,
+                **body
             )
             return {'elasticsearch_result': output, 'query': query}, 'output_1'
         else:
@@ -59,6 +62,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
         body = params['payload']
         query = body.get('query', None)
         body.pop('params', None)
+        # custom_query = body.get('custom_query', None)
 
         # Support for QA-type simple query
         if isinstance(query, str):
@@ -69,6 +73,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(
                 index=index,
+                # custom_query=custom_query,
                 **body,
             )
             return {'elasticsearch_result': output, 'query': query}, 'output_1'
@@ -87,6 +92,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
         print(q)
         search_term = get_search_term(q)
         query_emb = self.embed_queries(texts=[search_term])[0]
+        args.pop('use_dp', None)
         args['query_emb'] = query_emb
 
         return self.document_store.query_by_embedding(**args)
