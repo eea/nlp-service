@@ -16,7 +16,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
     def query(
         self,
         query: Optional[dict],
-        custom_query: Optional[dict],
+        custom_query: Optional[dict] = None,
         aggs: Optional[dict] = None,
         highlight: Optional[dict] = None,
         size: Optional[int] = None,

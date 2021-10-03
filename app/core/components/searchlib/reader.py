@@ -14,11 +14,13 @@ class SearchlibQAAdapter(BaseComponent):
 
         # answers = kwargs.pop('answers', [])
 
+        document_map = {doc.id: doc for doc in documents}
         output = {'documents': documents, "answers": answers}
 
         for doc in answers:     # in-place mutation
             meta = doc.pop('meta', {})
             doc['source'] = meta
             doc['id'] = doc['document_id']
+            doc['text'] = document_map[doc['id']].text
 
         return output, 'output_1'
