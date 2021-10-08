@@ -31,12 +31,19 @@ class SearchlibQAAdapter(BaseComponent):
             answer_span = sdoc.char_span(doc['offset_start_in_doc'],
                                          doc['offset_end_in_doc'])
 
+            if answer_span is None:
+                continue
+
             current_sent = answer_span.sent
+
             sentences = list(sdoc.sents)
             index = -1
             for i, sent in enumerate(sentences):
                 if sent == current_sent:
                     index = i
+
+            # TODO: there's a bug here in case the answer is multiple sentences.
+
             full_context = sentences[index > 0 and index - 1 or 0:
                                      index == len(sentences) - 1 and
                                      len(sentences) - 1 or index + 1]
