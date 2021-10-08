@@ -249,15 +249,6 @@ pipelines:
 #         }
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
 #       },
 #       "script": {
 #         "source": "dotProduct(params.query_vector,'text_embeddings') + 1000",

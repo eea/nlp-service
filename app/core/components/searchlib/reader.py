@@ -1,11 +1,16 @@
 from haystack.schema import BaseComponent
+# import spacy
+from spacy.lang.en import English
 
 
 class SearchlibQAAdapter(BaseComponent):
+    def __init__(self):
+        # self.nlp = spacy.load("en_core_web_trf")
+        nlp = English()
+        nlp.add_pipe('sentencizer')
+        self.nlp = nlp
 
     def run(self, query, documents, answers):
-        # import pdb
-        # pdb.set_trace()
         # @(Pdb) pp kwargs['answers'][0]
         # {'answer': 'global warming and a rapidly evolving world economy',
         #  'context': 't local level are exacerbated by threats by global '
@@ -22,5 +27,19 @@ class SearchlibQAAdapter(BaseComponent):
             doc['source'] = meta
             doc['id'] = doc['document_id']
             doc['text'] = document_map[doc['id']].text
+            sdoc = self.nlp(doc['text'])
+            answer_span = sdoc.char_span(doc['offset_start_in_doc'],
+                                         doc['offset_end_in_doc'])
+
+            current_sent = answer_span.sent
+            sentences = list(sdoc.sents)
+            index = -1
+            for i, sent in enumerate(sentences):
+                if sent == current_sent:
+                    index = i
+            full_context = sentences[index > 0 and index - 1 or 0:
+                                     index == len(sentences) - 1 and
+                                     len(sentences) - 1 or index + 1]
+            doc['full_context'] = " ".join([s.text for s in full_context])
 
         return output, 'output_1'

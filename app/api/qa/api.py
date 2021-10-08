@@ -27,6 +27,7 @@ class Answer(BaseModel):
     score: Optional[float] = None
     probability: Optional[float] = None
     context: Optional[str]
+    full_context: Optional[str]
     offset_start: int
     offset_end: int
     offset_start_in_doc: Optional[int]

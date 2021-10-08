@@ -205,7 +205,7 @@ We want to get to a state where the query looks like:
                            highlight: Optional[dict] = None,
                            index: Optional[str] = None,
                            query: Optional[dict] = None,
-                           size: Optional[int] = None,
+                           size: Optional[int] = 5,
                            sort: Optional[Any] = None,
                            track_total_hits: Optional[bool] = True,
                            ) \
