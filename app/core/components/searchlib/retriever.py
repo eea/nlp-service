@@ -15,12 +15,17 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
     """
 
     def run(self, root_node: str, params: dict, index: str = None):
+        # import pdb
+        # pdb.set_trace()
         body = params['payload']
         # custom_query = params.get('custom_query', None)
 
         # Support for QA-type
         query = body.get('query', None)
-        body.pop('params', None)
+        bodyparams = body.pop('params', {})
+        custom_query = bodyparams.pop('custom_query', None)
+        if custom_query:
+            body['custom_query'] = custom_query     # ['query']
 
         if isinstance(query, str):
             body['query'] = {"match": {'text': body['query']}}

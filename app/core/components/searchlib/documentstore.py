@@ -38,6 +38,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         if query:
             body['query'] = query
 
+        if custom_query:
+            body['query'] = custom_query
+
         if aggs:
             body['aggs'] = aggs
 
@@ -56,7 +59,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         if sort is not None:
             body['sort'] = sort
 
-        print('-------')
+        print('---[ ES Query ]----')
         print(json.dumps(body))
         print('-------')
 
@@ -191,7 +194,7 @@ We want to get to a state where the query looks like:
             query = {'function_score': {}}
 
         query['function_score']['query'] = script
-        print('---------')
+        print('---[ ES Embedding query ]------')
         print(query)
         print('---------')
         return query
@@ -268,7 +271,7 @@ We want to get to a state where the query looks like:
             # print("query body")
             # with open('/tmp/1.json', 'w') as f:
             #     f.write(json.dumps(body))
-            print(body)
+            # print(body)
             try:
                 result = self.client.search(
                     index=index,
