@@ -166,8 +166,6 @@ We want to get to a state where the query looks like:
                 "constructor. Choose between \'cosine\' and \'dot_product\'"
             )
 
-        if custom_query:
-            custom_query = custom_query.get('query', {})
         query = deepcopy(custom_query or body)
 
         if query.get('function_score', {}).get(
