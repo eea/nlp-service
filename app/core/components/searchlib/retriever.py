@@ -92,7 +92,6 @@ class RawDensePassageRetriever(DensePassageRetriever):
 
         # Hardcoded for ES
         q = kwargs['query']
-        print(q)
         search_term = get_search_term(q)
         query_emb = self.embed_queries(texts=[search_term])[0]
         args.pop('use_dp', None)
