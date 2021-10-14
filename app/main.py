@@ -17,6 +17,8 @@ from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.core.pipeline import add_pipeline
 from app.views import router as views_router
 
+import logging
+
 dev_mode = True
 
 folder = os.path.dirname(__file__)
@@ -54,12 +56,24 @@ def load_components(config):
 def get_app() -> FastAPI:
     """FastAPI app controller"""
 
+    with open(config.CONFIG_YAML_PATH, "r", encoding='utf-8') as stream:
+        conf = yaml.safe_load(stream)
+        service_names = conf.get('services', [])
+
     if os.environ.get('NLP_SERVICES'):
         service_names = os.environ['NLP_SERVICES'].strip().split(',')
-    else:
-        with open(config.CONFIG_YAML_PATH, "r", encoding='utf-8') as stream:
-            conf = yaml.safe_load(stream)
-            service_names = conf.get('services', [])
+
+    file_handler = logging.FileHandler(
+        conf.get('logfile',
+                 os.environ.get('NLP_LOGFILE', '/tmp/nlpservice.log'))
+    )
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+    )
+    loglevel = conf.get('loglevel', logging.DEBUG)
+    root = logging.getLogger()
+    root.setLevel(loglevel)
+    root.addHandler(file_handler)
 
     fast_app = FastAPI(title=config.APP_NAME,
                        version=config.APP_VERSION, debug=config.IS_DEBUG)
