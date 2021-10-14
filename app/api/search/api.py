@@ -15,6 +15,7 @@ class SearchRequestParams(BaseModel):
 class SearchRequest(BaseModel):
     """ A search request
     """
+    runtime_mappings: Optional[Dict]
     query: Optional[Dict]
     aggs: Optional[Dict]
     highlight: Optional[Dict]

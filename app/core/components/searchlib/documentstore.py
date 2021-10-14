@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
     def query(
         self,
+        runtime_mappings: Optional[dict],
         query: Optional[dict],
         custom_query: Optional[dict] = None,
         aggs: Optional[dict] = None,
@@ -37,6 +38,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         body = {}
         if query:
             body['query'] = query
+
+        if runtime_mappings:
+            body['runtime_mappings'] = runtime_mappings
 
         if custom_query:
             body['query'] = custom_query
