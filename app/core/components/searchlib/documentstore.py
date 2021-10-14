@@ -21,6 +21,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         aggs: Optional[dict] = None,
         highlight: Optional[dict] = None,
         size: Optional[int] = None,
+        from_: Optional[int] = 0,
         sort: Optional[Any] = None,
         track_total_hits: Optional[bool] = True,
         index: str = None
@@ -53,6 +54,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
         if size is not None:
             body['size'] = size
+
+        if from_ is not None:
+            body['from'] = from_
 
         if track_total_hits is not None:
             body['track_total_hits'] = track_total_hits

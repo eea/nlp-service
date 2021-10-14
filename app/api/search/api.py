@@ -14,8 +14,16 @@ class SearchRequestParams(BaseModel):
 
 class SearchRequest(BaseModel):
     """ A search request
+
+    See also https://github.com/samuelcolvin/pydantic/issues/153
     """
+    class Config:
+        allow_population_by_field_name = True
+        fields = {
+            'from_': 'from'
+        }
     runtime_mappings: Optional[Dict]
+    from_: Optional[int] = 0
     query: Optional[Dict]
     aggs: Optional[Dict]
     highlight: Optional[Dict]

@@ -22,6 +22,10 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         query = body.get('query', None)
         bodyparams = body.pop('params', {})
         custom_query = bodyparams.pop('custom_query', None)
+        from_ = bodyparams.pop('from_', 0)
+
+        if from_:
+            body['from_'] = from_
         if custom_query:
             body['custom_query'] = custom_query     # ['query']
 
@@ -64,8 +68,13 @@ class RawDensePassageRetriever(DensePassageRetriever):
 
         body = params['payload']
         query = body.get('query', None)
-        body.pop('params', None)
+        bodyparams = body.pop('params', {})
         # custom_query = body.get('custom_query', None)
+
+        from_ = bodyparams.pop('from_', 0)
+
+        if from_:
+            body['from_'] = from_
 
         # Support for QA-type simple query
         if isinstance(query, str):
