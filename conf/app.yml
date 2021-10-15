@@ -15,5 +15,3 @@ services:    # define all the building-blocks for Pipeline
   - zeroshot-classifier
   # - preprocessor
   #
-logfile: /tmp/nlpservice.log
-loglevel: 20
