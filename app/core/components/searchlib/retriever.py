@@ -14,13 +14,20 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
     SearchlibElasticsearchDocumentStore
     """
 
-    def run(self, root_node: str, params: dict, index: str = None):
+    def run(self,
+            root_node: str,
+            params: dict,
+            index: str = None,
+            top_k: int = None):
         body = params['payload']
 
         # Support for QA-type
         query = body.get('query', None)
         bodyparams = body.pop('params', {})
         from_ = bodyparams.pop('from_', 0)
+
+        if top_k is not None:
+            body['size'] = top_k
 
         if from_:
             body['from_'] = from_
@@ -63,6 +70,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
             root_node: str,
             params: Optional[dict] = {},
             index: str = None,
+            top_k: int = None
             ):
 
         body = params['payload']
@@ -75,6 +83,9 @@ class RawDensePassageRetriever(DensePassageRetriever):
         if from_:
             body['from_'] = from_
 
+        if top_k is not None:
+            body['size'] = top_k
+
         # TODO: check the custom parameters are used when required
 
         # Support for QA-type simple query
@@ -86,7 +97,6 @@ class RawDensePassageRetriever(DensePassageRetriever):
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(
                 index=index,
-                # custom_query=custom_query,
                 **body,
             )
             return {'elasticsearch_result': output, 'query': query}, 'output_1'

@@ -63,20 +63,21 @@ def get_app() -> FastAPI:
     if os.environ.get('NLP_SERVICES'):
         service_names = os.environ['NLP_SERVICES'].strip().split(',')
 
-    loglevel = conf.get('loglevel', int(os.environ.get('NLP_LOGLEVEL', logging.DEBUG)))
+    loglevel = conf.get('loglevel', int(
+        os.environ.get('NLP_LOGLEVEL', logging.INFO)))
 
     if (loglevel != -1):
-      file_handler = logging.FileHandler(
-          conf.get('logfile',
-                   os.environ.get('NLP_LOGFILE', '/tmp/nlpservice.log'))
-      )
-      file_handler.setFormatter(
-          logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
-      )
+        file_handler = logging.FileHandler(
+            conf.get('logfile',
+                     os.environ.get('NLP_LOGFILE', '/tmp/nlpservice.log'))
+        )
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+        )
 
-      root = logging.getLogger()
-      root.setLevel(loglevel)
-      root.addHandler(file_handler)
+        root = logging.getLogger()
+        root.setLevel(loglevel)
+        root.addHandler(file_handler)
 
     fast_app = FastAPI(title=config.APP_NAME,
                        version=config.APP_VERSION, debug=config.IS_DEBUG)

@@ -27,7 +27,7 @@ def process_request(pipeline, request):
         "time": f"{(end_time - start_time):.2f}",
     }
     try:
-        logger.info(json.dumps(info))
+        logger.debug(json.dumps(info))
     except Exception:
         pass
 
@@ -90,7 +90,7 @@ class PipelineModel(object):
 
         prediction = self._predict(pre_processed_payload)
 
-        logger.info(prediction)
+        # logger.info(prediction)
         post_processed_result = self._post_process(prediction)
 
         return post_processed_result

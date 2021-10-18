@@ -8,7 +8,21 @@ class QAModel(PipelineModel):
     pipeline_name = QUERY_PIPELINE_NAME
 
     def _pre_process(self, payload):
-        return {'params': {'payload': payload.dict()}}
+        body = payload.dict()
+        params = body.get('params', {})
+
+        RawRetriever = params.pop('RawRetriever', {}) or {}
+        DensePassageRetriever = params.pop('DensePassageRetriever', {}) or {}
+        AnswerExtraction = params.pop('AnswerExtraction', {}) or {}
+
+        return {
+            'params': {
+                'payload': body,
+                'RawRetriever': RawRetriever,
+                'DensePassageRetriever': DensePassageRetriever,
+                'AnswerExtraction': AnswerExtraction,
+            }
+        }
 
 
 @register_model("dp_qa")
@@ -20,4 +34,16 @@ class QADPModel(PipelineModel):
         params = body.pop('params') or {}
         if not params.get('query'):
             params['query'] = body['query']
-        return {'params': {'payload': params}}
+
+        RawRetriever = params.pop('RawRetriever', {}) or {}
+        DensePassageRetriever = params.pop('DensePassageRetriever', {}) or {}
+        AnswerExtraction = params.pop('AnswerExtraction', {}) or {}
+
+        return {
+            'params': {
+                'payload': params,
+                'RawRetriever': RawRetriever,
+                'DensePassageRetriever': DensePassageRetriever,
+                'AnswerExtraction': AnswerExtraction,
+            }
+        }
