@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
     def query(
         self,
-        runtime_mappings: Optional[dict],
         query: Optional[dict],
         custom_query: Optional[dict] = None,
+        runtime_mappings: Optional[dict] = None,
         aggs: Optional[dict] = None,
         highlight: Optional[dict] = None,
         size: Optional[int] = None,
@@ -209,11 +209,12 @@ We want to get to a state where the query looks like:
                            query_emb: np.ndarray,
                            return_embedding: Optional[bool] = None,
                            custom_query: Optional[dict] = None,
-
+                           runtime_mappings: Optional[dict] = None,
                            aggs: Optional[dict] = None,
                            highlight: Optional[dict] = None,
                            index: Optional[str] = None,
                            query: Optional[dict] = None,
+                           from_: Optional[int] = 0,
                            size: Optional[int] = 5,
                            sort: Optional[Any] = None,
                            track_total_hits: Optional[bool] = True,
@@ -235,6 +236,13 @@ We want to get to a state where the query looks like:
             emb_query = self._get_vector_similarity_query(
                 body=query, query_emb=query_emb, custom_query=custom_query)
             body = {}
+
+            if from_ is not None:
+                body['from'] = from_
+
+            if runtime_mappings:
+                body['runtime_mappings'] = runtime_mappings
+
             if emb_query:
                 body['query'] = emb_query
 
@@ -254,9 +262,6 @@ We want to get to a state where the query looks like:
                 body["_source"] = {"excludes": self.excluded_meta_data}
 
                 excluded_meta_data: Optional[list] = None
-
-            if size is not None:
-                body['size'] = size
 
             if self.excluded_meta_data:
                 excluded_meta_data = deepcopy(self.excluded_meta_data)

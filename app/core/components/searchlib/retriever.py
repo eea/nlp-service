@@ -16,16 +16,16 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
 
     def run(self, root_node: str, params: dict, index: str = None):
         body = params['payload']
-        # custom_query = params.get('custom_query', None)
 
         # Support for QA-type
         query = body.get('query', None)
         bodyparams = body.pop('params', {})
-        custom_query = bodyparams.pop('custom_query', None)
         from_ = bodyparams.pop('from_', 0)
 
         if from_:
             body['from_'] = from_
+
+        custom_query = bodyparams.pop('custom_query', None)
         if custom_query:
             body['custom_query'] = custom_query     # ['query']
 
@@ -37,7 +37,6 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(
                 index=index,
-                # custom_query=custom_query,
                 **body
             )
             return {'elasticsearch_result': output, 'query': query}, 'output_1'
@@ -75,6 +74,8 @@ class RawDensePassageRetriever(DensePassageRetriever):
 
         if from_:
             body['from_'] = from_
+
+        # TODO: check the custom parameters are used when required
 
         # Support for QA-type simple query
         if isinstance(query, str):
