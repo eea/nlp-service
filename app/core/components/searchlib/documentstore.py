@@ -200,9 +200,9 @@ We want to get to a state where the query looks like:
             query = {'function_score': {}}
 
         query['function_score']['query'] = script
-        print('---[ ES Embedding query ]------')
-        print(query)
-        print('---------')
+        # print('---[ ES Embedding query ]------')
+        # print(query)
+        # print('---------')
         return query
 
     def query_by_embedding(self,
@@ -278,7 +278,7 @@ We want to get to a state where the query looks like:
             if excluded_meta_data:
                 body["_source"] = {"excludes": excluded_meta_data}
 
-            logger.debug(f"Retriever query: {body}")
+            logger.info(f"DeepRetriever query: {body}")
             # print("query body")
             # with open('/tmp/1.json', 'w') as f:
             #     f.write(json.dumps(body))
