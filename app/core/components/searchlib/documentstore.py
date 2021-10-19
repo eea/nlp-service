@@ -67,11 +67,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         if sort is not None:
             body['sort'] = sort
 
-        logger.info('---[ ES Query ]----')
-        logger.info(json.dumps(body))
-        logger.info('-------')
-
-        logger.debug(f"Retriever query: {body}")
+        logger.info(f"Retriever query: {index} {body}")
 
         result = self.client.search(index=index, body=body)
 
@@ -278,7 +274,7 @@ We want to get to a state where the query looks like:
             if excluded_meta_data:
                 body["_source"] = {"excludes": excluded_meta_data}
 
-            logger.info(f"DeepRetriever query: {body}")
+            logger.info(f"DeepRetriever query: {index} - {body}")
             # print("query body")
             # with open('/tmp/1.json', 'w') as f:
             #     f.write(json.dumps(body))
