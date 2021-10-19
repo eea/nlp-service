@@ -46,7 +46,7 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: FacetedDocumentStore
 
-  - name: DPRRetriever
+  - name: DensePassageRetriever
     type: RawDensePassageRetriever
     params:
       document_store: HaystackDocumentStore
@@ -129,10 +129,10 @@ pipelines:
       - name: CategoryDeclarativeQuery
         inputs: [QuestionStatementQueryClassifier.output_2]
 
-      - name: DPRRetriever
+      - name: DensePassageRetriever
         inputs: [CategoryInterrogativeQuery]
 
-      - name: DPRRetriever
+      - name: DensePassageRetriever
         inputs: [CategoryDeclarativeQuery]
 
 # See

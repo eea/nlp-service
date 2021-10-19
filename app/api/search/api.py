@@ -5,13 +5,6 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 
 
-# class SearchRequestParams(BaseModel):
-#     custom_query: Optional[Dict]
-#     top_k: Optional[int] = 10
-#
-#     # filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = {}
-
-
 class SearchRequest(BaseModel):
     """ A search request
 
@@ -32,6 +25,7 @@ class SearchRequest(BaseModel):
     size: Optional[int] = 10
     sort: Optional[List]
     track_total_hits: Optional[bool] = True
+    params: Optional[Dict] = {}
 
 
 class Document(BaseModel):

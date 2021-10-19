@@ -39,11 +39,13 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         if isinstance(query, str):
             body['query'] = {"match": {'text': body['query']}}
 
+        if index:
+            body['index'] = index
+
         if root_node == "Query":
             self.query_count += 1
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(
-                index=index,
                 **body
             )
             return {'elasticsearch_result': output, 'query': query}, 'output_1'
@@ -92,11 +94,13 @@ class RawDensePassageRetriever(DensePassageRetriever):
         if isinstance(query, str):
             body['query'] = {"match": {'text': body['query']}}
 
+        if index:
+            body['index'] = index
+
         if root_node == "Query":
             self.query_count += 1
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(
-                index=index,
                 **body,
             )
             return {'elasticsearch_result': output, 'query': query}, 'output_1'
