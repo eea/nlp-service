@@ -21,12 +21,9 @@ def preprocess(input_index,
 
     from haystack.document_store.elasticsearch import \
         ElasticsearchDocumentStore
-    from haystack.schema import Document
     from haystack.preprocessor import PreProcessor
 
     preprocessor = PreProcessor(split_length=split_length)
-
-    # client = Elasticsearch(hosts=[host], scheme='http', timeout=300)
 
     input_store = ElasticsearchDocumentStore(
         host=host,
@@ -41,13 +38,13 @@ def preprocess(input_index,
     for doc in input_store.get_all_documents_generator():
         logger.info(f"Indexing {doc.id}")
 
-        # if (isinstance(doc.text, list)):
-        #     text = "\n".join(doc.text)
-        # elif doc.text is None:
-        #     text = ""
-        # else:
-        #     text = doc.text
-        text = doc.meta[input_text_field]
+        text = doc.meta.get(input_text_field)
+
+        if (isinstance(text, list)):
+            text = "\n".join(text)
+        elif text is None:
+            text = ""
+
         meta = {k: v
                 for k, v in doc.meta.items() if k not in BLACKLIST}
 

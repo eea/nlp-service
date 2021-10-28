@@ -45,6 +45,8 @@ setuptools.setup(
     install_requires=[
         'venusian',
         'uvicorn',
-        'fastapi_chameleon'
+        'fastapi_chameleon',
+        'pygraphviz',
+        'jq',
     ]
 )

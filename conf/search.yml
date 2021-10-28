@@ -17,19 +17,19 @@ components:    # define all the building-blocks for Pipeline
       host: localhost
       index: data_searchui
       create_index: false
-      text_field: "text"
-      embedding_field: "text_embeddings"
+      text_field: "description"
+      embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
 
   - name: HaystackDocumentStore
-    type: ElasticsearchDocumentStore
+    type: SearchlibElasticsearchDocumentStore
     params:
       host: localhost
-      index: data_searchui
+      index: data_searchui-documents
       create_index: false
       text_field: "text"
-      embedding_field: "text_embeddings"
+      embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
 
@@ -41,45 +41,56 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: FacetedDocumentStore
 
-  # - name: RawRetrieverWithQuery
-  #   type: RawElasticsearchRetriever
-  #   params:
-  #     document_store: FacetedDocumentStore
-  #
-  - name: DPRRetriever
-    type: RawDensePassageRetriever
+  - name: RawRetrieverWithQuery
+    type: RawElasticsearchRetriever
     params:
       document_store: FacetedDocumentStore
-  #
+
+  - name: DensePassageRetriever
+    type: RawDensePassageRetriever
+    params:
+      document_store: HaystackDocumentStore
+
   # - name: Ranker
-  #   type: FARMRanker
+  #   type: RawFARMRanker
   #   params:
   #     model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
-  #
-  # - name: CategoryDeclarativeQuery
-  #   type: Category
-  #   params:
-  #     category: "declarative_query"
-  #
-  # - name: CategoryInterrogativeQuery
-  #   type: Category
-  #   params:
-  #     category: "interrogative query"
-  #
-  # - name: CategoryKeyword
-  #   type: Category
-  #   params:
-  #     category: "keyword"
-  #
-  # - name: QueryClassifier
-  #   type: TransformersQueryClassifier
-  #   params:
-  #     model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
-  #
-  # - name: Ranker
-  #   type: SentenceTransformersRanker
-  #   params:
-  #     model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
+  #     document_store: FacetedDocumentStore
+
+  - name: CategoryDeclarativeQuery
+    type: Category
+    params:
+      category: "query:declarative"
+
+  - name: CategoryInterrogativeQuery
+    type: Category
+    params:
+      category: "query:interrogative"
+
+  - name: CategoryKeywordQuery
+    type: Category
+    params:
+      category: "query:keyword"
+
+  - name: CategoryMetadataRequest
+    type: Category
+    params:
+      category: "request:metadata"
+
+  - name: CategoryQueryRequest
+    type: Category
+    params:
+      category: "request:query"
+
+  - name: QueryClassifier
+    type: TransformersQueryClassifier
+    params:
+      model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
+
+  - name: QuestionStatementQueryClassifier
+    type: TransformersQueryClassifier
+    params:
+      model_name_or_path: shahrukhx01/question-vs-statement-classifier
 
 pipelines:
   - name: search
@@ -88,23 +99,41 @@ pipelines:
       - name: RequestClassifier
         inputs: [Query]
 
-      - name: DPRRetriever
+      - name: CategoryMetadataRequest
         inputs: [RequestClassifier.output_1]
 
-      - name: DPRRetriever
+      - name: CategoryQueryRequest
         inputs: [RequestClassifier.output_2]
 
-      # - name: QueryClassifier
-      #   inputs: [RequestClassifier.output_2]
-      #
-      # - name: DPRRetriever
-      #   inputs: [QueryClassifier.output_2]
-      #
-      # - name: RawRetrieverWithQuery
-      #   inputs: [QueryClassifier.output_1]
-      #
+      - name: RawRetriever
+        inputs: [CategoryMetadataRequest]
+
+      - name: QueryClassifier
+        inputs: [CategoryQueryRequest]
+
+      - name: CategoryKeywordQuery
+        inputs: [QueryClassifier.output_2]
+
+      - name: RawRetrieverWithQuery
+        inputs: [CategoryKeywordQuery]
+
       # - name: Ranker
       #   inputs: [RawRetrieverWithQuery]
+
+      - name: QuestionStatementQueryClassifier
+        inputs: [QueryClassifier.output_1]
+
+      - name: CategoryInterrogativeQuery
+        inputs: [QuestionStatementQueryClassifier.output_1]
+
+      - name: CategoryDeclarativeQuery
+        inputs: [QuestionStatementQueryClassifier.output_2]
+
+      - name: DensePassageRetriever
+        inputs: [CategoryInterrogativeQuery]
+
+      - name: DensePassageRetriever
+        inputs: [CategoryDeclarativeQuery]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml
@@ -130,3 +159,109 @@ pipelines:
 #
 # See the rest at:
 # https://github.com/deepset-ai/haystack/blob/master/haystack/document_store/elasticsearch.py
+#
+# - name: Ranker
+#   type: SentenceTransformersRanker
+#   params:
+#     model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
+
+# TODO: update query, to be like:
+# {"size": 4,
+# "_source": {
+#     "excludes": [
+#       "text_embeddings"
+#     ]
+#     },
+#     "query": {
+#
+#     "function_score": {
+#   "query": {
+#
+#
+#
+#
+#
+#
+#
+#     "script_score": {
+#       "query": {
+#
+#
+#
+#       	"bool": {
+#           "filter": [
+#             {
+#               "bool": {
+#                 "should": [
+#                   {
+#                     "term": {
+#                       "language": "en"
+#                     }
+#                   }
+#                 ],
+#                 "minimum_should_match": 1
+#               }
+#             },
+#             {
+#               "bool": {
+#                 "should": [
+#                   {
+#                     "range": {
+#                       "readingTime": {}
+#                     }
+#                   }
+#                 ],
+#                 "minimum_should_match": 1
+#               }
+#             },
+#             {
+#               "term": {
+#                 "hasWorkflowState": "published"
+#               }
+#             },
+#             {
+#               "constant_score": {
+#                 "filter": {
+#                   "bool": {
+#                     "should": [
+#                       {
+#                         "bool": {
+#                           "must_not": {
+#                             "exists": {
+#                               "field": "expires"
+#                             }
+#                           }
+#                         }
+#                       },
+#                       {
+#                         "range": {
+#                           "expires": {
+#                             "gte": "2021-09-28T10:15:55Z"
+#                           }
+#                         }
+#                       }
+#                     ]
+#                   }
+#                 }
+#               }
+#             }
+#           ]
+#         }
+#
+#
+#       },
+#       "script": {
+#         "source": "dotProduct(params.query_vector,'text_embeddings') + 1000",
+#           "params": {
+#             "query_vector": [
+#               0.17094166576862335,
+#             0.22060824930667877,
+#           -0.25065118074417114
+#               ]
+#           }
+#       }
+#     }
+#   }
+#     }
+#   }
+# }

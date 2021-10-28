@@ -1,6 +1,8 @@
 import copy
 import json
 import time
+from base64 import b64encode
+from networkx.drawing.nx_agraph import to_agraph
 
 from app.core.messages import NO_VALID_PAYLOAD
 from haystack.pipeline import Pipeline
@@ -25,7 +27,7 @@ def process_request(pipeline, request):
         "time": f"{(end_time - start_time):.2f}",
     }
     try:
-        logger.info(json.dumps(info))
+        logger.debug(json.dumps(info))
     except Exception:
         pass
 
@@ -88,7 +90,27 @@ class PipelineModel(object):
 
         prediction = self._predict(pre_processed_payload)
 
-        logger.info(prediction)
+        # logger.info(prediction)
         post_processed_result = self._post_process(prediction)
 
         return post_processed_result
+
+    def graph_pipeline(self):
+
+        try:
+            import pygraphviz
+        except ImportError:
+            raise ImportError(
+                "Could not import `pygraphviz`. Please install via: \n"
+                "pip install pygraphviz\n"
+                "(You might need to run this first: "
+                "apt install libgraphviz-dev graphviz )")
+
+        graphviz = to_agraph(self.pipeline.graph)
+        graphviz.layout("dot")
+        bits = graphviz.draw(path=None, format='svg')
+        # print('original bits', bits)
+
+        encoded = b64encode(bits)
+
+        return encoded

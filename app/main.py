@@ -17,6 +17,8 @@ from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.core.pipeline import add_pipeline
 from app.views import router as views_router
 
+import logging
+
 dev_mode = True
 
 folder = os.path.dirname(__file__)
@@ -40,9 +42,13 @@ def load_components(config):
             if isinstance(v, str) and v in components:
                 params[k] = components[v]
 
-        components[name] = BaseComponent.load_from_args(
-            copied['type'], **params
-        )
+        try:
+            components[name] = BaseComponent.load_from_args(
+                copied['type'], **params
+            )
+        except Exception:
+            print(f"Error in loading component: ${params}")
+            raise
 
     return components
 
@@ -50,12 +56,28 @@ def load_components(config):
 def get_app() -> FastAPI:
     """FastAPI app controller"""
 
+    with open(config.CONFIG_YAML_PATH, "r", encoding='utf-8') as stream:
+        conf = yaml.safe_load(stream)
+        service_names = conf.get('services', [])
+
     if os.environ.get('NLP_SERVICES'):
         service_names = os.environ['NLP_SERVICES'].strip().split(',')
-    else:
-        with open(config.CONFIG_YAML_PATH, "r", encoding='utf-8') as stream:
-            conf = yaml.safe_load(stream)
-            service_names = conf.get('services', [])
+
+    loglevel = conf.get('loglevel', int(
+        os.environ.get('NLP_LOGLEVEL', logging.INFO)))
+
+    if (loglevel != -1):
+        file_handler = logging.FileHandler(
+            conf.get('logfile',
+                     os.environ.get('NLP_LOGFILE', '/tmp/nlpservice.log'))
+        )
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+        )
+
+        root = logging.getLogger()
+        root.setLevel(loglevel)
+        root.addHandler(file_handler)
 
     fast_app = FastAPI(title=config.APP_NAME,
                        version=config.APP_VERSION, debug=config.IS_DEBUG)
@@ -92,6 +114,7 @@ def get_app() -> FastAPI:
         pkg = service_conf.get('package', f"app.api.services.{name}")
         tags = service_conf.get('tags', [name])
         prefix = service_conf.get('prefix', f"/{name}")
+        service_descriptions.append({'name': name, 'conf': service_conf})
 
         module = importlib.import_module(pkg)
         scanner = venusian.Scanner()
@@ -101,7 +124,6 @@ def get_app() -> FastAPI:
             module.routes.router, tags=tags, prefix=prefix)
 
         logger.info(f"Loading service <{name}> completed")
-        service_descriptions.append({'name': name, 'conf': service_conf})
 
     fast_app.include_router(views_router, prefix='')
     fast_app.include_router(api_router, prefix=config.API_PREFIX)
@@ -113,7 +135,7 @@ def get_app() -> FastAPI:
         for service in (app.state.services or []):
             name = service.get('name')
             logger.info(f"Starting runtime test for <{name}> service")
-            pkg = service.get('conf',{}).get('package', f"app.api.{name}")
+            pkg = service.get('conf', {}).get('package', f"app.api.{name}")
             module = importlib.import_module(pkg)
             module.runtimetest.runtimetest(app)
             logger.info(f"Runtime test for <{name}> completed")

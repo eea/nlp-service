@@ -33,23 +33,37 @@ description: |
   Show countries that Jon snow was filmed in.
   List all brothers of Arya.
 
+prefix: /query-classifier
 package: app.api.question
 tags:
   - classifier
 
 components:    # define all the building-blocks for Pipeline
-  - name: CategoryQuestion
-    type: Category
-    params:
-      category: "question/statement"
-  - name: CategoryStatement
-    type: Category
-    params:
-      category: "keyword"
   - name: QueryClassifier
     type: TransformersQueryClassifier
     params:
       model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
+
+  - name: QuestionStatementQueryClassifier
+    type: TransformersQueryClassifier
+    params:
+      model_name_or_path: shahrukhx01/question-vs-statement-classifier
+
+  - name: CategoryDeclarativeQuery
+    type: Category
+    params:
+      category: "query:declarative"
+
+  - name: CategoryInterrogativeQuery
+    type: Category
+    params:
+      category: "query:interrogative"
+
+  - name: CategoryKeywordQuery
+    type: Category
+    params:
+      category: "query:keyword"
+
 
 pipelines:
   - name: question    # classify queries in question/statement classes
@@ -57,7 +71,15 @@ pipelines:
     nodes:
       - name: QueryClassifier
         inputs: [Query]
-      - name: CategoryQuestion
-        inputs: [QueryClassifier.output_1]
-      - name: CategoryStatement
+
+      - name: CategoryKeywordQuery
         inputs: [QueryClassifier.output_2]
+
+      - name: QuestionStatementQueryClassifier
+        inputs: [QueryClassifier.output_1]
+
+      - name: CategoryInterrogativeQuery
+        inputs: [QuestionStatementQueryClassifier.output_1]
+
+      - name: CategoryDeclarativeQuery
+        inputs: [QuestionStatementQueryClassifier.output_2]

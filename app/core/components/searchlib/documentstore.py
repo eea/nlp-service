@@ -1,14 +1,13 @@
+import jq
 from copy import deepcopy
-from haystack.schema import BaseComponent
-from haystack.retriever import ElasticsearchRetriever, DensePassageRetriever
 from haystack.document_store import ElasticsearchDocumentStore
+from haystack.schema import BaseComponent, MultiLabel
 from typing import List, Optional, Any       # , Dict
-from haystack.schema import MultiLabel, Document
+from haystack.schema import Document
 import numpy as np
 import logging
 from elasticsearch.exceptions import RequestError
 import json
-from app.core.elasticsearch import get_search_term
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +16,12 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
     def query(
         self,
         query: Optional[dict],
+        custom_query: Optional[dict] = None,
+        runtime_mappings: Optional[dict] = None,
         aggs: Optional[dict] = None,
         highlight: Optional[dict] = None,
         size: Optional[int] = None,
+        from_: Optional[int] = 0,
         sort: Optional[Any] = None,
         track_total_hits: Optional[bool] = True,
         index: str = None
@@ -28,6 +30,8 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         ES Docstore replacement that supports native ES queries
         """
 
+        # TODO: use custom_query
+
         if index is None:
             index = self.index
 
@@ -35,6 +39,12 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         body = {}
         if query:
             body['query'] = query
+
+        if runtime_mappings:
+            body['runtime_mappings'] = runtime_mappings
+
+        if custom_query:
+            body['query'] = custom_query
 
         if aggs:
             body['aggs'] = aggs
@@ -45,6 +55,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         if size is not None:
             body['size'] = size
 
+        if from_ is not None:
+            body['from'] = from_
+
         if track_total_hits is not None:
             body['track_total_hits'] = track_total_hits
 
@@ -54,16 +67,97 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         if sort is not None:
             body['sort'] = sort
 
-        # print(json.dumps(body))
-        logger.debug(f"Retriever query: {body}")
+        logger.info(f"Retriever query: {index} {body}")
 
         result = self.client.search(index=index, body=body)
 
         return result
 
-    def _get_vector_similarity_query(self, body: dict, query_emb: np.ndarray):
+    def _get_vector_similarity_query(
+        self, body: dict,
+        query_emb: np.ndarray,
+        custom_query: Optional[dict] = None
+    ):
         """
         Generate Elasticsearch query for vector similarity.
+
+The original query looks like:
+
+query = {
+    'function_score': {
+        'functions': [],
+        'query': {
+            'bool': {
+                'filter': [
+                    {'bool': {'minimum_should_match': 1, 'should': [ {'term': {'language': 'en'}}]}},
+                    {'bool': {'minimum_should_match': 1, 'should': [ {'range': {'readingTime': {}}}]}},
+                    {'term': {'hasWorkflowState': 'published'}},
+                    {'constant_score': {'filter': {'bool': {'should': [{'bool': {'must_not': {'exists': { 'field': 'expires'}}}}, {'range': {'expires': {'gte': '2021-09-29T12:16:09Z'}}}]}}}}
+                ],
+                # 'must': [
+                #     {'multi_match':
+                #      {'fields': ['title^2',
+                #                  'subject^1.5',
+                #                  'description^1.5',
+                #                  'searchable_spatial^1.2',
+                #                  'searchable_places^1.2',
+                #                  'searchable_objectProvides^1.4',
+                #                  'searchable_topics^1.2',
+                #                  'searchable_time_coverage^10',
+                #                  'searchable_organisation^2',
+                #                  'label',
+                #                  'all_fields_for_freetext'],
+                #       'query': 'what '
+                #       'is '
+                #       'the '
+                #       'best '
+                #       'country '
+                #       'at '
+                #       'reducing '
+                #       'polution?'
+                #       }}]
+              }
+          },
+    'score_mode': 'sum'
+    }
+}
+
+
+We want to get to a state where the query looks like:
+
+{
+  "size":4,
+  "_source":{
+    "excludes":[
+      "embedding"
+    ]
+  },
+  "query": {
+    "function_score":{
+      "query":{
+        "script_score":{
+          "query":{
+            "bool":{
+              "filter":[
+                { "bool":{ "should":[ { "term":{ "language":"en" } } ], "minimum_should_match":1 } },
+                { "bool":{ "should":[ { "range":{ "readingTime":{ } } } ], "minimum_should_match":1 } },
+                { "term":{ "hasWorkflowState":"published" } },
+                { "constant_score":{ "filter":{ "bool":{ "should":[ { "bool":{ "must_not":{ "exists":{ "field":"expires" } } } }, { "range":{ "expires":{ "gte":"2021-09-28T10:15:55Z" } } } ] } } } }
+              ]
+            }
+          },
+          "script":{
+            "source":"dotProduct(params.query_vector,'embedding') + 1000",
+            "params":{
+              "query_vector":[
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
         """
 
         if self.similarity == "cosine":
@@ -76,14 +170,18 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
                 "constructor. Choose between \'cosine\' and \'dot_product\'"
             )
 
-        query = deepcopy(body)
+        query = deepcopy(custom_query or body)
+
         if query.get('function_score', {}).get(
                 'query', {}).get('bool', {}).get('must'):
+            # TODO: might not be enough, might be too much
             del query['function_score']['query']['bool']['must']
+
+        filterquery = query.get('function_score', {}).get('query')
 
         script = {
             "script_score": {
-                # "query": {"match_all": {}},
+                "query": filterquery or {"match_all": {}},
                 "script": {
                     # offset score to ensure a positive range as required by ES
                     "source": f"{similarity_fn_name}(params.query_vector,"
@@ -92,18 +190,28 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
                 },
             }
         }
-        query['function_score']['functions'].append(script)
+
+        # support simple QA style queries
+        if jq.compile('.match.text').input(query).first():
+            query = {'function_score': {}}
+
+        query['function_score']['query'] = script
+        # print('---[ ES Embedding query ]------')
+        # print(query)
+        # print('---------')
         return query
 
     def query_by_embedding(self,
                            query_emb: np.ndarray,
                            return_embedding: Optional[bool] = None,
-
+                           custom_query: Optional[dict] = None,
+                           runtime_mappings: Optional[dict] = None,
                            aggs: Optional[dict] = None,
                            highlight: Optional[dict] = None,
                            index: Optional[str] = None,
                            query: Optional[dict] = None,
-                           size: Optional[int] = None,
+                           from_: Optional[int] = 0,
+                           size: Optional[int] = 5,
                            sort: Optional[Any] = None,
                            track_total_hits: Optional[bool] = True,
                            ) \
@@ -121,8 +229,16 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             )
         else:
             # +1 in similarity to avoid negative numbers (for cosine sim)
-            emb_query = self._get_vector_similarity_query(query, query_emb)
+            emb_query = self._get_vector_similarity_query(
+                body=query, query_emb=query_emb, custom_query=custom_query)
             body = {}
+
+            if from_ is not None:
+                body['from'] = from_
+
+            if runtime_mappings:
+                body['runtime_mappings'] = runtime_mappings
+
             if emb_query:
                 body['query'] = emb_query
 
@@ -143,9 +259,6 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
                 excluded_meta_data: Optional[list] = None
 
-            if size is not None:
-                body['size'] = size
-
             if self.excluded_meta_data:
                 excluded_meta_data = deepcopy(self.excluded_meta_data)
 
@@ -161,15 +274,15 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             if excluded_meta_data:
                 body["_source"] = {"excludes": excluded_meta_data}
 
-            logger.debug(f"Retriever query: {body}")
-            print("query body")
-            with open('/tmp/1.json', 'w') as f:
-                f.write(json.dumps(body))
-            print(body)
+            logger.info(f"DeepRetriever query: {index} - {body}")
+            # print("query body")
+            # with open('/tmp/1.json', 'w') as f:
+            #     f.write(json.dumps(body))
+            # print(body)
             try:
                 result = self.client.search(
                     index=index,
-                    body=body, request_timeout=300)["hits"]["hits"]
+                    body=body, request_timeout=300)
             except RequestError as e:
                 if e.error == "search_phase_execution_exception":
                     error_message: str = (
@@ -184,131 +297,30 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             return result
 
 
-class RawElasticsearchRetriever(ElasticsearchRetriever):
-    """ An ElasticSearch retriever variant that just passes ES queries to ES
-
-    Note: document_store needs to be an instance of
-    SearchlibElasticsearchDocumentStore
+class ESHit2HaystackDoc(BaseComponent):
+    """ A component that converts raw elasticsearch hits to Haystack Documents
     """
+    outgoing_edges = 1
 
-    def run(self, root_node: str, params: dict, index: str = None):
-        # aggs: Optional[dict] = None,
-        # highlight: Optional[dict] = None, query: Optional[dict] = None,
-        # size: Optional[int] = None,
-        # track_total_hits: Optional[bool] = True,
-        body = params['payload']
+    def __init__(self, document_store=None):
+        self.document_store = document_store
 
-        if root_node == "Query":
-            self.query_count += 1
-            run_query_timed = self.timing(self.retrieve, "query_time")
-            output = run_query_timed(
-                index=index, **body
-            )
-            return output, 'output_1'
-        else:
-            raise Exception(f"Invalid root_node '{root_node}'.")
-
-    def retrieve(self, **kwargs):
-
-        index = kwargs.get('index')
-
-        if index is None:
-            index = self.document_store.index
-
-        args = kwargs.copy()
-        args['index'] = index
-
-        return self.document_store.query(**args)
-
-
-class RawDensePassageRetriever(DensePassageRetriever):
-    """ A DensePassageRetriever variant that doesn't follow Haystack's query model
-
-    Note: document_store needs to be an instance of
-    SearchlibElasticsearchDocumentStore
-    """
-
-    def run(self,
-            root_node: str,
-            # aggs: Optional[dict] = None,
-            # highlight: Optional[dict] = None,
-            # query: Optional[dict] = None,
-            # size: Optional[int] = None,
-            # track_total_hits: Optional[bool] = True,
-            params: Optional[dict] = {},
-            index: str = None,
-            ):
-
-        body = params['payload']
-
-        if root_node == "Query":
-            self.query_count += 1
-            run_query_timed = self.timing(self.retrieve, "query_time")
-            output = run_query_timed(
-                index=index,
-                **body,
-            )
-            return output, 'output_1'
-        else:
-            raise Exception(f"Invalid root_node '{root_node}'.")
-
-    def retrieve(self, **kwargs):
-
-        index = kwargs.get('index')
-
-        if index is None:
-            index = self.document_store.index
-
-        args = kwargs.copy()
-        args['index'] = index
-
-        # Hardcoded for ES
-        q = kwargs['query']
-        print(q)
-        # import pdb
-        # pdb.set_trace()
-        search_term = get_search_term(q)
-        query_emb = self.embed_queries(texts=[search_term])[0]
-        args['query_emb'] = query_emb
-
-        return self.document_store.query_by_embedding(**args)
-
-
-class Category(BaseComponent):
-
-    def __init__(self, *args, **kwargs):
-        self.category = kwargs.get('category', 'untitled')
-
-    def run(self):
-        return {"category": self.category}, 'output_1'
-
-
-class ElasticSearchRequestClassifier(BaseComponent):
-    """ A classifier and search query adapter for incoming requests from ES
-
-    - output_1: Aggregation queries, they go to "raw index"
-    - output_2: Haystack-native, send a haystack-compatible query in pipeline
-    """
-    outgoing_edges = 2
-
-    def run(self,
-            # aggs,
-            # highlight,
-            # query,
-            # size,
-            # track_total_hits
-            query: Optional[Any] = None,
+    def run(
+            self,
+            query: Optional[str] = None,
             file_paths: Optional[List[str]] = None,
             labels: Optional[MultiLabel] = None,
             documents: Optional[List[Document]] = None,
             meta: Optional[dict] = None,
+            hits: Optional[List[any]] = [],
             params: Optional[dict] = None,
-            ):
+            elasticsearch_result: Any = None):
 
-        payload = params['payload']
-        if (payload or {}).get('size', 0) > 0:
-            search_term = get_search_term(payload['query'])
-            if search_term:
-                return {"query": search_term}, 'output_2'
+        hits = elasticsearch_result.get('hits', {}).get('hits', [])
+        documents = [
+            self.document_store._convert_es_hit_to_document(
+                hit, return_embedding=False) for hit in hits
+        ]
 
-        return {}, 'output_1'
+        # TODO: query might come as full ES body
+        return {'documents': documents, 'query': query}, 'output_1'

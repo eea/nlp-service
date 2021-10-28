@@ -8,7 +8,11 @@ from pydantic import BaseModel
 
 class QA_RequestParams(BaseModel):
     use_dp: bool = True
-    # custom_query: str
+    custom_query: Optional[dict]
+    RawRetriever: Optional[dict]
+    DensePassageRetriever: Optional[dict]
+    AnswerExtraction: Optional[dict]
+
     # top_k_retriever: Optional[int] = 10
     # top_k_reader: Optional[int] = 10
     # filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
@@ -22,10 +26,12 @@ class QA_Request(BaseModel):
 class Answer(BaseModel):
 
     answer: Optional[str]
+    text: Optional[str]
     question: Optional[str]
     score: Optional[float] = None
     probability: Optional[float] = None
     context: Optional[str]
+    full_context: Optional[str]
     offset_start: int
     offset_end: int
     offset_start_in_doc: Optional[int]

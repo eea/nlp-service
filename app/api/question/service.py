@@ -13,7 +13,7 @@ class QuestionModel(PipelineModel):
     def _post_process(self, prediction):
         # output_1 is Question
         # output_2 is Keyword
-        return {"answer": prediction['category']}
+        return {"answer": prediction['query_type']}
 
     def predict(self, payload: QuestionRequest) -> QuestionResponse:
         if payload is None:
