@@ -13,5 +13,6 @@ services:    # define all the building-blocks for Pipeline
   - spacy
   - summarizer
   - zeroshot-classifier
+  - converter
   # - preprocessor
   #

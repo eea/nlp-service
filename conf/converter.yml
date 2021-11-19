@@ -1,0 +1,23 @@
+version: '1.0'
+
+package: app.api.converter
+prefix: /converter
+tags:
+  - indexing
+
+components:    # define all the building-blocks for Pipeline
+  - name: Tika
+    type: TikaConverter
+    params:
+      tika_url: http://localhost:9998/tika
+
+pipelines:
+  - name: converter
+    type: Indexing
+    # component: app.core.pipeline.MetaPipeline
+    nodes:
+      - name: Tika
+        inputs: [Query]
+        remove_numeric_tables: True
+        valid_languages:
+          - en
