@@ -20,6 +20,9 @@ class TikaModel(PipelineModel):
             "params": {
                 "Tika": {
                     "file_paths": [Path(fpath)],
+                    "meta": {
+                        "id": url
+                    }
                 }
             }
         }
@@ -27,4 +30,10 @@ class TikaModel(PipelineModel):
     def _post_process(self, payload):
         for fpath in payload['params']['Tika']['file_paths']:
             os.unlink(fpath.as_posix())
+
+        doc_id = payload['params']['Tika']['meta']['id']
+
+        for doc in payload['documents']:
+            doc['id'] = doc_id
+
         return payload
