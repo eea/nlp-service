@@ -43,7 +43,6 @@ def make_pipeline(pipeline_config, yaml_conf):
         name = definition.pop("name")
         definitions[name] = definition
 
-    print(pipeline_config)
     pipeline = Pipeline()
 
     components: dict = {}  # instances of component objects.

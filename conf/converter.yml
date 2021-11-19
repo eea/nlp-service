@@ -14,7 +14,6 @@ components:    # define all the building-blocks for Pipeline
 pipelines:
   - name: converter
     type: Indexing
-    # component: app.core.pipeline.MetaPipeline
     nodes:
       - name: Tika
         inputs: [Query]
