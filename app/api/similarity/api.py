@@ -1,7 +1,7 @@
 """ FastAPI data models for similarity computation model
 """
 
-from typing import List
+from typing import List, Any
 
 from pydantic import BaseModel
 
@@ -23,3 +23,4 @@ class Prediction(BaseModel):
 class SimilarityResponse(BaseModel):
     base: str
     predictions: List[Prediction]
+    clusters: List[Any]
