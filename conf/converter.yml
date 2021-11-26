@@ -7,7 +7,7 @@ tags:
 
 components:    # define all the building-blocks for Pipeline
   - name: Tika
-    type: TikaConverter
+    type: SearchTikaConverter
     params:
       tika_url: http://tika:9998/tika
 
