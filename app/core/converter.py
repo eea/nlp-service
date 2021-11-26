@@ -1,19 +1,18 @@
+import logging
+from html.parser import HTMLParser
+from pathlib import Path
 from typing import List, Optional, Dict, Any
 
-import logging
 import requests
-from pathlib import Path
-from html.parser import HTMLParser
 from tika import parser as tikaparser
 
-from haystack.nodes.file_converter import BaseConverter
-
+from haystack.file_converter.base import BaseConverter
 
 logger = logging.getLogger(__name__)
 
 
+# Use the built-in HTML parser with minimum dependencies
 class TikaXHTMLParser(HTMLParser):
-    # Use the built-in HTML parser with minimum dependencies
     def __init__(self):
         self.ingest = True
         self.page = ""
@@ -23,9 +22,7 @@ class TikaXHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         # find page div
         pagediv = [
-            value
-            for attr, value in attrs
-            if attr == "class" and value == "page"
+            value for attr, value in attrs if attr == "class" and value == "page"
         ]
         if tag == "div" and pagediv:
             self.ingest = True
@@ -153,6 +150,6 @@ class SearchTikaConverter(BaseConverter):
                 )
 
         text = "\f".join(cleaned_pages)
-        document = {"content": text, "content_type": "text",
-                    "meta": {**parsed["metadata"], **(meta or {})}}
+        document = {"text": text, "meta": {
+            **parsed["metadata"], **(meta or {})}}
         return document
