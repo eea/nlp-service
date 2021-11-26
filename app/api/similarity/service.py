@@ -37,8 +37,10 @@ class SimilarityModel(PipelineModel):
         corpus = np.array([self._normalize(e).numpy().flatten()
                            for e in embeddings])
         # corpus = np.array([e.numpy() for e in embeddings])
+        # See
+        # https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering
         model = AgglomerativeClustering(n_clusters=None,
-                                        affinity='cosine', linkage='average',
+                                        affinity='cosine', linkage='single',
                                         distance_threshold=0.2)
         model.fit(corpus)
         labels = model.labels_.tolist()
