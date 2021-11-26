@@ -46,6 +46,7 @@ class SearchTikaConverter(BaseConverter):
         tika_url: str = "http://localhost:9998/tika",
         remove_numeric_tables: bool = False,
         valid_languages: Optional[List[str]] = None,
+        requestOptions: Optional[Dict] = {},
     ):
         """
         :param tika_url: URL of the Tika server
@@ -67,7 +68,7 @@ class SearchTikaConverter(BaseConverter):
             remove_numeric_tables=remove_numeric_tables,
             valid_languages=valid_languages,
         )
-
+        self.requestOptions = requestOptions
         ping = requests.get(tika_url)
         if ping.status_code != 200:
             raise Exception(
@@ -110,7 +111,10 @@ class SearchTikaConverter(BaseConverter):
             valid_languages = self.valid_languages
 
         parsed = tikaparser.from_file(
-            file_path.as_posix(), self.tika_url, xmlContent=True
+            file_path.as_posix(),
+            self.tika_url,
+            xmlContent=True,
+            requestOptions=self.requestOptions,
         )
         parser = TikaXHTMLParser()
         parser.feed(parsed["content"])
@@ -122,8 +126,7 @@ class SearchTikaConverter(BaseConverter):
             cleaned_lines = []
             for line in lines:
                 words = line.split()
-                digits = [word for word in words if any(
-                    i.isdigit() for i in word)]
+                digits = [word for word in words if any(i.isdigit() for i in word)]
 
                 # remove lines having > 40% of words as digits AND not ending with a period(.)
                 if remove_numeric_tables:
@@ -132,8 +135,7 @@ class SearchTikaConverter(BaseConverter):
                         and len(digits) / len(words) > 0.4
                         and not line.strip().endswith(".")
                     ):
-                        logger.debug(
-                            f"Removing line '{line}' from {file_path}")
+                        logger.debug(f"Removing line '{line}' from {file_path}")
                         continue
 
                 cleaned_lines.append(line)
@@ -150,6 +152,5 @@ class SearchTikaConverter(BaseConverter):
                 )
 
         text = "\f".join(cleaned_pages)
-        document = {"text": text, "meta": {
-            **parsed["metadata"], **(meta or {})}}
+        document = {"text": text, "meta": {**parsed["metadata"], **(meta or {})}}
         return document

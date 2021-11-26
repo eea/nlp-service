@@ -10,6 +10,9 @@ components:    # define all the building-blocks for Pipeline
     type: SearchTikaConverter
     params:
       tika_url: http://tika:9998/tika
+      requestOptions:
+        timeout: 300
+
 
 pipelines:
   - name: converter
