@@ -39,9 +39,12 @@ class SimilarityModel(PipelineModel):
         # corpus = np.array([e.numpy() for e in embeddings])
         # See
         # https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering
-        model = AgglomerativeClustering(n_clusters=None,
-                                        affinity='cosine', linkage='single',
-                                        distance_threshold=0.2)
+        model = AgglomerativeClustering(
+            n_clusters=None,
+            affinity='cosine',
+            linkage='single',
+            distance_threshold=0.2
+        )
         model.fit(corpus)
         labels = model.labels_.tolist()
         clusters = [[doc.text, label]
@@ -72,3 +75,14 @@ class SimilarityModel(PipelineModel):
             "clusters": self.clustering(documents)
         }
         return res
+
+    def clusterize_text(self, sentences):
+        documents = [Document(text) for text in sentences]
+
+        output = process_request(
+            self.pipeline, {'documents': documents})
+
+        docs = output['documents']
+        clusters = self.clustering(docs)
+
+        return clusters
