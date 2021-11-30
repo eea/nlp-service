@@ -72,17 +72,17 @@ class SimilarityModel(PipelineModel):
         res = {
             "base": base_doc.text,
             "predictions": predictions,
-            "clusters": self.clustering(documents)
+            "clusters": self.clustering([base_doc] + documents)
         }
         return res
 
-    def clusterize_text(self, sentences):
-        documents = [Document(text) for text in sentences]
-
-        output = process_request(
-            self.pipeline, {'documents': documents})
-
-        docs = output['documents']
-        clusters = self.clustering(docs)
-
-        return clusters
+    # def clusterize_text(self, sentences):
+    #     documents = [Document(text) for text in sentences]
+    #
+    #     output = process_request(
+    #         self.pipeline, {'documents': documents})
+    #
+    #     docs = output['documents']
+    #     clusters = self.clustering(docs)
+    #
+    #     return clusters
