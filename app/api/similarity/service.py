@@ -33,6 +33,9 @@ class SimilarityModel(PipelineModel):
         return torch.mm(a_norm, b_norm.transpose(0, 1))
 
     def clustering(self, documents):
+        if len(documents) < 2:
+            return [[doc.text, 0] for doc in documents]
+
         embeddings = [doc.embedding for doc in documents]
         corpus = np.array([self._normalize(e).numpy().flatten()
                            for e in embeddings])
