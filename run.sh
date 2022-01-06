@@ -10,9 +10,11 @@ conda activate py38
 # export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_PORT=54125
 # export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX=data_nlp
 
+export SERVICES=langdetect,converter,search,qa,similarity
+
 env \
   DISABLE_RUNTIME_TESTS=1 \
-  NLP_SERVICES=converter,search,qa,similarity\
+  NLP_SERVICES=$SERVICES\
   CONVERTER_TIKA_PARAMS_TIKA_URL=http://localhost:9998/tika \
   TOKENIZERS_PARALLELISM=false \
   uvicorn --workers=1 --host 0.0.0.0 app.main:app
