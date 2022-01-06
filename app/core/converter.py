@@ -1,12 +1,11 @@
 import logging
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 import requests
-from tika import parser as tikaparser
-
 from haystack.file_converter.base import BaseConverter
+from tika import parser as tikaparser
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +21,7 @@ class TikaXHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         # find page div
         pagediv = [
-            value
-            for attr, value in attrs
-            if attr == "class" and value == "page"
+            value for attr, value in attrs if attr == "class" and value == "page"
         ]
         if tag == "div" and pagediv:
             self.ingest = True
@@ -32,8 +29,7 @@ class TikaXHTMLParser(HTMLParser):
     def handle_endtag(self, tag):
         # close page div, or a single page without page div,
         # save page and open a new page
-        if (tag == "div" or tag == "body") \
-                and self.ingest:
+        if (tag == "div" or tag == "body") and self.ingest:
             self.ingest = False
             # restore words hyphened to the next line
             self.pages.append(self.page.replace("-\n", ""))
@@ -118,6 +114,7 @@ class SearchTikaConverter(BaseConverter):
             file_path.as_posix(),
             self.tika_url,
             xmlContent=True,
+            headers={"X-Tika-PDFOcrStrategy": "no_ocr"},
             requestOptions=self.requestOptions,
         )
         parser = TikaXHTMLParser()
@@ -130,8 +127,7 @@ class SearchTikaConverter(BaseConverter):
             cleaned_lines = []
             for line in lines:
                 words = line.split()
-                digits = [word for word in words if any(
-                    i.isdigit() for i in word)]
+                digits = [word for word in words if any(i.isdigit() for i in word)]
 
                 # remove lines having > 40% of words as digits AND not ending with a period(.)
                 if remove_numeric_tables:
@@ -140,8 +136,7 @@ class SearchTikaConverter(BaseConverter):
                         and len(digits) / len(words) > 0.4
                         and not line.strip().endswith(".")
                     ):
-                        logger.debug(
-                            f"Removing line '{line}' from {file_path}")
+                        logger.debug(f"Removing line '{line}' from {file_path}")
                         continue
 
                 cleaned_lines.append(line)
@@ -158,6 +153,5 @@ class SearchTikaConverter(BaseConverter):
                 )
 
         text = "\f".join(cleaned_pages)
-        document = {"text": text, "meta": {
-            **parsed["metadata"], **(meta or {})}}
+        document = {"text": text, "meta": {**parsed["metadata"], **(meta or {})}}
         return document
