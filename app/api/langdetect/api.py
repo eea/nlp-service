@@ -15,7 +15,7 @@ class Options(BaseModel):
 
 class LangDetectRequest(BaseModel):
     texts: List[str] = [text]
-    options: Options
+    options: Options = {"debug": False}
 
 
 class LangDetectResponse(BaseModel):
