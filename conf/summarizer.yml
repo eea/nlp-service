@@ -9,11 +9,8 @@ package: app.api.summarizer
 
 components:    # define all the building-blocks for Pipeline
   - name: Summarizer
-    type: TransformersSummarizer
+    type: SearchlibTransformersSummarizer
     params:
-      generate_single_summary: True
-      max_length: 500
-      min_length: 20
       model_name_or_path: google/pegasus-xsum
 
 pipelines:
