@@ -8,10 +8,11 @@ conda activate py38
 #
 # export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_HOST=10.120.10.131
 # export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_PORT=54125
-# export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX=data_nlp
+# export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX=data_searchui
 
-#langdetect,converter,search,qa,similarity
-export SERVICES=summarizer
+#
+export SERVICES=search
+# summarizer,langdetect,converter,search,qa,similarity
 
 env \
   DISABLE_RUNTIME_TESTS=1 \
