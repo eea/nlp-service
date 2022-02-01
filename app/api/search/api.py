@@ -23,6 +23,7 @@ class SearchRequest(BaseModel):
     size: Optional[int] = 10
     sort: Optional[List]
     track_total_hits: Optional[bool] = True
+    explain: Optional[bool] = False
     params: Optional[Dict] = None
     source: Optional[Dict] = None
 

@@ -24,6 +24,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         from_: Optional[int] = 0,
         sort: Optional[Any] = None,
         track_total_hits: Optional[bool] = True,
+        explain: Optional[bool] = False,
         _source: Optional[dict] = None,
         index: str = None,
     ) -> List[Document]:
@@ -40,6 +41,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         body = {}
         if query:
             body["query"] = query
+
 
         if runtime_mappings:
             body["runtime_mappings"] = runtime_mappings
@@ -61,6 +63,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
         if track_total_hits is not None:
             body["track_total_hits"] = track_total_hits
+
+        if explain is not None:
+            body["explain"] = explain
 
         if _source:
             body["_source"] = _source
@@ -220,6 +225,8 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         size: Optional[int] = 5,
         sort: Optional[Any] = None,
         track_total_hits: Optional[bool] = True,
+        explain: Optional[bool] = False,
+
     ) -> List[Document]:
         if index is None:
             index = self.index
@@ -259,6 +266,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
             if track_total_hits is not None:
                 body["track_total_hits"] = track_total_hits
+
+            if explain is not None:
+                body["explain"] = explain
 
             if self.excluded_meta_data:
                 body["_source"] = {"excludes": self.excluded_meta_data}
