@@ -99,6 +99,7 @@ class PipelineModel(object):
 
         try:
             import pygraphviz
+            pygraphviz
         except ImportError:
             raise ImportError(
                 "Could not import `pygraphviz`. Please install via: \n"
@@ -109,7 +110,6 @@ class PipelineModel(object):
         graphviz = to_agraph(self.pipeline.graph)
         graphviz.layout("dot")
         bits = graphviz.draw(path=None, format='svg')
-        # print('original bits', bits)
 
         encoded = b64encode(bits)
 

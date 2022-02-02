@@ -24,9 +24,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name="NLPService",
     version="1.0",
-    description='NLP Service',
-    author='Tiberiu Ichim',
-    author_email='tiberiu.ichim@eaudeweb.ro',
+    description="NLP Service",
+    author="Tiberiu Ichim",
+    author_email="tiberiu.ichim@eaudeweb.ro",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/pypa/sampleproject",
@@ -43,10 +43,11 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     # python_requires=">=3.6",
     install_requires=[
-        'venusian',
-        'uvicorn',
-        'fastapi_chameleon',
-        'pygraphviz',
-        'jq',
-    ]
+        "venusian",
+        "uvicorn",
+        "fastapi_chameleon",
+        "pygraphviz",
+        "jq",
+        "langdetect",
+    ],
 )

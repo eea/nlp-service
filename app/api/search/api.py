@@ -6,16 +6,14 @@ from pydantic import BaseModel
 
 
 class SearchRequest(BaseModel):
-    """ A search request
+    """A search request
 
     See also https://github.com/samuelcolvin/pydantic/issues/153
     """
 
     class Config:
         allow_population_by_field_name = True
-        fields = {
-            'from_': 'from'
-        }
+        fields = {"from_": "from"}
 
     runtime_mappings: Optional[Dict]
     from_: Optional[int] = 0
@@ -25,7 +23,9 @@ class SearchRequest(BaseModel):
     size: Optional[int] = 10
     sort: Optional[List]
     track_total_hits: Optional[bool] = True
-    params: Optional[Dict] = {}
+    explain: Optional[bool] = False
+    params: Optional[Dict] = None
+    source: Optional[Dict] = None
 
 
 class Document(BaseModel):
@@ -36,6 +36,6 @@ class Document(BaseModel):
 
 
 class SearchResponse(BaseModel):
-    """ A search response
-    """
+    """A search response"""
+
     # documents: List

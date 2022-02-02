@@ -129,10 +129,10 @@ pipelines:
       - name: CategoryDeclarativeQuery
         inputs: [QuestionStatementQueryClassifier.output_2]
 
-      - name: DensePassageRetriever
+      - name: RawRetrieverWithQuery
         inputs: [CategoryInterrogativeQuery]
 
-      - name: DensePassageRetriever
+      - name: RawRetrieverWithQuery
         inputs: [CategoryDeclarativeQuery]
 
 # See

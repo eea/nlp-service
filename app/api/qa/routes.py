@@ -13,9 +13,17 @@ concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 def query(payload: QA_Request, request: Request):
     params = payload.dict()['params']
     if params.get('use_dp'):
-        model = request.app.state.dp_qa
+        qa_model = request.app.state.dp_qa
     else:
-        model = request.app.state.qa
+        qa_model = request.app.state.qa
 
     with concurrency_limiter.run():
-        return model.predict(payload)
+        stage_1 = qa_model.predict(payload)
+
+    # stage_2 = request.app.state.similarity_model.clusterize_answers(stage_1)
+    #
+    # # desired output in clusterized:
+    #
+    # return stage_2
+
+    return stage_1

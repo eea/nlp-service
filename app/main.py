@@ -132,6 +132,9 @@ def get_app() -> FastAPI:
         app.state.services = service_descriptions
 
     def startup_tests():
+        if os.environ.get('DISABLE_RUNTIME_TESTS'):
+            return
+
         for service in (app.state.services or []):
             name = service.get('name')
             logger.info(f"Starting runtime test for <{name}> service")
