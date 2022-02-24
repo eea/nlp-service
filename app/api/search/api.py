@@ -26,6 +26,7 @@ class SearchRequest(BaseModel):
     explain: Optional[bool] = False
     params: Optional[Dict] = None
     source: Optional[Dict] = None
+    suggest: Optional[Dict] = None
 
 
 class Document(BaseModel):

@@ -27,6 +27,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         explain: Optional[bool] = False,
         _source: Optional[dict] = None,
         index: str = None,
+        suggest: Optional[dict] = None,
     ) -> List[Document]:
         """
         ES Docstore replacement that supports native ES queries
@@ -69,6 +70,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
         if _source:
             body["_source"] = _source
+
+        if suggest is not None:
+            body["suggest"] = suggest
 
         if self.excluded_meta_data:
             if not body["_source"].get("excludes"):
