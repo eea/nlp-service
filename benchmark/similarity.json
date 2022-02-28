@@ -1,0 +1,16 @@
+{
+  "requestType": "nlp",
+  "endpoint": "similarity",
+  "base": "increased since 1990",
+  "candidates": [
+    "increased since 1990",
+    "increased since 1990",
+    "increased since 1990",
+    "diverges significantly from those in other sectors during that period",
+    "diverges significantly from those in other sectors during that period",
+    "diverges significantly from those in other sectors during that period",
+    "diverges significantly from those in other sectors during that period",
+    "diverges significantly from those in other sectors during that period",
+    "Air traffic activity is projected to rise again from 2021"
+  ]
+}
