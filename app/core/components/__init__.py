@@ -1,19 +1,16 @@
 import haystack.ranker  # noqa // register these components
 
-from .spacy import SpacyModel
 from .embedding import EmbeddingModel
 from .searchlib.documentstore import SearchlibElasticsearchDocumentStore
 from .searchlib.question import Category, ElasticSearchRequestClassifier
-from .searchlib.retriever import RawElasticsearchRetriever, RawDensePassageRetriever
-from .searchlib.ranker import RawFARMRanker
+# from .searchlib.ranker import RawFARMRanker
 from .searchlib.reader import SearchlibQAAdapter
-
-from .transformer import (
-    TransformersPipeline,
-    NERTransformersPipeline,
-    SentenceTransformer,
-)
+from .searchlib.retriever import (RawDensePassageRetriever,
+                                  RawElasticsearchRetriever)
+from .spacy import SpacyModel
 from .summarizer import SearchlibTransformersSummarizer
+from .transformer import (NERTransformersPipeline, SentenceTransformer,
+                          TransformersPipeline)
 
 __all__ = [
     Category,
@@ -22,7 +19,7 @@ __all__ = [
     NERTransformersPipeline,
     RawDensePassageRetriever,
     RawElasticsearchRetriever,
-    RawFARMRanker,
+    # RawFARMRanker,
     SearchlibQAAdapter,
     SearchlibTransformersSummarizer,
     SearchlibElasticsearchDocumentStore,

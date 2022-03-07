@@ -1,5 +1,4 @@
-from haystack.schema import BaseComponent
-
+from haystack.nodes.base import BaseComponent
 # import spacy
 from spacy.lang.en import English
 

@@ -1,14 +1,15 @@
-from haystack.schema import BaseComponent
+from haystack.nodes.base import BaseComponent
 
 
 class TransformersPipeline(BaseComponent):
     def __init__(self, *args, **kwargs):
         from transformers import pipeline
+
         self.pipeline = pipeline(*args, **kwargs)
 
     def run(self, params):
         result = self.pipeline(**params)
-        return {"result": result}, 'output_1'
+        return {"result": result}, "output_1"
 
 
 class NERTransformersPipeline(TransformersPipeline):
@@ -16,7 +17,8 @@ class NERTransformersPipeline(TransformersPipeline):
         super(NERTransformersPipeline, self).__init__(*args, **kwargs)
 
         from transformers import AutoTokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained(kwargs['model'])
+
+        self.tokenizer = AutoTokenizer.from_pretrained(kwargs["model"])
 
     def run(self, documents):
         # See https://huggingface.co/transformers/usage.html#named-entity-recognition
@@ -30,14 +32,15 @@ class NERTransformersPipeline(TransformersPipeline):
         #     'score': 0.9973650574684143,
         #     'start': 1,
         #     'word': 'ĠApple'}]
-        for entry in result['result']:
-            entry['word'] = self.tokenizer\
-                .convert_tokens_to_string([entry['word']]).strip()
-            entry['score'] = float(entry['score'])
-            entry['start'] = int(entry['start'])
-            entry['end'] = int(entry['end'])
+        for entry in result["result"]:
+            entry["word"] = self.tokenizer.convert_tokens_to_string(
+                [entry["word"]]
+            ).strip()
+            entry["score"] = float(entry["score"])
+            entry["start"] = int(entry["start"])
+            entry["end"] = int(entry["end"])
 
-        return {"result": result['result']}, output
+        return {"result": result["result"]}, output
 
 
 class SentenceTransformer(BaseComponent):
@@ -48,23 +51,24 @@ class SentenceTransformer(BaseComponent):
 
         self.torch = torch
         from transformers import AutoModel, AutoTokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained(kwargs['model'])
-        self.model = AutoModel.from_pretrained(kwargs['model'])
+
+        self.tokenizer = AutoTokenizer.from_pretrained(kwargs["model"])
+        self.model = AutoModel.from_pretrained(kwargs["model"])
 
     def run(self, documents):
         sentences = [doc.text for doc in documents]
-        encoded_input = self.tokenizer(sentences, padding=True,
-                                       truncation=True, return_tensors='pt')
+        encoded_input = self.tokenizer(
+            sentences, padding=True, truncation=True, return_tensors="pt"
+        )
         with self.torch.no_grad():
             model_output = self.model(**encoded_input)
 
-        embeddings = self._cls_pooling(
-            model_output, encoded_input['attention_mask'])
+        embeddings = self._cls_pooling(model_output, encoded_input["attention_mask"])
 
         for doc, embedding in zip(documents, embeddings):
             doc.embedding = embedding
 
-        return {'documents': documents}, 'output_1'
+        return {"documents": documents}, "output_1"
 
     def _cls_pooling(self, model_output, attention_mask):
         return model_output[0][:, 0]

@@ -1,41 +1,41 @@
 import copy
 import importlib
+import logging
 import os
 import os.path
+
+import yaml
 
 import fastapi_chameleon
 import uvicorn
 import venusian
-import yaml
-from fastapi import APIRouter, FastAPI, HTTPException
-from loguru import logger
-from starlette.middleware.cors import CORSMiddleware
-
 from app.core import config
 from app.core.errors.http_error import http_error_handler
 from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.core.pipeline import add_pipeline
 from app.views import router as views_router
-
-import logging
+from fastapi import APIRouter, FastAPI, HTTPException
+from loguru import logger
+from starlette.middleware.cors import CORSMiddleware
 
 dev_mode = True
 
 folder = os.path.dirname(__file__)
-template_folder = os.path.join(folder, 'templates')
+template_folder = os.path.join(folder, "templates")
 template_folder = os.path.abspath(template_folder)
 
 fastapi_chameleon.global_init(template_folder, auto_reload=dev_mode)
 
 
 def load_components(config):
-    from haystack.schema import BaseComponent
+    from haystack.nodes.base import BaseComponent
+
     components = {}  # definitions of each component from the YAML.
 
     for definition in config.get("components", []):
         copied = copy.deepcopy(definition)
         name = copied.pop("name")
-        params = copied.get('params', {})
+        params = copied.get("params", {})
 
         # loads references to other components
         for k, v in params.items():
@@ -43,11 +43,9 @@ def load_components(config):
                 params[k] = components[v]
 
         try:
-            components[name] = BaseComponent.load_from_args(
-                copied['type'], **params
-            )
+            components[name] = BaseComponent.load_from_args(copied["type"], **params)
         except Exception:
-            print(f"Error in loading component: ${params}")
+            print(f"Error loading: (${copied['type']}) with params: ${params}")
             raise
 
     return components
@@ -56,20 +54,18 @@ def load_components(config):
 def get_app() -> FastAPI:
     """FastAPI app controller"""
 
-    with open(config.CONFIG_YAML_PATH, "r", encoding='utf-8') as stream:
+    with open(config.CONFIG_YAML_PATH, "r", encoding="utf-8") as stream:
         conf = yaml.safe_load(stream)
-        service_names = conf.get('services', [])
+        service_names = conf.get("services", [])
 
-    if os.environ.get('NLP_SERVICES'):
-        service_names = os.environ['NLP_SERVICES'].strip().split(',')
+    if os.environ.get("NLP_SERVICES"):
+        service_names = os.environ["NLP_SERVICES"].strip().split(",")
 
-    loglevel = conf.get('loglevel', int(
-        os.environ.get('NLP_LOGLEVEL', logging.INFO)))
+    loglevel = conf.get("loglevel", int(os.environ.get("NLP_LOGLEVEL", logging.INFO)))
 
-    if (loglevel != -1):
+    if loglevel != -1:
         file_handler = logging.FileHandler(
-            conf.get('logfile',
-                     os.environ.get('NLP_LOGFILE', '/tmp/nlpservice.log'))
+            conf.get("logfile", os.environ.get("NLP_LOGFILE", "/tmp/nlpservice.log"))
         )
         file_handler.setFormatter(
             logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
@@ -79,8 +75,9 @@ def get_app() -> FastAPI:
         root.setLevel(loglevel)
         root.addHandler(file_handler)
 
-    fast_app = FastAPI(title=config.APP_NAME,
-                       version=config.APP_VERSION, debug=config.IS_DEBUG)
+    fast_app = FastAPI(
+        title=config.APP_NAME, version=config.APP_VERSION, debug=config.IS_DEBUG
+    )
 
     # This middleware enables allow all cross-domain requests to the API
     # from a browser.
@@ -98,47 +95,48 @@ def get_app() -> FastAPI:
 
     service_descriptions = []
 
-    for name in (service_names or []):
+    for name in service_names or []:
         logger.info(f"Loading service <{name}> started")
-        with open(os.path.join(config.CONFIG_PATH, f"{name}.yml"), "r",
-                  encoding='utf-8') as stream:
+        print(f"Loading service <{name}> started")
+        with open(
+            os.path.join(config.CONFIG_PATH, f"{name}.yml"), "r", encoding="utf-8"
+        ) as stream:
             service_conf = yaml.safe_load(stream)
 
         service_conf = config.overwrite_with_env_variables(service_conf, name)
 
         load_components(service_conf)
-        for pipeline_def in service_conf.get('pipelines', []):
-            pipeline_name = pipeline_def['name']
+        for pipeline_def in service_conf.get("pipelines", []):
+            pipeline_name = pipeline_def["name"]
             add_pipeline(pipeline_name, [pipeline_def, service_conf])
 
-        pkg = service_conf.get('package', f"app.api.services.{name}")
-        tags = service_conf.get('tags', [name])
-        prefix = service_conf.get('prefix', f"/{name}")
-        service_descriptions.append({'name': name, 'conf': service_conf})
+        pkg = service_conf.get("package", f"app.api.services.{name}")
+        tags = service_conf.get("tags", [name])
+        prefix = service_conf.get("prefix", f"/{name}")
+        service_descriptions.append({"name": name, "conf": service_conf})
 
         module = importlib.import_module(pkg)
         scanner = venusian.Scanner()
         scanner.scan(module)
 
-        api_router.include_router(
-            module.routes.router, tags=tags, prefix=prefix)
+        api_router.include_router(module.routes.router, tags=tags, prefix=prefix)
 
         logger.info(f"Loading service <{name}> completed")
 
-    fast_app.include_router(views_router, prefix='')
+    fast_app.include_router(views_router, prefix="")
     fast_app.include_router(api_router, prefix=config.API_PREFIX)
 
     def startup():
         app.state.services = service_descriptions
 
     def startup_tests():
-        if os.environ.get('DISABLE_RUNTIME_TESTS'):
+        if os.environ.get("DISABLE_RUNTIME_TESTS"):
             return
 
-        for service in (app.state.services or []):
-            name = service.get('name')
+        for service in app.state.services or []:
+            name = service.get("name")
             logger.info(f"Starting runtime test for <{name}> service")
-            pkg = service.get('conf', {}).get('package', f"app.api.{name}")
+            pkg = service.get("conf", {}).get("package", f"app.api.{name}")
             module = importlib.import_module(pkg)
             module.runtimetest.runtimetest(app)
             logger.info(f"Runtime test for <{name}> completed")
@@ -149,8 +147,7 @@ def get_app() -> FastAPI:
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
 
     if config.IS_DEBUG:
-        logger.info(
-            "See http://127.0.0.1:8000/docs for Swagger API Documentation.")
+        logger.info("See http://127.0.0.1:8000/docs for Swagger API Documentation.")
 
     return fast_app
 

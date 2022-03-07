@@ -1,8 +1,8 @@
-from haystack.summarizer.transformers import TransformersSummarizer
-from typing import List, Optional, Dict
-from haystack import Document
-
 import logging
+from typing import Dict, List, Optional
+
+from haystack import Document
+from haystack.nodes.summarizer import TransformersSummarizer
 
 logger = logging.getLogger(__name__)
 

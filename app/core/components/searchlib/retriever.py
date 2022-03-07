@@ -1,8 +1,9 @@
 import logging
-
-from haystack.retriever import ElasticsearchRetriever, DensePassageRetriever
 from typing import Optional
+
 from app.core.elasticsearch import get_search_term
+from haystack.nodes.retriever import (DensePassageRetriever,
+                                      ElasticsearchRetriever)
 
 logger = logging.getLogger(__name__)
 
