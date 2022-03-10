@@ -14,7 +14,7 @@ components:
       host: localhost
       index: data_searchui-documents
       create_index: false
-      text_field: "text"
+      content_field: "text"
       embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
