@@ -1,5 +1,6 @@
 #!/usr/bin/fish
 conda activate py38
+# TO setup: mamba install pytorch cudatoolkit=11.3 -c pytorch -c nvidia
 # poetry run uvicorn --host 0.0.0.0 app.main:app
 
 export TRANSFORMERS_CACHE=./cache
@@ -14,8 +15,8 @@ export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX=data_searchui
 
 #54125
 #
-export SERVICES=similarity
-#search,summarizer,langdetect,converter,search,qa,
+export SERVICES=summarizer
+#search,langdetect,converter,search,qa,,similarity
 
 env \
   DISABLE_RUNTIME_TESTS=1 \
