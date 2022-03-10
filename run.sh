@@ -15,9 +15,9 @@ export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX=data_searchui
 
 #54125
 #
-export SERVICES=langdetect
-#search,converter,search,qa,,
-#similarity,summarizer
+export SERVICES=converter
+#search,search,qa,,
+#similarity,summarizer,langdetect
 
 env \
   DISABLE_RUNTIME_TESTS=1 \
