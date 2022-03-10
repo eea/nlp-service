@@ -22,6 +22,9 @@ class NERTransformersPipeline(TransformersPipeline):
 
     def run(self, documents):
         # See https://huggingface.co/transformers/usage.html#named-entity-recognition
+        import pdb
+
+        pdb.set_trace()
         payload = {"inputs": [doc.text for doc in documents]}
 
         result, output = super(NERTransformersPipeline, self).run(payload)
@@ -56,7 +59,7 @@ class SentenceTransformer(BaseComponent):
         self.model = AutoModel.from_pretrained(kwargs["model"])
 
     def run(self, documents):
-        sentences = [doc.text for doc in documents]
+        sentences = [doc.content for doc in documents]
         encoded_input = self.tokenizer(
             sentences, padding=True, truncation=True, return_tensors="pt"
         )
