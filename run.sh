@@ -2,6 +2,8 @@
 conda activate py38
 # poetry run uvicorn --host 0.0.0.0 app.main:app
 
+export TRANSFORMERS_CACHE=./cache
+
 export QA_DOCUMENTSTORE_PARAMS_HOST=10.120.10.131
 export QA_DOCUMENTSTORE_PARAMS_PORT=57664
 export QA_DOCUMENTSTORE_PARAMS_INDEX=data_nlp
