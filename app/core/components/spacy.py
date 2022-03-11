@@ -16,5 +16,5 @@ class SpacyModel(BaseComponent):
 
     def run(self, documents):
         return {
-            "spacy_documents": [self.nlp(doc.text) for doc in documents]
+            "spacy_documents": [self.nlp(doc.content) for doc in documents]
         }, "output_1"

@@ -7,7 +7,7 @@ payload = {
 }
 
 
-def test_similarity(api_server):
+def test_ner(api_server):
     url = f"{api_server}/ner"
     resp = requests.post(url, json=payload)
     data = resp.json()

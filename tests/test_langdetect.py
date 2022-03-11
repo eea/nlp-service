@@ -17,7 +17,7 @@ The joint report assesses the current state of emerging maritime transport susta
 payload = {"texts": [text], "options": {"debug": False}}
 
 
-def test_similarity(api_server):
+def test_langdetect(api_server):
     url = f"{api_server}/langdetect"
     resp = requests.post(url, json=payload)
     data = resp.json()

@@ -10,7 +10,7 @@ payload = {
 }
 
 
-def test_similarity_no_passage(api_server):
+def test_embedding_no_passage(api_server):
     url = f"{api_server}/embedding"
     resp = requests.post(url, json=payload)
     data = resp.json()
@@ -22,7 +22,7 @@ def test_similarity_no_passage(api_server):
         assert data["embeddings"][i]["embedding"]
 
 
-def test_similarity_is_passage(api_server):
+def test_embedding_is_passage(api_server):
     url = f"{api_server}/embedding"
     dump = dict(is_passage=True, snippets=payload["snippets"])
     resp = requests.post(url, json=dump)

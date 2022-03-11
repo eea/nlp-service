@@ -16,7 +16,7 @@ payload = {
 }
 
 
-def test_similarity(api_server):
+def test_zeroshot(api_server):
     url = f"{api_server}/zeroshot"
     resp = requests.post(url, json=payload)
     data = resp.json()

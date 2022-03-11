@@ -15,7 +15,7 @@ export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX=data_searchui
 
 #54125
 #
-export SERVICES=question-classifier
+export SERVICES=spacy
 #embedding
 #search,search,qa,,
 #similarity,summarizer,langdetect
