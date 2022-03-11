@@ -7,8 +7,9 @@ class TransformersPipeline(BaseComponent):
 
         self.pipeline = pipeline(*args, **kwargs)
 
-    def run(self, params):
-        result = self.pipeline(**params)
+    def run(self, pipeline_params):
+        result = self.pipeline(**pipeline_params)
+
         return {"result": result}, "output_1"
 
 
@@ -22,10 +23,7 @@ class NERTransformersPipeline(TransformersPipeline):
 
     def run(self, documents):
         # See https://huggingface.co/transformers/usage.html#named-entity-recognition
-        import pdb
-
-        pdb.set_trace()
-        payload = {"inputs": [doc.text for doc in documents]}
+        payload = {"inputs": [doc.content for doc in documents]}
 
         result, output = super(NERTransformersPipeline, self).run(payload)
         # Result is like:
