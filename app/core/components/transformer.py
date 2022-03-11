@@ -33,13 +33,15 @@ class NERTransformersPipeline(TransformersPipeline):
         #     'score': 0.9973650574684143,
         #     'start': 1,
         #     'word': 'ĠApple'}]
-        for entry in result["result"]:
-            entry["word"] = self.tokenizer.convert_tokens_to_string(
-                [entry["word"]]
-            ).strip()
-            entry["score"] = float(entry["score"])
-            entry["start"] = int(entry["start"])
-            entry["end"] = int(entry["end"])
+
+        for doc in result["result"]:
+            for entry in doc:
+                entry["word"] = self.tokenizer.convert_tokens_to_string(
+                    [entry["word"]]
+                ).strip()
+                entry["score"] = float(entry["score"])
+                entry["start"] = int(entry["start"])
+                entry["end"] = int(entry["end"])
 
         return {"result": result["result"]}, output
 

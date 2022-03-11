@@ -15,7 +15,8 @@ export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX=data_searchui
 
 #54125
 #
-export SERVICES=embedding
+export SERVICES=ner
+#embedding
 #search,search,qa,,
 #similarity,summarizer,langdetect
 
