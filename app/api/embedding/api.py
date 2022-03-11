@@ -11,7 +11,7 @@ class EmbeddingRequest(BaseModel):
     snippets: List[str] = [
         "Maritime transport plays and will continue to play an essential role in global and European trade and economy.",
         "The European Environment Agency provides sound, independent information on the environment for those involved in developing, adopting, implementing and evaluating environmental policy, and also the general public.",
-        "Climate-friendly practices for sourcing raw materials hold significant potential to cut greenhouse gas emissions in Europe and globally."
+        "Climate-friendly practices for sourcing raw materials hold significant potential to cut greenhouse gas emissions in Europe and globally.",
     ]
 
 

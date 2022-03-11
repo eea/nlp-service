@@ -4,7 +4,7 @@ from haystack.nodes.base import BaseComponent
 class EmbeddingModel(BaseComponent):
     def __init__(self, *args, **kwargs):
         from haystack import Document
-        from haystack.retriever.dense import DensePassageRetriever
+        from haystack.nodes.retriever.dense import DensePassageRetriever
 
         self.Document = Document
         self.model = DensePassageRetriever(**kwargs)
@@ -14,7 +14,7 @@ class EmbeddingModel(BaseComponent):
 
         if payload["is_passage"]:
             documents = [self.Document(s) for s in payload["snippets"]]
-            result = self.model.embed_passages(documents)
+            result = self.model.embed_documents(documents)
         else:
             result = self.model.embed_queries(payload["snippets"])
 
