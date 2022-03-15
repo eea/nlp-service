@@ -1,6 +1,7 @@
 from haystack.nodes.base import BaseComponent
-# import spacy
 from spacy.lang.en import English
+
+# import spacy
 
 
 class SearchlibQAAdapter(BaseComponent):
@@ -20,16 +21,23 @@ class SearchlibQAAdapter(BaseComponent):
         # answers = kwargs.pop('answers', [])
 
         document_map = {doc.id: doc for doc in documents}
-        output = {"documents": documents, "answers": answers}
 
-        for doc in answers:  # in-place mutation
+        output = {"documents": documents, "answers": [a.to_dict() for a in answers]}
+
+        for doc in output["answers"]:  # in-place mutation
             meta = doc.pop("meta", {})
             doc["source"] = meta
             doc["id"] = doc["document_id"]
-            doc["text"] = document_map[doc["id"]].text
+            doc["text"] = document_map[doc["id"]].content
             sdoc = self.nlp(doc["text"])
+            span = doc["offsets_in_document"][0]
+            start = span["start"]
+            end = span["end"]
+
             answer_span = sdoc.char_span(
-                doc["offset_start_in_doc"], doc["offset_end_in_doc"]
+                start,
+                end
+                # doc["offset_start_in_doc"], doc["offset_end_in_doc"]
             )
 
             if answer_span is None:
@@ -45,13 +53,12 @@ class SearchlibQAAdapter(BaseComponent):
 
             # TODO: there's a bug here in case the answer is multiple sentences.
 
-            full_context = sentences[
-                index > 0
-                and index - 1
-                or 0 : index == len(sentences) - 1
-                and len(sentences) - 1
-                or index + 1
-            ]
+            s = index > 0 and index - 1 or 0
+            e = index == len(sentences) - 1 and len(sentences) - 1 or index + 1
+            full_context = sentences[s:e]
+
+            doc["offset_start"] = start
+            doc["offset_end"] = end
             doc["full_context"] = " ".join([s.text for s in full_context])
 
         return output, "output_1"

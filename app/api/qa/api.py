@@ -27,6 +27,7 @@ class Answer(BaseModel):
 
     answer: Optional[str]
     text: Optional[str]
+    body: Optional[str]
     question: Optional[str]
     score: Optional[float] = None
     probability: Optional[float] = None
