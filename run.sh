@@ -13,9 +13,11 @@ export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_HOST=10.120.10.131
 export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_PORT=57664
 export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX=data_searchui
 
+export SEARCH_SERVICES=search,qa,similarity
 #54125
-#
-export SERVICES=search
+
+export SERVICES=$SEARCH_SERVICES
+#search
 #embedding
 #search,search,qa,,
 #similarity,summarizer,langdetect
