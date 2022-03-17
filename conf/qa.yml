@@ -35,7 +35,8 @@ components:
       document_store: DocumentStore
 
   - name: AnswerExtraction
-    type: FARMReader
+    type: TransformersReader
+    #FARMReader
     params:
       # model_name_or_path: bert-large-uncased
       model_name_or_path: deepset/roberta-base-squad2

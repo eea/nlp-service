@@ -1,6 +1,9 @@
+import logging
+
 from haystack.nodes.base import BaseComponent
 from spacy.lang.en import English
 
+logger = logging.getLogger(__name__)
 # import spacy
 
 
@@ -22,12 +25,18 @@ class SearchlibQAAdapter(BaseComponent):
 
         document_map = {doc.id: doc for doc in documents}
 
-        output = {"documents": documents, "answers": [a.to_dict() for a in answers]}
+        output = {
+            "documents": documents,
+            "answers": [],
+        }
 
-        for doc in output["answers"]:  # in-place mutation
+        for doc in [a.to_dict() for a in answers if a.answer]:  # in-place mutation
             meta = doc.pop("meta", {})
             doc["source"] = meta
             doc["id"] = doc["document_id"]
+            if not doc["id"]:
+                logger.debug("Skipping an unknown document")
+                continue
             doc["text"] = document_map[doc["id"]].content
             sdoc = self.nlp(doc["text"])
             span = doc["offsets_in_document"][0]
@@ -45,7 +54,11 @@ class SearchlibQAAdapter(BaseComponent):
 
             current_sent = answer_span.sent
 
-            sentences = list(sdoc.sents)
+            try:
+                sentences = list(sdoc.sents)
+            except Exception:
+                logger.exception("Error in Searchlib QA Adapter")
+                continue
             index = -1
             for i, sent in enumerate(sentences):
                 if sent == current_sent:
@@ -60,5 +73,10 @@ class SearchlibQAAdapter(BaseComponent):
             doc["offset_start"] = start
             doc["offset_end"] = end
             doc["full_context"] = " ".join([s.text for s in full_context])
+
+            if not (start or end):
+                continue
+
+            output["answers"].append(doc)
 
         return output, "output_1"
