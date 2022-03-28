@@ -1,0 +1,180 @@
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "multi_match": {
+                "query": "What is the trend on greenhouse gas emissions from transport",
+                "minimum_should_match": "75%",
+                "fields": [
+                  "title^2",
+                  "subject^1.5",
+                  "description^1.5",
+                  "all_fields_for_freetext"
+                ]
+              }
+            }
+          ],
+          "filter": [
+            {
+              "constant_score": {
+                "filter": {
+                  "bool": {
+                    "should": [
+                      {
+                        "bool": {
+                          "must_not": { "exists": { "field": "expires" } }
+                        }
+                      },
+                      {
+                        "range": {
+                          "expires": { "gte": "2022-02-28T13:11:51Z" }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "bool": {
+                "should": [{ "range": { "readingTime": {} } }],
+                "minimum_should_match": 1
+              }
+            },
+            {
+              "bool": {
+                "should": [{ "range": { "issued.date": {} } }],
+                "minimum_should_match": 1
+              }
+            },
+            {
+              "bool": {
+                "should": [{ "term": { "language": "en" } }],
+                "minimum_should_match": 1
+              }
+            },
+            { "term": { "hasWorkflowState": "published" } },
+            {
+              "constant_score": {
+                "filter": {
+                  "range": { "issued.date": { "lte": "2022-02-28T13:11:52Z" } }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "functions": [
+        { "exp": { "issued.date": { "offset": "30d", "scale": "1800d" } } }
+      ],
+      "score_mode": "sum"
+    }
+  },
+  "highlight": {
+    "fragment_size": 200,
+    "number_of_fragments": 3,
+    "fields": {
+      "description.highlight": {
+        "highlight_query": {
+          "bool": {
+            "must": [
+              {
+                "match": {
+                  "description.highlight": {
+                    "query": "What is the trend on greenhouse gas emissions from transport"
+                  }
+                }
+              }
+            ],
+            "should": [
+              {
+                "match_phrase": {
+                  "description.highlight": {
+                    "query": "What is the trend on greenhouse gas emissions from transport",
+                    "slop": 1,
+                    "boost": 10
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "aggs": {
+    "time_coverage": {
+      "range": {
+        "script": "def vals = doc['time_coverage']; if (vals.length == 0){return 2500} else {def ret = [];for (val in vals){def tmp_val = val.substring(0,4);ret.add(tmp_val.toLowerCase() == tmp_val.toUpperCase() ? Integer.parseInt(tmp_val) : 2500);}return ret;}",
+        "ranges": [
+          { "from": 1700, "to": 1710 },
+          { "from": 1710, "to": 1720 },
+          { "from": 1720, "to": 1730 },
+          { "from": 1730, "to": 1740 },
+          { "from": 1740, "to": 1750 },
+          { "from": 1750, "to": 1760 },
+          { "from": 1760, "to": 1770 },
+          { "from": 1770, "to": 1780 },
+          { "from": 1780, "to": 1790 },
+          { "from": 1790, "to": 1800 },
+          { "from": 1800, "to": 1810 },
+          { "from": 1810, "to": 1820 },
+          { "from": 1820, "to": 1830 },
+          { "from": 1830, "to": 1840 },
+          { "from": 1840, "to": 1850 },
+          { "from": 1850, "to": 1860 },
+          { "from": 1860, "to": 1870 },
+          { "from": 1870, "to": 1880 },
+          { "from": 1880, "to": 1890 },
+          { "from": 1890, "to": 1900 },
+          { "from": 1900, "to": 1910 },
+          { "from": 1910, "to": 1920 },
+          { "from": 1920, "to": 1930 },
+          { "from": 1930, "to": 1940 },
+          { "from": 1940, "to": 1950 },
+          { "from": 1950, "to": 1960 },
+          { "from": 1960, "to": 1970 },
+          { "from": 1970, "to": 1980 },
+          { "from": 1980, "to": 1990 },
+          { "from": 1990, "to": 2000 },
+          { "from": 2000, "to": 2010 },
+          { "from": 2010, "to": 2020 },
+          { "from": 2020, "to": 2030 },
+          { "from": 2030, "to": 2040 },
+          { "from": 2040, "to": 2050 },
+          { "from": 2050, "to": 2060 },
+          { "from": 2060, "to": 2070 },
+          { "from": 2070, "to": 2080 },
+          { "from": 2080, "to": 2090 },
+          { "from": 2090, "to": 2100 },
+          { "from": 2100, "to": 2110 },
+          { "from": 2110, "to": 2120 },
+          { "from": 2120, "to": 2130 },
+          { "from": 2130, "to": 2140 },
+          { "from": 2140, "to": 2150 },
+          { "from": 2150, "to": 2160 },
+          { "from": 2160, "to": 2170 },
+          { "from": 2170, "to": 2180 },
+          { "from": 2180, "to": 2190 },
+          { "from": 2190, "to": 2200 },
+          { "from": 2200, "to": 2210 }
+        ]
+      }
+    }
+  },
+  "size": 0,
+  "runtime_mappings": {
+    "op_cluster": {
+      "type": "keyword",
+      "script": {
+        "source": "emit(\"_all_\"); def clusters_settings = [[\"name\": \"News\", \"values\": [\"News\",\"Article\"]],[\"name\": \"Publications\", \"values\": [\"Report\",\"Indicator\",\"Briefing\",\"Topic page\",\"Country fact sheet\"]],[\"name\": \"Maps and charts\", \"values\": [\"Figure (chart/map)\",\"Chart (interactive)\",\"Infographic\",\"Dashboard\",\"Map (interactive)\"]],[\"name\": \"Data\", \"values\": [\"External data reference\",\"Data set\"]],[\"name\": \"Others\", \"values\": [\"Webpage\",\"Organisation\",\"FAQ\",\"Video\",\"Contract opportunity\",\"Glossary term\",\"Collection\",\"File\",\"Adaptation option\",\"Guidance\",\"Research and knowledge project\",\"Information portal\",\"Tool\",\"Case study\"]]]; def vals = doc['objectProvides']; def clusters = ['All']; for (val in vals) { for (cs in clusters_settings) { if (cs.values.contains(val)) { emit(cs.name) } } }"
+      }
+    }
+  },
+  "params": {},
+  "source": { "exclude": ["fulltext"] },
+  "track_total_hits": true
+}

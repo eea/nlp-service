@@ -1,13 +1,14 @@
-import jq
-from copy import deepcopy
-from haystack.document_store import ElasticsearchDocumentStore
-from haystack.schema import BaseComponent, MultiLabel
-from typing import List, Optional, Any  # , Dict
-from haystack.schema import Document
-import numpy as np
-import logging
-from elasticsearch.exceptions import RequestError
 import json
+import logging
+from copy import deepcopy
+from typing import Any, List, Optional  # , Dict
+
+import jq
+import numpy as np
+from elasticsearch.exceptions import RequestError
+from haystack.document_stores.elasticsearch import ElasticsearchDocumentStore
+from haystack.nodes.base import BaseComponent
+from haystack.schema import Document, MultiLabel
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         explain: Optional[bool] = False,
         _source: Optional[dict] = None,
         index: str = None,
+        suggest: Optional[dict] = None,
     ) -> List[Document]:
         """
         ES Docstore replacement that supports native ES queries
@@ -41,7 +43,6 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         body = {}
         if query:
             body["query"] = query
-
 
         if runtime_mappings:
             body["runtime_mappings"] = runtime_mappings
@@ -69,6 +70,9 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
         if _source:
             body["_source"] = _source
+
+        if suggest is not None:
+            body["suggest"] = suggest
 
         if self.excluded_meta_data:
             if not body["_source"].get("excludes"):
@@ -226,7 +230,6 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         sort: Optional[Any] = None,
         track_total_hits: Optional[bool] = True,
         explain: Optional[bool] = False,
-
     ) -> List[Document]:
         if index is None:
             index = self.index

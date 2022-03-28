@@ -1,10 +1,10 @@
+import numpy as np
 import torch
 from app.core.model import register_model
 from app.core.pipeline import PipelineModel, process_request
 from haystack import Document
-from torch import Tensor
 from sklearn.cluster import AgglomerativeClustering
-import numpy as np
+from torch import Tensor
 
 
 @register_model("similarity_model")
@@ -34,35 +34,29 @@ class SimilarityModel(PipelineModel):
 
     def clustering(self, documents):
         if len(documents) < 2:
-            return [[doc.text, 0] for doc in documents]
+            return [[doc.content, 0] for doc in documents]
 
         embeddings = [doc.embedding for doc in documents]
-        corpus = np.array([self._normalize(e).numpy().flatten()
-                           for e in embeddings])
+        corpus = np.array([self._normalize(e).numpy().flatten() for e in embeddings])
         # corpus = np.array([e.numpy() for e in embeddings])
         # See
         # https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering
         model = AgglomerativeClustering(
-            n_clusters=None,
-            affinity='cosine',
-            linkage='single',
-            distance_threshold=0.2
+            n_clusters=None, affinity="cosine", linkage="single", distance_threshold=0.2
         )
         model.fit(corpus)
         labels = model.labels_.tolist()
-        clusters = [[doc.text, label]
-                    for (doc, label) in zip(documents, labels)]
+        clusters = [[doc.content, label] for (doc, label) in zip(documents, labels)]
         return clusters
 
     def _predict(self, payload):
         # See https://www.sbert.net/docs/usage/semantic_textual_similarity.html
-        sentences = [payload['base']] + payload['candidates']
+        sentences = [payload["base"]] + payload["candidates"]
         documents = [Document(text) for text in sentences]
 
-        output = process_request(
-            self.pipeline, {'documents': documents})
+        output = process_request(self.pipeline, {"documents": documents})
 
-        documents = output['documents']
+        documents = output["documents"]
 
         base_doc = documents[0]
         del documents[0]
@@ -70,12 +64,12 @@ class SimilarityModel(PipelineModel):
         predictions = []
         for i, doc in enumerate(documents):
             score = self.cos_sim(base_doc.embedding, doc.embedding)
-            predictions.append({'score': score, "text": doc.text})
+            predictions.append({"score": score, "text": doc.content})
 
         res = {
-            "base": base_doc.text,
+            "base": base_doc.content,
             "predictions": predictions,
-            "clusters": self.clustering([base_doc] + documents)
+            "clusters": self.clustering([base_doc] + documents),
         }
         return res
 

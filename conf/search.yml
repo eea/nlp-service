@@ -17,7 +17,7 @@ components:    # define all the building-blocks for Pipeline
       host: localhost
       index: data_searchui
       create_index: false
-      text_field: "description"
+      content_field: "description"
       embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
@@ -28,7 +28,7 @@ components:    # define all the building-blocks for Pipeline
       host: localhost
       index: data_searchui-documents
       create_index: false
-      text_field: "text"
+      content_field: "text"
       embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"

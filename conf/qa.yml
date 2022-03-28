@@ -14,7 +14,7 @@ components:
       host: localhost
       index: data_searchui-documents
       create_index: false
-      text_field: "text"
+      content_field: "text"
       embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
@@ -35,7 +35,8 @@ components:
       document_store: DocumentStore
 
   - name: AnswerExtraction
-    type: FARMReader
+    type: TransformersReader
+    #FARMReader
     params:
       # model_name_or_path: bert-large-uncased
       model_name_or_path: deepset/roberta-base-squad2
