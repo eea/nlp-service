@@ -2,11 +2,11 @@ import copy
 import json
 import time
 from base64 import b64encode
-from networkx.drawing.nx_agraph import to_agraph
 
 from app.core.messages import NO_VALID_PAYLOAD
-from haystack.pipeline import Pipeline
+from haystack.pipelines.base import Pipeline
 from loguru import logger
+from networkx.drawing.nx_agraph import to_agraph
 
 PIPELINES = {}
 
@@ -52,8 +52,9 @@ def make_pipeline(pipeline_config, yaml_conf):
             name=name, definitions=definitions, components=components
         )
         pipeline.add_node(
-            component=component, name=node_config["name"],
-            inputs=node_config.get("inputs", [])
+            component=component,
+            name=node_config["name"],
+            inputs=node_config.get("inputs", []),
         )
 
     return pipeline
@@ -70,8 +71,7 @@ class PipelineModel(object):
         self.pipeline_config = pipeline_config
         self.yaml_config = yaml_conf
 
-        logger.info(
-            f"Loaded pipeline nodes: {self.pipeline.graph.nodes.keys()}")
+        logger.info(f"Loaded pipeline nodes: {self.pipeline.graph.nodes.keys()}")
 
     def _pre_process(self, payload):
         return payload.dict()
@@ -99,17 +99,19 @@ class PipelineModel(object):
 
         try:
             import pygraphviz
+
             pygraphviz
         except ImportError:
             raise ImportError(
                 "Could not import `pygraphviz`. Please install via: \n"
                 "pip install pygraphviz\n"
                 "(You might need to run this first: "
-                "apt install libgraphviz-dev graphviz )")
+                "apt install libgraphviz-dev graphviz )"
+            )
 
         graphviz = to_agraph(self.pipeline.graph)
         graphviz.layout("dot")
-        bits = graphviz.draw(path=None, format='svg')
+        bits = graphviz.draw(path=None, format="svg")
 
         encoded = b64encode(bits)
 

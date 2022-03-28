@@ -30,7 +30,7 @@ class QuestionGenerator:
         self.spacy_nlp = en_core_web_trf.load()
 
     def generate(
-        self, article, use_evaluator=True, num_questions=None, answer_style="all"
+        self, article, use_evaluator=True, num_questions=None, answer_style="sentences"
     ):
 
         print("Generating questions...\n")
