@@ -1,8 +1,9 @@
 import logging
-
-from haystack.retriever import ElasticsearchRetriever, DensePassageRetriever
 from typing import Optional
+
 from app.core.elasticsearch import get_search_term
+from haystack.nodes.retriever import (DensePassageRetriever,
+                                      ElasticsearchRetriever)
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +15,15 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
     SearchlibElasticsearchDocumentStore
     """
 
-    def run(self, root_node: str, params: dict, index: str = None, top_k: int = None):
-        body = params["payload"]
+    def run(
+        self,
+        root_node: str,
+        params: dict,
+        payload: dict = {},
+        index: str = None,
+        top_k: int = None,
+    ):
+        body = payload or params["payload"]
 
         # Support for QA-type
         query = body.get("query", None)
@@ -69,12 +77,13 @@ class RawDensePassageRetriever(DensePassageRetriever):
     def run(
         self,
         root_node: str,
+        payload: dict = {},
         params: Optional[dict] = {},
         index: str = None,
         top_k: int = None,
     ):
 
-        body = params["payload"]
+        body = payload or params["payload"]
         query = body.get("query", None)
         bodyparams = body.pop("params", {})
         # custom_query = body.get('custom_query', None)

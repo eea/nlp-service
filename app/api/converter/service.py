@@ -1,8 +1,9 @@
-from app.core.model import register_model
-from app.core.pipeline import PipelineModel     # , process_request
+import os
 import urllib.request
 from pathlib import Path
-import os
+
+from app.core.model import register_model
+from app.core.pipeline import PipelineModel  # , process_request
 
 
 @register_model("tika_model")
@@ -16,24 +17,16 @@ class TikaModel(PipelineModel):
         except Exception:
             raise
 
-        return {
-            "params": {
-                "Tika": {
-                    "file_paths": [Path(fpath)],
-                    "meta": {
-                        "id": url
-                    }
-                }
-            }
-        }
+        return {"params": {"Tika": {"file_paths": [Path(fpath)], "meta": {"id": url}}}}
 
     def _post_process(self, payload):
-        for fpath in payload['params']['Tika']['file_paths']:
+        for fpath in payload["params"]["Tika"]["file_paths"]:
             os.unlink(fpath.as_posix())
 
-        doc_id = payload['params']['Tika']['meta']['id']
+        doc_id = payload["params"]["Tika"]["meta"]["id"]
 
-        for doc in payload['documents']:
-            doc['id'] = doc_id
+        for doc in payload["documents"]:
+            doc["id"] = doc_id
+            doc["text"] = doc["content"]  # BBB
 
         return payload

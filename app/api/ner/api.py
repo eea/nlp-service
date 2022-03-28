@@ -4,11 +4,11 @@ See https://huggingface.co/cross-encoder/nli-roberta-base
 """
 
 import os
-from typing import List
+from typing import Any, List
 
 from pydantic import BaseModel
 
-sample_name = os.path.join(os.path.dirname(__file__), 'sample.txt')
+sample_name = os.path.join(os.path.dirname(__file__), "sample.txt")
 with open(sample_name) as f:
     sample_text = f.read().strip()
 
@@ -18,4 +18,4 @@ class NERRequest(BaseModel):
 
 
 class NERResponse(BaseModel):
-    entities: List[dict]
+    entities: List[Any]

@@ -4,7 +4,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import requests
-from haystack.file_converter.base import BaseConverter
+
+from haystack.nodes import TikaConverter
+from haystack.nodes.file_converter import BaseConverter
 from tika import parser as tikaparser
 
 logger = logging.getLogger(__name__)
@@ -153,5 +155,10 @@ class SearchTikaConverter(BaseConverter):
                 )
 
         text = "\f".join(cleaned_pages)
-        document = {"text": text, "meta": {**parsed["metadata"], **(meta or {})}}
-        return document
+        document = {
+            "content": text,
+            "content_type": "text",
+            "meta": {**parsed["metadata"], **(meta or {})},
+        }
+
+        return [document]

@@ -1,7 +1,10 @@
-from haystack.schema import BaseComponent
+import logging
 
-# import spacy
+from haystack.nodes.base import BaseComponent
 from spacy.lang.en import English
+
+logger = logging.getLogger(__name__)
+# import spacy
 
 
 class SearchlibQAAdapter(BaseComponent):
@@ -21,16 +24,29 @@ class SearchlibQAAdapter(BaseComponent):
         # answers = kwargs.pop('answers', [])
 
         document_map = {doc.id: doc for doc in documents}
-        output = {"documents": documents, "answers": answers}
 
-        for doc in answers:  # in-place mutation
+        output = {
+            "documents": documents,
+            "answers": [],
+        }
+
+        for doc in [a.to_dict() for a in answers if a.answer]:  # in-place mutation
             meta = doc.pop("meta", {})
             doc["source"] = meta
             doc["id"] = doc["document_id"]
-            doc["text"] = document_map[doc["id"]].text
+            if not doc["id"]:
+                logger.debug("Skipping an unknown document")
+                continue
+            doc["text"] = document_map[doc["id"]].content
             sdoc = self.nlp(doc["text"])
+            span = doc["offsets_in_document"][0]
+            start = span["start"]
+            end = span["end"]
+
             answer_span = sdoc.char_span(
-                doc["offset_start_in_doc"], doc["offset_end_in_doc"]
+                start,
+                end
+                # doc["offset_start_in_doc"], doc["offset_end_in_doc"]
             )
 
             if answer_span is None:
@@ -38,7 +54,11 @@ class SearchlibQAAdapter(BaseComponent):
 
             current_sent = answer_span.sent
 
-            sentences = list(sdoc.sents)
+            try:
+                sentences = list(sdoc.sents)
+            except Exception:
+                logger.exception("Error in Searchlib QA Adapter")
+                continue
             index = -1
             for i, sent in enumerate(sentences):
                 if sent == current_sent:
@@ -46,13 +66,17 @@ class SearchlibQAAdapter(BaseComponent):
 
             # TODO: there's a bug here in case the answer is multiple sentences.
 
-            full_context = sentences[
-                index > 0
-                and index - 1
-                or 0 : index == len(sentences) - 1
-                and len(sentences) - 1
-                or index + 1
-            ]
+            s = index > 0 and index - 1 or 0
+            e = index == len(sentences) - 1 and len(sentences) - 1 or index + 1
+            full_context = sentences[s:e]
+
+            doc["offset_start"] = start
+            doc["offset_end"] = end
             doc["full_context"] = " ".join([s.text for s in full_context])
+
+            if not (start or end):
+                continue
+
+            output["answers"].append(doc)
 
         return output, "output_1"
