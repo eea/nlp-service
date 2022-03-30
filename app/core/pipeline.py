@@ -2,9 +2,12 @@ import copy
 import json
 import time
 from base64 import b64encode
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from app.core.messages import NO_VALID_PAYLOAD
-from haystack.pipelines.base import Pipeline
+from haystack.pipelines.base import Pipeline as BasePipeline
+from haystack.pipelines.config import (get_component_definitions,
+                                       get_pipeline_definition)
 from loguru import logger
 from networkx.drawing.nx_agraph import to_agraph
 
@@ -34,28 +37,70 @@ def process_request(pipeline, request):
     return result
 
 
-def make_pipeline(pipeline_config, yaml_conf):
-    definitions = {}  # definitions of each component from the YAML.
-    component_definitions = copy.deepcopy(yaml_conf.get("components", []))
+class Pipeline(BasePipeline):
+    """A variant of Pipeline that does not call validate_config.
 
-    for definition in component_definitions:
-        Pipeline._overwrite_with_env_variables(definition)
-        name = definition.pop("name")
-        definitions[name] = definition
+    Based on haystack.pipelines.base.Pipeline.load_from_config
+    """
 
-    pipeline = Pipeline()
-
-    components: dict = {}  # instances of component objects.
-    for node_config in pipeline_config["nodes"]:
-        name = node_config["name"]
-        component = Pipeline._load_or_get_component(
-            name=name, definitions=definitions, components=components
+    @classmethod
+    def load_from_config(
+        cls,
+        pipeline_config: Dict,
+        pipeline_name: Optional[str] = None,
+        overwrite_with_env_variables: bool = True,
+    ):
+        pipeline_definition = get_pipeline_definition(
+            pipeline_config=pipeline_config, pipeline_name=pipeline_name
         )
-        pipeline.add_node(
-            component=component,
-            name=node_config["name"],
-            inputs=node_config.get("inputs", []),
+        component_definitions = get_component_definitions(
+            pipeline_config=pipeline_config,
+            overwrite_with_env_variables=overwrite_with_env_variables,
         )
+
+        pipeline = cls()
+
+        components: dict = {}  # instances of component objects.
+        for node in pipeline_definition["nodes"]:
+            name = node["name"]
+            component = cls._load_or_get_component(
+                name=name, definitions=component_definitions, components=components
+            )
+            pipeline.add_node(
+                component=component, name=name, inputs=node.get("inputs", [])
+            )
+
+        return pipeline
+
+
+def make_pipeline(pipeline_config, service_conf):
+    components = service_conf.get("components", [])
+
+    conf = dict(components=components, pipelines=[pipeline_config])
+
+    pipeline = Pipeline.load_from_config(conf, overwrite_with_env_variables=True)
+
+    # definitions = {}  # definitions of each component from the YAML.
+    # component_definitions = copy.deepcopy(yaml_conf.get("components", []))
+    #
+    # for definition in component_definitions:
+    #     Pipeline._overwrite_with_env_variables(definition)
+    #     name = definition.pop("name")
+    #     definitions[name] = definition
+    #
+    # pipeline = Pipeline()
+    #
+    # components: dict = {}  # instances of component objects.
+    # for node_config in pipeline_config["nodes"]:
+    #     name = node_config["name"]
+    #     component = Pipeline._load_or_get_component(
+    #         name=name, definitions=definitions, components=components
+    #     )
+    #     pipeline.add_node(
+    #         component=component,
+    #         name=node_config["name"],
+    #         inputs=node_config.get("inputs", []),
+    #     )
 
     return pipeline
 
