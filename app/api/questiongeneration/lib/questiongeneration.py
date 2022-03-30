@@ -17,7 +17,7 @@ class QuestionGenerator:
         QG_PRETRAINED = "iarfmoose/t5-base-question-generator"
         self.ANSWER_TOKEN = "<answer>"
         self.CONTEXT_TOKEN = "<context>"
-        self.SEQ_LENGTH = 512
+        self.SEQ_LENGTH = 100
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -265,7 +265,7 @@ class QAEvaluator:
     def __init__(self, model_dir=None):
 
         QAE_PRETRAINED = "iarfmoose/bert-base-cased-qa-evaluator"
-        self.SEQ_LENGTH = 512
+        self.SEQ_LENGTH = 100
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

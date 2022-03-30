@@ -6,7 +6,7 @@ https://docs.anaconda.com/anaconda/install/index.html
 
 https://linuxize.com/post/how-to-install-anaconda-on-ubuntu-20-04/
 
-Please note that after the installation there will be automatically created a conda  ``base`` environment  
+Please note that after the installation there will be automatically created a conda  ``base`` environment
 
 * **Clone the repository**
 
