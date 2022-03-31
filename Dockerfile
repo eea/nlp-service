@@ -1,23 +1,17 @@
 FROM nvcr.io/nvidia/tensorflow:21.08-tf2-py3
 
-COPY . /app
-
-#RUN curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
-#RUN bash Mambaforge-$(uname)-$(uname -m).sh -b
-
-#RUN ~/mambaforge/bin/mamba install pytorch cudatoolkit=10.2 tensorflow tensorflow-hub -c pytorch -y
+WORKDIR /app
 
 RUN apt update
 RUN apt install libgraphviz-dev graphviz -y
 
-RUN pip install https://github.com/deepset-ai/haystack/archive/refs/tags/v0.10.0.zip
-RUN pip install spacy[cuda102]
-WORKDIR /app
-RUN pip install -r requirements.txt
+COPY requirements/ /app/requirements/
+RUN pip install --no-cache-dir -c requirements/constraints.txt -r requirements/gpu.txt
 
 RUN python -m spacy download en_core_web_sm
 RUN python -m spacy download en_core_web_trf
 
+COPY . /app
 
 # define the default command to run when starting the container
 CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "app.main:app"]
