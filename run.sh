@@ -16,7 +16,10 @@ export SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX=data_searchui
 export SEARCH_SERVICES=search,qa,similarity
 #54125
 
-export SERVICES=question-generation
+export SERVICES=$SEARCH_SERVICES
+
+#embedding
+##question-generation
 #$SEARCH_SERVICES
 #search
 #embedding
