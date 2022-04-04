@@ -12,10 +12,17 @@ from loguru import logger
 from networkx.drawing.nx_agraph import to_agraph
 
 PIPELINES = {}
+COMPONENTS = {}
 
 
 def add_pipeline(name, pipeline):
     PIPELINES[name] = pipeline
+
+
+def add_components(components):
+    for component in components:
+        name = component["name"]
+        COMPONENTS[name] = component
 
 
 def process_request(pipeline, request):
@@ -161,3 +168,27 @@ class PipelineModel(object):
         encoded = b64encode(bits)
 
         return encoded
+
+
+class ComponentModel(object):
+    component_name = None
+
+    def __init__(self, component=None, pipeline=None):
+        component = component or self.component_name
+        component_config = COMPONENTS[component]
+
+        conf = dict(components=[component_config], pipelines=[])
+
+        component_definitions = get_component_definitions(
+            pipeline_config=conf,
+            overwrite_with_env_variables=True,
+        )
+        components = {}
+        for name in component_definitions:
+            c = BasePipeline._load_or_get_component(
+                name=name, definitions=component_definitions, components=components
+            )
+            components[name] = c
+
+        self.component = components[component]
+        logger.info("Initialized component:", self.component)
