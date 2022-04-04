@@ -1,9 +1,8 @@
 from typing import Callable
 
+from app.core.model import MODELS
 from fastapi import FastAPI
 from loguru import logger
-
-from app.core.model import MODELS
 
 
 def _startup_models(app: FastAPI) -> None:
@@ -12,11 +11,11 @@ def _startup_models(app: FastAPI) -> None:
         model = Model()
         setattr(app.state, name, model)
 
-        if not getattr(app.state, 'pipelines', None):
+        if not getattr(app.state, "pipelines", None):
             app.state.pipelines = {}
 
-        pipeline = getattr(model, 'pipeline_name', None)
-        if pipeline:
+        pipeline = getattr(model, "pipeline_name", None)
+        if pipeline and hasattr(model, "graph_pipeline"):
             graph = model.graph_pipeline()
             app.state.pipelines[pipeline] = graph
 

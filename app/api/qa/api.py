@@ -42,6 +42,8 @@ class Answer(BaseModel):
     source: Optional[Dict[str, Any]]
     meta: Optional[Dict[str, Any]]
 
+    original_answer: Optional[dict] = None
+
 
 class Response(BaseModel):
     query: str

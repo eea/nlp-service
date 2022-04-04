@@ -9,10 +9,11 @@ import yaml
 import fastapi_chameleon
 import uvicorn
 import venusian
+from app.api.system import router as sys_router
 from app.core import config
 from app.core.errors.http_error import http_error_handler
 from app.core.event_handlers import start_app_handler, stop_app_handler
-from app.core.pipeline import add_pipeline
+from app.core.pipeline import add_components, add_pipeline
 from app.views import router as views_router
 from fastapi import APIRouter, FastAPI, HTTPException
 from loguru import logger
@@ -106,9 +107,14 @@ def get_app() -> FastAPI:
         service_conf = config.overwrite_with_env_variables(service_conf, name)
 
         load_components(service_conf)
-        for pipeline_def in service_conf.get("pipelines", []):
-            pipeline_name = pipeline_def["name"]
-            add_pipeline(pipeline_name, [pipeline_def, service_conf])
+        pipelines = service_conf.get("pipelines", [])
+        if pipelines:
+            for pipeline_def in pipelines:
+                pipeline_name = pipeline_def["name"]
+                add_pipeline(pipeline_name, [pipeline_def, service_conf])
+        else:
+            components = service_conf.get("components", [])
+            add_components(components)
 
         pkg = service_conf.get("package", f"app.api.services.{name}")
         tags = service_conf.get("tags", [name])
@@ -120,6 +126,7 @@ def get_app() -> FastAPI:
         scanner.scan(module)
 
         api_router.include_router(module.routes.router, tags=tags, prefix=prefix)
+        api_router.include_router(sys_router.router, prefix="/sys")
 
         logger.info(f"Loading service <{name}> completed")
 

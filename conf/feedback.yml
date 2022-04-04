@@ -1,0 +1,23 @@
+version: '1.0'
+
+title: Feedback endpoint
+description: |
+  An endpoint to allow users to write feedback and correct classification on documents.
+
+package: app.api.feedback
+prefix: /feedback
+tags:
+  - qa
+
+components:
+  - name: FeedbackModel
+    type: SearchlibElasticsearchDocumentStore
+    params:
+      host: localhost
+      index: documents
+      label_index: data_searchui-feedback
+      create_index: true
+      content_field: "text"
+      embedding_field: "embedding"
+      search_fields: "*"
+      # name_field: "_id"

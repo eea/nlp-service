@@ -17,21 +17,20 @@ class QuestionGenerator:
         QG_PRETRAINED = "iarfmoose/t5-base-question-generator"
         self.ANSWER_TOKEN = "<answer>"
         self.CONTEXT_TOKEN = "<context>"
-        self.SEQ_LENGTH = 512
+        self.SEQ_LENGTH = 100
 
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.qg_tokenizer = AutoTokenizer.from_pretrained(
-            QG_PRETRAINED, use_fast=False)
+        self.qg_tokenizer = AutoTokenizer.from_pretrained(QG_PRETRAINED, use_fast=False)
         self.qg_model = AutoModelForSeq2SeqLM.from_pretrained(QG_PRETRAINED)
         self.qg_model.to(self.device)
 
         self.qa_evaluator = QAEvaluator(model_dir)
 
+        self.spacy_nlp = en_core_web_trf.load()
+
     def generate(
-        self, article, use_evaluator=True, num_questions=None,
-        answer_style="all"
+        self, article, use_evaluator=True, num_questions=None, answer_style="sentences"
     ):
 
         print("Generating questions...\n")
@@ -93,8 +92,7 @@ class QuestionGenerator:
 
         if answer_style == "multiple_choice" or answer_style == "all":
             sentences = self._split_text(text)
-            prepped_inputs, prepped_answers = self._prepare_qg_inputs_MC(
-                sentences)
+            prepped_inputs, prepped_answers = self._prepare_qg_inputs_MC(sentences)
             inputs.extend(prepped_inputs)
             answers.extend(prepped_answers)
 
@@ -155,9 +153,7 @@ class QuestionGenerator:
         return inputs, answers
 
     def _prepare_qg_inputs_MC(self, sentences):
-
-        spacy_nlp = en_core_web_trf.load()
-        docs = list(spacy_nlp.pipe(sentences, disable=["parser"]))
+        docs = list(self.spacy_nlp.pipe(sentences, disable=["parser"]))
         inputs_from_text = []
         answers_from_text = []
 
@@ -178,8 +174,7 @@ class QuestionGenerator:
 
         entities = []
         for doc in docs:
-            entities.extend([{"text": e.text, "label_": e.label_}
-                             for e in doc.ents])
+            entities.extend([{"text": e.text, "label_": e.label_} for e in doc.ents])
 
         # remove duplicate elements
         entities_json = [json.dumps(kv) for kv in entities]
@@ -193,8 +188,7 @@ class QuestionGenerator:
         correct_label = correct_answer.label_
         final_choices.append({"answer": correct_answer.text, "correct": True})
         pool.remove(
-            json.dumps({"text": correct_answer.text,
-                        "label_": correct_answer.label_})
+            json.dumps({"text": correct_answer.text, "label_": correct_answer.label_})
         )
 
         # find answers with the same NER label
@@ -218,16 +212,14 @@ class QuestionGenerator:
         self.qg_model.eval()
         encoded_input = self._encode_qg_input(qg_input)
         with torch.no_grad():
-            output = self.qg_model.generate(
-                input_ids=encoded_input["input_ids"])
-        question = self.qg_tokenizer.decode(
-            output[0], skip_special_tokens=True)
+            output = self.qg_model.generate(input_ids=encoded_input["input_ids"])
+        question = self.qg_tokenizer.decode(output[0], skip_special_tokens=True)
         return question
 
     def _encode_qg_input(self, qg_input):
         return self.qg_tokenizer(
             qg_input,
-            padding='max_length',
+            padding="max_length",
             max_length=self.SEQ_LENGTH,
             truncation=True,
             return_tensors="pt",
@@ -248,8 +240,7 @@ class QuestionGenerator:
         for i in range(num_questions):
             index = scores[i]
             qa = self._make_dict(
-                generated_questions[index].split(
-                    "?")[0] + "?", qg_answers[index]
+                generated_questions[index].split("?")[0] + "?", qg_answers[index]
             )
             qa_list.append(qa)
         return qa_list
@@ -274,10 +265,9 @@ class QAEvaluator:
     def __init__(self, model_dir=None):
 
         QAE_PRETRAINED = "iarfmoose/bert-base-cased-qa-evaluator"
-        self.SEQ_LENGTH = 512
+        self.SEQ_LENGTH = 100
 
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.qae_tokenizer = AutoTokenizer.from_pretrained(QAE_PRETRAINED)
         self.qae_model = AutoModelForSequenceClassification.from_pretrained(
@@ -346,15 +336,13 @@ def print_qa(qa_list, show_answers=True):
                     print(
                         "{}{}.".format(space + "   ", j + 1),
                         answer[j]["answer"],
-                        np.where(answer[j]["correct"] ==
-                                 True, "(correct)", ""),
+                        np.where(answer[j]["correct"] == True, "(correct)", ""),
                     )
 
             else:
                 print("{}A: 1.".format(space), answer[0]["answer"])
                 for j in range(1, len(answer)):
-                    print("{}{}.".format(space + "   ", j + 1),
-                          answer[j]["answer"])
+                    print("{}{}.".format(space + "   ", j + 1), answer[j]["answer"])
             print("")
 
         # print full sentence answers

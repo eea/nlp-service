@@ -20,11 +20,14 @@ from app.core.pipeline import PipelineModel
 class QuestionGenerationModelB(PipelineModel):
     def __init__(self):
         from .lib.questiongeneration import QuestionGenerator
+
         self.pipeline = QuestionGenerator()
 
     def predict(self, payload):
         prediction = self.pipeline.generate(
             payload.text,
-            num_questions=payload.num_questions)
+            num_questions=payload.num_questions,
+            answer_style=payload.answer_style,
+        )
 
         return {"text": payload.text, "questions": prediction}
