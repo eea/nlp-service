@@ -1,3 +1,4 @@
+import copy
 import logging
 
 from haystack.nodes.base import BaseComponent
@@ -31,6 +32,7 @@ class SearchlibQAAdapter(BaseComponent):
         }
 
         for doc in [a.to_dict() for a in answers if a.answer]:  # in-place mutation
+            doc["original_answer"] = copy.deepcopy(doc)
             meta = doc.pop("meta", {})
             doc["source"] = meta
             doc["id"] = doc["document_id"]
