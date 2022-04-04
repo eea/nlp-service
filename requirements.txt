@@ -219,3 +219,5 @@ pygraphviz==1.7 \
 pymilvus==1.1.2 \
     --hash=sha256:68cfa70931f9e0c0170edc90701dcfe8a12d26433f5bc6449e6a66fd4c2a6a57 \
     --hash=sha256:8622233c49aa9d27b84e6ee54f30d6370136a8ef4f2362b95d6499a21f5305c0
+matplotlib==3.5.1 \
+    --hash=sha256:b71f3a7ca935fc759f2aed7cec06cfe10bc3100fadb5dbd9c435b04e557971e1
