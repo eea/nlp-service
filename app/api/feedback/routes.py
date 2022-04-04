@@ -3,10 +3,10 @@ import logging
 from typing import Dict, Optional, Union
 
 from fastapi import APIRouter, Request
-from haystack.schema import Label
+from haystack.schema import Answer, Document, Label
 
-from .api import (CreateLabelSerialized, FeedbackResponse, FilterRequest,
-                  LabelSerialized)
+from .api import (CreateLabelSerialized, FeedbackRequest, FeedbackResponse,
+                  FilterRequest, LabelSerialized)
 
 router = APIRouter()
 
@@ -14,15 +14,39 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("", response_model=FeedbackResponse)
-def post_feedback(
-    feedback: Union[LabelSerialized, CreateLabelSerialized], request: Request
-):
+def post_feedback(feedback: FeedbackRequest, request: Request):
     DOCUMENT_STORE = request.app.state.feedback_document_store.component
 
-    if feedback.origin is None:
-        feedback.origin = "user-feedback"
+    # is_correct_answer: bool,
+    # is_correct_document: bool,
+    # origin: Literal["user-feedback", "gold-label"],
+    # answer: Optional[Answer],
+    # id: Optional[str] = None,
+    # no_answer: Optional[bool] = None,
+    # pipeline_id: Optional[str] = None,
+    # created_at: Optional[str] = None,
+    # updated_at: Optional[str] = None,
+    # meta: Optional[dict] = None,
+    # filters: Optional[dict] = None,
 
-    label = Label(**feedback.dict())
+    document = Document(id=feedback.document_id, content=feedback.context)
+    answer = Answer(
+        document_id=feedback.document_id,
+        answer=feedback.answer,
+        context=feedback.context,
+        score=feedback.score,
+        offsets_in_document=feedback.offsets_in_document,
+    )
+    props = dict(
+        query=feedback.question,
+        document=document,
+        answer=answer,
+        is_correct_answer=feedback.is_correct_answer,
+        is_correct_document=feedback.is_correct_document,
+        origin="user-feedback",
+    )
+
+    label = Label(**props)
     DOCUMENT_STORE.write_labels([label])
 
 

@@ -44,3 +44,19 @@ class CreateLabelSerialized(BaseModel):
 
 class FilterRequest(BaseModel):
     filters: Optional[Dict[str, Optional[Union[str, List[str]]]]] = None
+
+
+class FeedbackRequest(BaseModel):
+    answer: str
+    question: str
+    context: str
+    document_id: str
+    score: Optional[float]
+    is_correct_answer: bool
+    is_correct_document: bool
+    no_answer: Optional[bool] = None
+    offsets_in_context: Optional[list]
+    offsets_in_document: Optional[list]
+    origin: str = "user-feedback"
+
+    # document: DocumentSerialized

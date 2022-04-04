@@ -14,7 +14,8 @@ components:
     type: SearchlibElasticsearchDocumentStore
     params:
       host: localhost
-      index: data_searchui-feedback
+      index: documents
+      label_index: data_searchui-feedback
       create_index: true
       content_field: "text"
       embedding_field: "embedding"
