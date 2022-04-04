@@ -1,7 +1,6 @@
 import haystack.ranker  # noqa // register these components
 
 from .embedding import EmbeddingModel
-from .feedback import FeedbackModel
 from .searchlib.documentstore import SearchlibElasticsearchDocumentStore
 from .searchlib.question import Category, ElasticSearchRequestClassifier
 # from .searchlib.ranker import RawFARMRanker
@@ -27,5 +26,4 @@ __all__ = [
     SentenceTransformer,
     SpacyModel,
     TransformersPipeline,
-    FeedbackModel,
 ]
