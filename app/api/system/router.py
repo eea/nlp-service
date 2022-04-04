@@ -1,6 +1,5 @@
 from importlib.metadata import version
 
-import app
 from fastapi import APIRouter
 
 router = APIRouter()
