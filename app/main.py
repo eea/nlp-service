@@ -9,6 +9,7 @@ import yaml
 import fastapi_chameleon
 import uvicorn
 import venusian
+from app.api.system import router as sys_router
 from app.core import config
 from app.core.errors.http_error import http_error_handler
 from app.core.event_handlers import start_app_handler, stop_app_handler
@@ -125,6 +126,7 @@ def get_app() -> FastAPI:
         scanner.scan(module)
 
         api_router.include_router(module.routes.router, tags=tags, prefix=prefix)
+        api_router.include_router(sys_router.router, prefix="/sys")
 
         logger.info(f"Loading service <{name}> completed")
 
