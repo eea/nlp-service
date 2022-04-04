@@ -36,7 +36,7 @@ Information submitted through this endpoint is used to train the underlying QA m
 """
 
 
-@router.get("/feedback")
+@router.get("")
 def get_feedback(request: Request):
     """
     This endpoint allows the API user to retrieve all the feedback that has been submitted
@@ -47,7 +47,7 @@ def get_feedback(request: Request):
     return labels
 
 
-@router.delete("/feedback")
+@router.delete("")
 def delete_feedback(request: Request):
     """
     This endpoint allows the API user to delete all the
