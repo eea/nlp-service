@@ -44,10 +44,12 @@ def post_feedback(feedback: FeedbackRequest, request: Request):
         is_correct_answer=feedback.is_correct_answer,
         is_correct_document=feedback.is_correct_document,
         origin="user-feedback",
+        meta=feedback.meta or {},
     )
 
     label = Label(**props)
     DOCUMENT_STORE.write_labels([label])
+    return {}
 
 
 post_feedback.__doc__ = """

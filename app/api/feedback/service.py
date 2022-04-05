@@ -4,5 +4,5 @@ from app.core.pipeline import ComponentModel
 
 @register_model("feedback_document_store")
 class FeedbackDocumentStore(ComponentModel):
-    component_name = "FeedbackModel"
+    component_name = "FeedbackStore"
     pipeline_name = "feedback"

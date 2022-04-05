@@ -10,7 +10,7 @@ tags:
   - qa
 
 components:
-  - name: FeedbackModel
+  - name: FeedbackStore
     type: SearchlibElasticsearchDocumentStore
     params:
       host: localhost

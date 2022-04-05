@@ -58,5 +58,6 @@ class FeedbackRequest(BaseModel):
     offsets_in_context: Optional[list]
     offsets_in_document: Optional[list]
     origin: str = "user-feedback"
+    meta: Optional[dict]
 
     # document: DocumentSerialized
