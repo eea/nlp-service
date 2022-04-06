@@ -154,7 +154,7 @@ def get_app() -> FastAPI:
     fast_app.add_event_handler("startup", startup_tests)
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
 
-    static_media_path = os.env.get("STATIC_MEDIA")
+    static_media_path = os.environ.get("STATIC_MEDIA")
     if static_media_path:
         if not os.path.exists(static_media_path):
             os.mkdir(static_media_path)

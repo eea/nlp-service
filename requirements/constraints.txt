@@ -1,5 +1,6 @@
 absl-py==1.0.0
 aiocontextvars==0.2.2
+aiofiles==0.8.0
 alembic==1.4.1
 anyio==3.5.0
 asgiref==3.5.0
