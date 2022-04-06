@@ -16,6 +16,7 @@ from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.core.pipeline import add_components, add_pipeline
 from app.views import router as views_router
 from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.middleware.cors import CORSMiddleware
 
@@ -152,6 +153,12 @@ def get_app() -> FastAPI:
     fast_app.add_event_handler("startup", startup)
     fast_app.add_event_handler("startup", startup_tests)
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
+
+    static_media_path = os.env.get("STATIC_MEDIA")
+    if static_media_path:
+        if not os.path.exists(static_media_path):
+            os.mkdir(static_media_path)
+        app.mount("/static", StaticFiles(directory=static_media_path), name="static")
 
     if config.IS_DEBUG:
         logger.info("See http://127.0.0.1:8000/docs for Swagger API Documentation.")
