@@ -1,3 +1,4 @@
+aiofiles  # Used by starlette but not correctly declared as dependency
 aiocontextvars
 contextvars
 farm-haystack
