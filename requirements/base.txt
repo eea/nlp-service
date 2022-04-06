@@ -1,0 +1,16 @@
+aiocontextvars
+contextvars
+farm-haystack
+fastapi
+fastapi-chameleon
+jq
+loguru
+numpy
+pydantic
+pygraphviz
+pymilvus
+tensorflow
+tensorflow-hub
+torch
+uvicorn
+venusian

@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 class QuestionGenerationRequest(BaseModel):
     num_questions: int = 10
+    answer_style: Literal["all", "sentences", "multiple_choice"] = "sentences"
     text: str = """With 77 % of European external trade and 35 % of all trade by value between EU Member States moved by sea, maritime transport is a key part of the international supply chain. Despite a drop in shipping activity in 2020 due to the effects of the COVID-19 pandemic, the sector is expected to grow strongly over the coming decades, fueled by rising demand for primary resources and container shipping.
 
 Against this background, the European Maritime Transport Environmental Report, launched today by the European Environment Agency and the European Maritime Safety Agency, marks the first comprehensive health-check of the sector. The report shows that ships produce 13.5 % of all greenhouse gas emissions from transport in the EU, behind emissions from road transport (71 %) and aviation (14.4 %). Sulphur dioxide (SO2) emissions from ships calling in European ports amounted to approximately 1.63 million tonnes in 2019, a figure which is expected to fall further over the coming decades due to stricter environmental rules and measures.
