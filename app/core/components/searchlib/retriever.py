@@ -45,7 +45,7 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             body["custom_query"] = custom_query  # ['query']
 
         if isinstance(query, str):
-            body["query"] = {"match": {"text": body["query"]}}
+            body["query"] = {"match": {"fulltext": body["query"]}}
 
         if index:
             body["index"] = index
@@ -82,7 +82,6 @@ class RawDensePassageRetriever(DensePassageRetriever):
         index: str = None,
         top_k: int = None,
     ):
-
         body = payload or params["payload"]
         query = body.get("query", None)
         bodyparams = body.pop("params", {})

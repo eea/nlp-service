@@ -30,6 +30,9 @@ INDEXING_PIPELINE_NAME = os.getenv("INDEXING_PIPELINE_NAME", "indexing")
 QUESTION_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "question")
 SUMMARIZER_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "summarizer")
 
+# TODO: figure out a way to determine what the best size for this is
+NLP_FIELD = os.getenv("NLP_FIELD", "nlp_250")
+
 
 FILE_UPLOAD_PATH = os.getenv("FILE_UPLOAD_PATH", "./file-upload")
 

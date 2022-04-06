@@ -12,9 +12,9 @@ components:
     type: SearchlibElasticsearchDocumentStore
     params:
       host: localhost
-      index: data_searchui-documents
+      index: data_searchui
       create_index: false
-      content_field: "text"
+      content_field: "fulltext"
       embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
