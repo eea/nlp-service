@@ -128,10 +128,55 @@ payload = {
     "track_total_hits": True,
 }
 
+dp_payload = {
+    **payload,
+    "params": {
+        "use_dp": True,
+        "query": "Where can I access greenhouse gas data?",
+        "custom_query": payload["query"],
+    },
+    "query": None,
+}
+
+dp_payload_no_custom_query = {
+    **payload,
+    "params": {
+        "use_dp": True,
+        "query": "Where can I access greenhouse gas data?",
+    },
+    "query": None,
+}
+
 
 def test_search(api_server):
     url = f"{api_server}/_search"
     resp = requests.post(url, json=payload)
+    data = resp.json()
+    assert len(data["hits"]["hits"]) > 0
+
+    doc = data["hits"]["hits"][0]
+
+    assert doc["_id"]
+    assert doc["_source"]
+    assert doc["highlight"]
+
+
+def test_dp_search(api_server):
+    url = f"{api_server}/_search"
+    resp = requests.post(url, json=dp_payload)
+    data = resp.json()
+    assert len(data["hits"]["hits"]) > 0
+
+    doc = data["hits"]["hits"][0]
+
+    assert doc["_id"]
+    assert doc["_source"]
+    assert doc["highlight"]
+
+
+def test_dp_search_no_custom_query(api_server):
+    url = f"{api_server}/_search"
+    resp = requests.post(url, json=dp_payload_no_custom_query)
     data = resp.json()
     assert len(data["hits"]["hits"]) > 0
 

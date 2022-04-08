@@ -134,6 +134,47 @@ pipelines:
 
       - name: RawRetrieverWithQuery
         inputs: [CategoryDeclarativeQuery]
+  - name: dp_search
+    type: Query
+    nodes:
+      - name: RequestClassifier
+        inputs: [Query]
+
+      - name: CategoryMetadataRequest
+        inputs: [RequestClassifier.output_1]
+
+      - name: CategoryQueryRequest
+        inputs: [RequestClassifier.output_2]
+
+      - name: RawRetriever
+        inputs: [CategoryMetadataRequest]
+
+      - name: QueryClassifier
+        inputs: [CategoryQueryRequest]
+
+      - name: CategoryKeywordQuery
+        inputs: [QueryClassifier.output_2]
+
+      - name: DensePassageRetriever
+        inputs: [CategoryKeywordQuery]
+
+      # - name: Ranker
+      #   inputs: [RawRetrieverWithQuery]
+
+      - name: QuestionStatementQueryClassifier
+        inputs: [QueryClassifier.output_1]
+
+      - name: CategoryInterrogativeQuery
+        inputs: [QuestionStatementQueryClassifier.output_1]
+
+      - name: CategoryDeclarativeQuery
+        inputs: [QuestionStatementQueryClassifier.output_2]
+
+      - name: DensePassageRetriever
+        inputs: [CategoryInterrogativeQuery]
+
+      - name: DensePassageRetriever
+        inputs: [CategoryDeclarativeQuery]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml
