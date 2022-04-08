@@ -12,8 +12,10 @@ QUERY_MATCH_TEXT = jq.compile(
 def get_search_term(body):
     """ Extract the text search term from an ES query
     """
+    if isinstance(body, str):
+        return body
 
-    strategies = [QUERY_MATCH_TEXT, QUERY_MATCH_ALL, QUERY_SIMPLE_MATCH]
+    strategies = [QUERY_MATCH_TEXT, QUERY_MATCH_ALL, QUERY_SIMPLE_MATCH, "query"]
     search_term = ""
 
     for compiled in strategies:
