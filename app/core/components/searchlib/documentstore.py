@@ -261,6 +261,8 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         sort: Optional[Any] = None,
         track_total_hits: Optional[bool] = True,
         explain: Optional[bool] = False,
+        _source: Optional[dict] = None,
+        suggest: Optional[dict] = None,
     ) -> List[Document]:
         if index is None:
             index = self.index
@@ -302,6 +304,12 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
             if explain is not None:
                 body["explain"] = explain
+
+            if _source:
+                body["_source"] = _source
+
+            if suggest is not None:
+                body["suggest"] = suggest
 
             if self.excluded_meta_data:
                 body["_source"] = {"excludes": self.excluded_meta_data}
