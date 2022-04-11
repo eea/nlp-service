@@ -2,7 +2,7 @@ import copy
 import json
 import time
 from base64 import b64encode
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, Optional
 
 from app.core.messages import NO_VALID_PAYLOAD
 from haystack.pipelines.base import Pipeline as BasePipeline
@@ -19,10 +19,32 @@ def add_pipeline(name, pipeline):
     PIPELINES[name] = pipeline
 
 
-def add_components(components):
-    for component in components:
-        name = component["name"]
-        COMPONENTS[name] = component
+# def add_components(components):
+#     for component in components:
+#         name = component["name"]
+#         COMPONENTS[name] = component
+
+
+def load_components(config, components):
+    """Instantiate components based on a configuration"""
+
+    from haystack.nodes.base import BaseComponent
+
+    for definition in config.get("components", []):
+        copied = copy.deepcopy(definition)
+        name = copied.pop("name")
+        params = copied.get("params", {})
+
+        # loads references to other components
+        for k, v in params.items():
+            if isinstance(v, str) and v in components:
+                params[k] = components[v]
+
+        try:
+            components[name] = BaseComponent.load_from_args(copied["type"], **params)
+        except Exception:
+            print(f"Error loading: (${copied['type']}) with params: ${params}")
+            raise
 
 
 def process_request(pipeline, request):
@@ -87,32 +109,15 @@ def make_pipeline(pipeline_config, service_conf):
 
     pipeline = Pipeline.load_from_config(conf, overwrite_with_env_variables=True)
 
-    # definitions = {}  # definitions of each component from the YAML.
-    # component_definitions = copy.deepcopy(yaml_conf.get("components", []))
-    #
-    # for definition in component_definitions:
-    #     Pipeline._overwrite_with_env_variables(definition)
-    #     name = definition.pop("name")
-    #     definitions[name] = definition
-    #
-    # pipeline = Pipeline()
-    #
-    # components: dict = {}  # instances of component objects.
-    # for node_config in pipeline_config["nodes"]:
-    #     name = node_config["name"]
-    #     component = Pipeline._load_or_get_component(
-    #         name=name, definitions=definitions, components=components
-    #     )
-    #     pipeline.add_node(
-    #         component=component,
-    #         name=node_config["name"],
-    #         inputs=node_config.get("inputs", []),
-    #     )
-
     return pipeline
 
 
 class PipelineModel(object):
+    """A component that can be instantiated as a singleton model.
+
+    It uses a declared Pipeline to process (and identifies is based on name)
+    """
+
     pipeline = None
     pipeline_name = None
 

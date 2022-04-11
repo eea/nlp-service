@@ -21,11 +21,11 @@ def query(payload: QA_Request, request: Request):
         stage_1 = qa_model.predict(payload)
 
     return stage_1
+
     # return {
     #     "query": stage_1["query"],
     #     "answers": stage_1["answers"],
     # }
-
     # stage_2 = request.app.state.similarity_model.clusterize_answers(stage_1)
     #
     # # desired output in clusterized:
