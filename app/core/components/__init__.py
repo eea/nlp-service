@@ -2,6 +2,7 @@ import haystack.ranker  # noqa // register these components
 
 from .embedding import EmbeddingModel
 from .searchlib.documentstore import SearchlibElasticsearchDocumentStore
+from .searchlib.querysearch import QuerySearchModel
 from .searchlib.question import Category, ElasticSearchRequestClassifier
 # from .searchlib.ranker import RawFARMRanker
 from .searchlib.reader import SearchlibQAAdapter
@@ -26,4 +27,5 @@ __all__ = [
     SentenceTransformer,
     SpacyModel,
     TransformersPipeline,
+    QuerySearchModel,
 ]

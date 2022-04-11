@@ -21,8 +21,8 @@ export FEEDBACK_FEEDBACKSTORE_PARAMS_CREATE_INDEX=True
 
 export SEARCH_SERVICES=search,qa,similarity,feedback
 #54125
-
-export SERVICES=$SEARCH_SERVICES
+#$SEARCH_SERVICES
+export SERVICES=qasearch
 
 #embedding
 ##question-generation
