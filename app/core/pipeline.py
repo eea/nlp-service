@@ -13,16 +13,17 @@ from networkx.drawing.nx_agraph import to_agraph
 
 PIPELINES = {}
 COMPONENTS = {}
+COMPONENTS_CONFIG = {}
 
 
 def add_pipeline(name, pipeline):
     PIPELINES[name] = pipeline
 
 
-# def add_components(components):
-#     for component in components:
-#         name = component["name"]
-#         COMPONENTS[name] = component
+def add_components_config(components):
+    for component in components:
+        name = component["name"]
+        COMPONENTS_CONFIG[name] = component
 
 
 def load_components(config, components):
@@ -89,11 +90,11 @@ class Pipeline(BasePipeline):
 
         pipeline = cls()
 
-        components: dict = {}  # instances of component objects.
+        # components: dict = {}  # instances of component objects.
         for node in pipeline_definition["nodes"]:
             name = node["name"]
             component = cls._load_or_get_component(
-                name=name, definitions=component_definitions, components=components
+                name=name, definitions=component_definitions, components=COMPONENTS
             )
             pipeline.add_node(
                 component=component, name=name, inputs=node.get("inputs", [])
@@ -180,7 +181,7 @@ class ComponentModel(object):
 
     def __init__(self, component=None, pipeline=None):
         component = component or self.component_name
-        component_config = COMPONENTS[component]
+        component_config = COMPONENTS_CONFIG[component]
 
         conf = dict(components=[component_config], pipelines=[])
 
@@ -190,8 +191,13 @@ class ComponentModel(object):
         )
         components = {}
         for name in component_definitions:
+            # if name not in COMPONENTS:
+            #     import pdb
+            #
+            #     pdb.set_trace()
+
             c = BasePipeline._load_or_get_component(
-                name=name, definitions=component_definitions, components=components
+                name=name, definitions=component_definitions, components=COMPONENTS
             )
             components[name] = c
 
