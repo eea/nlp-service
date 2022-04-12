@@ -3,7 +3,7 @@ version: '1.0'
 package: app.api.qasearch
 tags:
   - qa
-prefix: /querysearch
+prefix: /_search
 description: |
   A service that combines search and QA
 
@@ -12,4 +12,4 @@ components:
     type: QuerySearchModel
     params:
       search_pipeline: "search"
-      qa_pipeline: "query"
+      qa_pipeline: "qa"

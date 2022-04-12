@@ -8,5 +8,5 @@ class QuerySearchModel(BaseComponent):
         self.search_pipeline = search_pipeline
         self.qa_pipeline = qa_pipeline
 
-    def run(self, *args, **kwargs):
-        pass
+    def run(self, payload):
+        return

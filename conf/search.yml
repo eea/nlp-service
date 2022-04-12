@@ -8,7 +8,7 @@ description: |
 package: app.api.search
 tags:
   - semanticsearch
-prefix: /_search
+prefix: /_search_classic
 
 components:    # define all the building-blocks for Pipeline
   - name: FacetedDocumentStore
@@ -22,16 +22,16 @@ components:    # define all the building-blocks for Pipeline
       search_fields: "*"
       name_field: "_id"
 
-  - name: HaystackDocumentStore
-    type: SearchlibElasticsearchDocumentStore
-    params:
-      host: localhost
-      index: data_searchui-documents
-      create_index: false
-      content_field: "text"
-      embedding_field: "embedding"
-      search_fields: "*"
-      name_field: "_id"
+  # - name: HaystackDocumentStore
+  #   type: SearchlibElasticsearchDocumentStore
+  #   params:
+  #     host: localhost
+  #     index: data_searchui-documents
+  #     create_index: false
+  #     content_field: "text"
+  #     embedding_field: "embedding"
+  #     search_fields: "*"
+  #     name_field: "_id"
 
   - name: RequestClassifier
     type: ElasticSearchRequestClassifier
@@ -49,7 +49,8 @@ components:    # define all the building-blocks for Pipeline
   - name: DensePassageRetriever
     type: RawDensePassageRetriever
     params:
-      document_store: HaystackDocumentStore
+      # document_store: HaystackDocumentStore
+      document_store: FacetedDocumentStore
 
   # - name: Ranker
   #   type: RawFARMRanker
@@ -134,6 +135,7 @@ pipelines:
 
       - name: RawRetrieverWithQuery
         inputs: [CategoryDeclarativeQuery]
+
   - name: dp_search
     type: Query
     nodes:
