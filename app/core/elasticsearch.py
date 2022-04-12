@@ -3,19 +3,18 @@
 
 import jq
 
-QUERY_SIMPLE_MATCH = jq.compile('.match.text')
-QUERY_MATCH_ALL = jq.compile('.function_score.query.bool.must[].match_all')
-QUERY_MATCH_TEXT = jq.compile(
-    '.function_score.query.bool.must[].multi_match.query')
+QUERY_SIMPLE_MATCH = jq.compile(".match.text")
+QUERY_MATCH_ALL = jq.compile(".function_score.query.bool.must[].match_all")
+QUERY_MATCH_TEXT = jq.compile(".function_score.query.bool.must[].multi_match.query")
+QUERY_QUERY = jq.compile(".query")
 
 
 def get_search_term(body):
-    """ Extract the text search term from an ES query
-    """
+    """Extract the text search term from an ES query"""
     if isinstance(body, str):
         return body
 
-    strategies = [QUERY_MATCH_TEXT, QUERY_MATCH_ALL, QUERY_SIMPLE_MATCH, "query"]
+    strategies = [QUERY_MATCH_TEXT, QUERY_MATCH_ALL, QUERY_SIMPLE_MATCH, QUERY_QUERY]
     search_term = ""
 
     for compiled in strategies:

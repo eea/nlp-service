@@ -18,7 +18,7 @@ def query(payload: QA_Request, request: Request):
         qa_model = request.app.state.qa
 
     with concurrency_limiter.run():
-        stage_1 = qa_model.predict(payload)
+        stage_1 = qa_model.predict(payload.dict())
 
     return stage_1
 

@@ -8,7 +8,7 @@ description: |
   Based on the search term query, it extracts answers from the ES results
 
 components:
-  - name: DocumentStore
+  - name: FacetedDocumentStore
     type: SearchlibElasticsearchDocumentStore
     params:
       host: localhost
@@ -22,17 +22,17 @@ components:
   - name: RawRetriever
     type: RawElasticsearchRetriever
     params:
-      document_store: DocumentStore
+      document_store: FacetedDocumentStore
 
   - name: DensePassageRetriever
     type: RawDensePassageRetriever
     params:
-      document_store: DocumentStore
+      document_store: FacetedDocumentStore
 
   - name: ESHit2HaystackDoc
     type: ESHit2HaystackDoc
     params:
-      document_store: DocumentStore
+      document_store: FacetedDocumentStore
 
   - name: AnswerExtraction
     type: TransformersReader

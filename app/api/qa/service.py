@@ -8,8 +8,8 @@ class QAModel(PipelineModel):
     pipeline_name = QUERY_PIPELINE_NAME
 
     def _pre_process(self, payload):
-        body = payload.dict()
-        params = body.get("params", {})
+        # body = payload.dict()
+        params = payload.get("params", {})
 
         params.pop("DensePassageRetriever", {})
 
@@ -18,7 +18,7 @@ class QAModel(PipelineModel):
 
         res = {
             "params": {
-                "payload": body,
+                "payload": payload,
                 "RawRetriever": RawRetriever,
                 "AnswerExtraction": AnswerExtraction,
             }
@@ -32,10 +32,9 @@ class QADPModel(PipelineModel):
     pipeline_name = DP_QUERY_PIPELINE_NAME
 
     def _pre_process(self, payload):
-        body = payload.dict()
-        params = body.pop("params") or {}
+        params = payload.pop("params") or {}
         if not params.get("query"):
-            params["query"] = body["query"]
+            params["query"] = payload["query"]
 
         params.pop("RawRetriever", {})
 

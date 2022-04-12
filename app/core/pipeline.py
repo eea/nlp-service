@@ -41,11 +41,14 @@ def load_components(config, components):
             if isinstance(v, str) and v in components:
                 params[k] = components[v]
 
-        try:
-            components[name] = BaseComponent.load_from_args(copied["type"], **params)
-        except Exception:
-            print(f"Error loading: (${copied['type']}) with params: ${params}")
-            raise
+        if not name in components:
+            try:
+                components[name] = BaseComponent.load_from_args(
+                    copied["type"], **params
+                )
+            except Exception:
+                print(f"Error loading: (${copied['type']}) with params: ${params}")
+                raise
 
 
 def process_request(pipeline, request):
@@ -191,11 +194,6 @@ class ComponentModel(object):
         )
         components = {}
         for name in component_definitions:
-            # if name not in COMPONENTS:
-            #     import pdb
-            #
-            #     pdb.set_trace()
-
             c = BasePipeline._load_or_get_component(
                 name=name, definitions=component_definitions, components=COMPONENTS
             )
