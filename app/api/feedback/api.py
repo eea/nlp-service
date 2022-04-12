@@ -7,7 +7,7 @@ from pydantic import BaseModel, Extra
 class FeedbackResponse(BaseModel):
     """ """
 
-    status: str = Literal["ok"]
+    status: Literal["ok", "error"] = "ok"
 
 
 class AnswerSerialized(Answer):
