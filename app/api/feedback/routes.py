@@ -239,7 +239,7 @@ def export_feedback(
 
     export = {"data": export_data}
 
-    static_media_path = os.env.get("STATIC_MEDIA", "var")
+    static_media_path = os.environ.get("STATIC_MEDIA", "var")
 
     dest = os.path.join(static_media_path, "feedback_squad_direct.json")
     with open(dest, "w", encoding="utf8") as f:
