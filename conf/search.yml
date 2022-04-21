@@ -17,7 +17,7 @@ components:    # define all the building-blocks for Pipeline
       host: localhost
       index: data_searchui
       create_index: false
-      content_field: "fulltext"
+      content_field: "text"
       embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
@@ -41,10 +41,10 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: FacetedDocumentStore
 
-  - name: RawRetrieverWithQuery
-    type: RawElasticsearchRetriever
-    params:
-      document_store: FacetedDocumentStore
+  # - name: RawRetrieverWithQuery
+  #   type: RawElasticsearchRetriever
+  #   params:
+  #     document_store: FacetedDocumentStore
 
   - name: DensePassageRetriever
     type: RawDensePassageRetriever
@@ -83,6 +83,9 @@ components:    # define all the building-blocks for Pipeline
     params:
       category: "request:query"
 
+  - name: DPRequestClassifier
+    type: DPRequestClassifier
+
   - name: QueryClassifier
     type: TransformersQueryClassifier
     params:
@@ -109,74 +112,83 @@ pipelines:
       - name: RawRetriever
         inputs: [CategoryMetadataRequest]
 
-      - name: QueryClassifier
+      - name: DPRequestClassifier
         inputs: [CategoryQueryRequest]
-
-      - name: CategoryKeywordQuery
-        inputs: [QueryClassifier.output_2]
-
-      - name: RawRetrieverWithQuery
-        inputs: [CategoryKeywordQuery]
-
-      # - name: Ranker
-      #   inputs: [RawRetrieverWithQuery]
-
-      - name: QuestionStatementQueryClassifier
-        inputs: [QueryClassifier.output_1]
-
-      - name: CategoryInterrogativeQuery
-        inputs: [QuestionStatementQueryClassifier.output_1]
-
-      - name: CategoryDeclarativeQuery
-        inputs: [QuestionStatementQueryClassifier.output_2]
-
-      - name: RawRetrieverWithQuery
-        inputs: [CategoryInterrogativeQuery]
-
-      - name: RawRetrieverWithQuery
-        inputs: [CategoryDeclarativeQuery]
-
-  - name: dp_search
-    type: Query
-    nodes:
-      - name: RequestClassifier
-        inputs: [Query]
-
-      - name: CategoryMetadataRequest
-        inputs: [RequestClassifier.output_1]
-
-      - name: CategoryQueryRequest
-        inputs: [RequestClassifier.output_2]
 
       - name: RawRetriever
-        inputs: [CategoryMetadataRequest]
-
-      - name: QueryClassifier
-        inputs: [CategoryQueryRequest]
-
-      - name: CategoryKeywordQuery
-        inputs: [QueryClassifier.output_2]
+        inputs: [DPRequestClassifier.output_1]
 
       - name: DensePassageRetriever
-        inputs: [CategoryKeywordQuery]
+        inputs: [DPRequestClassifier.output_2]
 
-      # - name: Ranker
-      #   inputs: [RawRetrieverWithQuery]
+      # - name: QueryClassifier
+      #   inputs: [CategoryQueryRequest]
+      #
+      # - name: CategoryKeywordQuery
+      #   inputs: [QueryClassifier.output_2]
+      #
+      # - name: RawRetrieverWithQuery
+      #   inputs: [CategoryKeywordQuery]
+      #
+      # # - name: Ranker
+      # #   inputs: [RawRetrieverWithQuery]
+      #
+      # - name: QuestionStatementQueryClassifier
+      #   inputs: [QueryClassifier.output_1]
+      #
+      # - name: CategoryInterrogativeQuery
+      #   inputs: [QuestionStatementQueryClassifier.output_1]
+      #
+      # - name: CategoryDeclarativeQuery
+      #   inputs: [QuestionStatementQueryClassifier.output_2]
+      #
+      # - name: RawRetrieverWithQuery
+      #   inputs: [CategoryInterrogativeQuery]
+      #
+      # - name: RawRetrieverWithQuery
+      #   inputs: [CategoryDeclarativeQuery]
 
-      - name: QuestionStatementQueryClassifier
-        inputs: [QueryClassifier.output_1]
-
-      - name: CategoryInterrogativeQuery
-        inputs: [QuestionStatementQueryClassifier.output_1]
-
-      - name: CategoryDeclarativeQuery
-        inputs: [QuestionStatementQueryClassifier.output_2]
-
-      - name: DensePassageRetriever
-        inputs: [CategoryInterrogativeQuery]
-
-      - name: DensePassageRetriever
-        inputs: [CategoryDeclarativeQuery]
+  # - name: dp_search
+  #   type: Query
+  #   nodes:
+  #     - name: RequestClassifier
+  #       inputs: [Query]
+  #
+  #     - name: CategoryMetadataRequest
+  #       inputs: [RequestClassifier.output_1]
+  #
+  #     - name: CategoryQueryRequest
+  #       inputs: [RequestClassifier.output_2]
+  #
+  #     - name: RawRetriever
+  #       inputs: [CategoryMetadataRequest]
+  #
+  #     - name: QueryClassifier
+  #       inputs: [CategoryQueryRequest]
+  #
+  #     - name: CategoryKeywordQuery
+  #       inputs: [QueryClassifier.output_2]
+  #
+  #     - name: DensePassageRetriever
+  #       inputs: [CategoryKeywordQuery]
+  #
+  #     # - name: Ranker
+  #     #   inputs: [RawRetrieverWithQuery]
+  #
+  #     - name: QuestionStatementQueryClassifier
+  #       inputs: [QueryClassifier.output_1]
+  #
+  #     - name: CategoryInterrogativeQuery
+  #       inputs: [QuestionStatementQueryClassifier.output_1]
+  #
+  #     - name: CategoryDeclarativeQuery
+  #       inputs: [QuestionStatementQueryClassifier.output_2]
+  #
+  #     - name: DensePassageRetriever
+  #       inputs: [CategoryInterrogativeQuery]
+  #
+  #     - name: DensePassageRetriever
+  #       inputs: [CategoryDeclarativeQuery]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml

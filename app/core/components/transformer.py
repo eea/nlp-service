@@ -2,6 +2,8 @@ from haystack.nodes.base import BaseComponent
 
 
 class TransformersPipeline(BaseComponent):
+    outgoing_edges = 1
+
     def __init__(self, *args, **kwargs):
         from transformers import pipeline
 
@@ -14,6 +16,8 @@ class TransformersPipeline(BaseComponent):
 
 
 class NERTransformersPipeline(TransformersPipeline):
+    outgoing_edges = 1
+
     def __init__(self, *args, **kwargs):
         super(NERTransformersPipeline, self).__init__(*args, **kwargs)
 
@@ -47,6 +51,8 @@ class NERTransformersPipeline(TransformersPipeline):
 
 
 class SentenceTransformer(BaseComponent):
+    outgoing_edges = 1
+
     def __init__(self, *args, **kwargs):
         # from sentence_transformers import SentenceTransformer
         # self.model = SentenceTransformer(kwargs['model'])
@@ -58,8 +64,8 @@ class SentenceTransformer(BaseComponent):
         self.tokenizer = AutoTokenizer.from_pretrained(kwargs["model"])
         self.model = AutoModel.from_pretrained(kwargs["model"])
 
-    def run(self, documents):
-        sentences = [doc.content for doc in documents]
+    def run(self, sentence_transformer_documents):
+        sentences = [doc.content for doc in sentence_transformer_documents]
         encoded_input = self.tokenizer(
             sentences, padding=True, truncation=True, return_tensors="pt"
         )
@@ -68,10 +74,12 @@ class SentenceTransformer(BaseComponent):
 
         embeddings = self._cls_pooling(model_output, encoded_input["attention_mask"])
 
-        for doc, embedding in zip(documents, embeddings):
+        for doc, embedding in zip(sentence_transformer_documents, embeddings):
             doc.embedding = embedding
 
-        return {"documents": documents}, "output_1"
+        return {
+            "sentence_transformer_documents": sentence_transformer_documents
+        }, "output_1"
 
     def _cls_pooling(self, model_output, attention_mask):
         return model_output[0][:, 0]

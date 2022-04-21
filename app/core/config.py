@@ -24,7 +24,7 @@ IS_DEBUG = os.getenv("DEBUG", True)
 
 # pipeline names, can be overriden from env
 QUERY_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "query")
-DP_QUERY_PIPELINE_NAME = os.getenv("DP_QUERY_PIPELINE_NAME", "dpquery")
+# DP_QUERY_PIPELINE_NAME = os.getenv("DP_QUERY_PIPELINE_NAME", "dpquery")
 SEARCH_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "search")
 INDEXING_PIPELINE_NAME = os.getenv("INDEXING_PIPELINE_NAME", "indexing")
 QUESTION_PIPELINE_NAME = os.getenv("QUERY_PIPELINE_NAME", "question")
@@ -39,11 +39,11 @@ FILE_UPLOAD_PATH = os.getenv("FILE_UPLOAD_PATH", "./file-upload")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 ROOT_PATH = os.getenv("ROOT_PATH", "/")
 
-CONCURRENT_REQUEST_PER_WORKER = int(os.getenv("CONCURRENT_REQUEST_PER_WORKER",
-                                              20))
+CONCURRENT_REQUEST_PER_WORKER = int(os.getenv("CONCURRENT_REQUEST_PER_WORKER", 20))
 
 
 # components = load_components(conf)
+
 
 def overwrite_with_env_variables(conf: dict, component: str):
     """
@@ -51,7 +51,7 @@ def overwrite_with_env_variables(conf: dict, component: str):
     Ex: QA_ELASTICSEARCHDOCUMENTSTORE_PARAMS_HOST=elastic
     """
     config = copy.deepcopy(conf)
-    definitions = config.get('components', [])
+    definitions = config.get("components", [])
     for definition in definitions:
         env_prefix = f"{component}_{definition['name']}_params_".upper()
         for key, value in os.environ.items():

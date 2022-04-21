@@ -3,12 +3,11 @@ from copy import deepcopy
 from typing import Any, List, Optional  # , Dict
 
 import numpy as np
+from app.core.config import NLP_FIELD
 from elasticsearch.exceptions import RequestError
 from haystack.document_stores.elasticsearch import ElasticsearchDocumentStore
 from haystack.nodes.base import BaseComponent
 from haystack.schema import Document, MultiLabel
-
-from app.core.config import NLP_FIELD
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +184,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             # Using the standard sigmoid function prevents scores from being negative.
             script_source = f"""
               double value = dotProduct(params.query_vector, '{full_path}');
-              return sigmoid(1, Math.E, -value); 
+              return sigmoid(1, Math.E, -value);
             """
         else:
             raise Exception(

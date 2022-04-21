@@ -14,7 +14,7 @@ components:
       host: localhost
       index: data_searchui
       create_index: false
-      content_field: "fulltext"
+      content_field: "text"
       embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
@@ -43,39 +43,57 @@ components:
       # deepset/roberta-base-squad2
       # deepset/minilm-uncased-squad2
 
+  - name: AnswerOptimizer
+    type: AnswerOptimizer
+
   - name: SearchlibQAAdapter
     type: SearchlibQAAdapter
+
+  - name: DPRequestClassifier
+    type: DPRequestClassifier
 
 pipelines:
   - name: query
     type: Query
     nodes:
+      - name: DPRequestClassifier
+        inputs: [Query]
+
       - name: RawRetriever
-        inputs: [Query]
+        inputs: [DPRequestClassifier.output_1]
 
-      - name: ESHit2HaystackDoc
-        inputs: [RawRetriever]
-
-      - name: AnswerExtraction
-        inputs: [ESHit2HaystackDoc]
-
-      - name: SearchlibQAAdapter
-        inputs: [AnswerExtraction]
-
-  - name: dpquery
-    type: Query
-    nodes:
       - name: DensePassageRetriever
-        inputs: [Query]
+        inputs: [DPRequestClassifier.output_2]
 
       - name: ESHit2HaystackDoc
-        inputs: [DensePassageRetriever]
+        inputs: [RawRetriever, DensePassageRetriever]
 
       - name: AnswerExtraction
         inputs: [ESHit2HaystackDoc]
 
-      - name: SearchlibQAAdapter
+      - name: AnswerOptimizer
         inputs: [AnswerExtraction]
+
+      - name: SentenceSimilarity
+        inputs: [AnswerOptimizer]
+
+      - name: SearchlibQAAdapter
+        inputs: [SentenceSimilarity]
+
+  # - name: dpquery
+  #   type: Query
+  #   nodes:
+  #     - name: DensePassageRetriever
+  #       inputs: [Query]
+  #
+  #     - name: ESHit2HaystackDoc
+  #       inputs: [DensePassageRetriever]
+  #
+  #     - name: AnswerExtraction
+  #       inputs: [ESHit2HaystackDoc]
+  #
+  #     - name: SearchlibQAAdapter
+  #       inputs: [AnswerExtraction]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml

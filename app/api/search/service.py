@@ -13,12 +13,12 @@ class SearchModel(PipelineModel):
         return result
 
 
-@register_model("dp_search")
-class DPSearchModel(PipelineModel):
-    pipeline_name = "dp_search"
-
-    def predict(self, body):
-        result = self.pipeline.run(params={"payload": body})
-        es = result.pop("elasticsearch_result")
-        result.update(es)
-        return result
+# @register_model("dp_search")
+# class DPSearchModel(PipelineModel):
+#     pipeline_name = "dp_search"
+#
+#     def predict(self, body):
+#         result = self.pipeline.run(params={"payload": body})
+#         es = result.pop("elasticsearch_result")
+#         result.update(es)
+#         return result

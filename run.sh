@@ -19,11 +19,11 @@ export FEEDBACK_FEEDBACKSTORE_PARAMS_INDEX=data_searchui
 export FEEDBACK_FEEDBACKSTORE_PARAMS_LABEL_INDEX=data_searchui-feedback
 export FEEDBACK_FEEDBACKSTORE_PARAMS_CREATE_INDEX=True
 
-export SEARCH_SERVICES=feedback,qa,search,qasearch
+export SEARCH_SERVICES=feedback,qa,search,similarity,qasearch
 #,qasearch
 #search,
 #
-#search,qa,similarity,,
+#search,qa,,
 #54125
 
 export SERVICES=$SEARCH_SERVICES
