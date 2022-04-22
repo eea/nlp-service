@@ -36,27 +36,27 @@ components:    # define all the building-blocks for Pipeline
       # document_store: HaystackDocumentStore
       document_store: FacetedDocumentStore
 
-  - name: ClassifyRequestAsDeclarativeQuery
+  - name: TagRequestAsDeclarativeQuery
     type: Category
     params:
       category: "query:declarative"
 
-  - name: ClassifyRequestAsInterrogativeQuery
+  - name: TagRequestAsInterrogativeQuery
     type: Category
     params:
       category: "query:interrogative"
 
-  - name: ClassifyRequestAsKeyword
+  - name: TagRequestAsKeyword
     type: Category
     params:
       category: "query:keyword"
 
-  - name: ClassifyRequestAsMetadata
+  - name: TagRequestAsMetadata
     type: Category
     params:
       category: "request:metadata"
 
-  - name: ClassifyRequestAsQuery
+  - name: TagRequestAsQuery
     type: Category
     params:
       category: "request:query"
@@ -81,32 +81,32 @@ pipelines:
       - name: RequestClassifier
         inputs: [Query]
 
-      - name: ClassifyRequestAsMetadata
+      - name: TagRequestAsMetadata
         inputs: [RequestClassifier.output_1]
 
-      - name: ClassifyRequestAsQuery
+      - name: TagRequestAsQuery
         inputs: [RequestClassifier.output_2]
 
       - name: RawRetriever
-        inputs: [ClassifyRequestAsMetadata]
+        inputs: [TagRequestAsMetadata]
 
       - name: QueryClassifier
-        inputs: [ClassifyRequestAsQuery]
+        inputs: [TagRequestAsQuery]
 
       - name: QuestionStatementQueryClassifier
         inputs: [QueryClassifier.output_1]
 
-      - name: ClassifyRequestAsKeyword
+      - name: TagRequestAsKeyword
         inputs: [QueryClassifier.output_2]
 
-      - name: ClassifyRequestAsInterrogativeQuery
+      - name: TagRequestAsInterrogativeQuery
         inputs: [QuestionStatementQueryClassifier.output_1]
 
-      - name: ClassifyRequestAsDeclarativeQuery
+      - name: TagRequestAsDeclarativeQuery
         inputs: [QuestionStatementQueryClassifier.output_2]
 
       - name: DPRequestClassifier
-        inputs: [ClassifyRequestAsInterrogativeQuery, ClassifyRequestAsDeclarativeQuery, ClassifyRequestAsKeyword]
+        inputs: [TagRequestAsInterrogativeQuery, TagRequestAsDeclarativeQuery, TagRequestAsKeyword]
 
       - name: RawRetriever
         inputs: [DPRequestClassifier.output_1]
@@ -114,89 +114,6 @@ pipelines:
       - name: DensePassageRetriever
         inputs: [DPRequestClassifier.output_2]
 
-
-
-
-  # - name: HaystackDocumentStore
-  #   type: SearchlibElasticsearchDocumentStore
-  #   params:
-  #     host: localhost
-  #     index: data_searchui-documents
-  #     create_index: false
-  #     content_field: "text"
-  #     embedding_field: "embedding"
-  #     search_fields: "*"
-  #     name_field: "_id"
-  # - name: RawRetrieverWithQuery
-  #   type: RawElasticsearchRetriever
-  #   params:
-  #     document_store: FacetedDocumentStore
-  # - name: Ranker
-  #   type: RawFARMRanker
-  #   params:
-  #     model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
-  #     document_store: FacetedDocumentStore
-
-
-
-
-      #
-      #
-      # - name: RawRetrieverWithQuery
-      #   inputs: [ClassifyRequestAsKeyword]
-      #
-      # # - name: Ranker
-      # #   inputs: [RawRetrieverWithQuery]
-      #
-      #
-      #
-      # - name: RawRetrieverWithQuery
-      #   inputs: [ClassifyRequestAsInterrogativeQuery]
-      #
-      # - name: RawRetrieverWithQuery
-      #   inputs: [ClassifyRequestAsDeclarativeQuery]
-
-  # - name: dp_search
-  #   type: Query
-  #   nodes:
-  #     - name: RequestClassifier
-  #       inputs: [Query]
-  #
-  #     - name: ClassifyRequestAsMetadata
-  #       inputs: [RequestClassifier.output_1]
-  #
-  #     - name: ClassifyRequestAsQuery
-  #       inputs: [RequestClassifier.output_2]
-  #
-  #     - name: RawRetriever
-  #       inputs: [ClassifyRequestAsMetadata]
-  #
-  #     - name: QueryClassifier
-  #       inputs: [ClassifyRequestAsQuery]
-  #
-  #     - name: ClassifyRequestAsKeyword
-  #       inputs: [QueryClassifier.output_2]
-  #
-  #     - name: DensePassageRetriever
-  #       inputs: [ClassifyRequestAsKeyword]
-  #
-  #     # - name: Ranker
-  #     #   inputs: [RawRetrieverWithQuery]
-  #
-  #     - name: QuestionStatementQueryClassifier
-  #       inputs: [QueryClassifier.output_1]
-  #
-  #     - name: ClassifyRequestAsInterrogativeQuery
-  #       inputs: [QuestionStatementQueryClassifier.output_1]
-  #
-  #     - name: ClassifyRequestAsDeclarativeQuery
-  #       inputs: [QuestionStatementQueryClassifier.output_2]
-  #
-  #     - name: DensePassageRetriever
-  #       inputs: [ClassifyRequestAsInterrogativeQuery]
-  #
-  #     - name: DensePassageRetriever
-  #       inputs: [ClassifyRequestAsDeclarativeQuery]
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml
