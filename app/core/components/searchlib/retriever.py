@@ -1,3 +1,4 @@
+import copy
 import logging
 from typing import Optional
 
@@ -23,7 +24,7 @@ es_params = [
 
 
 def clean_body(body):
-    body = body.copy()
+    body = copy.deepcopy(body)
     keys = list(body.keys())
 
     for k in keys:
@@ -109,6 +110,9 @@ class RawDensePassageRetriever(DensePassageRetriever):
         index: str = None,
         top_k: int = None,
     ):
+        import pdb
+
+        pdb.set_trace()
         body = payload or params["payload"]
         body = clean_body(body)
         query = body.get("query", None)
