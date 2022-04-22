@@ -7,6 +7,31 @@ from haystack.nodes.retriever import (DensePassageRetriever,
 
 logger = logging.getLogger(__name__)
 
+es_params = [
+    "query",
+    "size",
+    "suggest",
+    "sort",
+    "track_total_hits",
+    "runtime_mappings",
+    "highlight",
+    "aggs",
+    "_source",
+    "from_",
+    "params",  # will be removed later in code
+]
+
+
+def clean_body(body):
+    body = body.copy()
+    keys = list(body.keys())
+
+    for k in keys:
+        if k not in es_params:
+            del body[k]
+
+    return body
+
 
 class RawElasticsearchRetriever(ElasticsearchRetriever):
     """An ElasticSearch retriever variant that just passes ES queries to ES
@@ -24,8 +49,10 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         top_k: int = None,
     ):
         body = payload or params["payload"]
+        body = clean_body(body)
 
         # Support for QA-type
+        body.pop("use_dp", None)
         query = body.get("query", None)
         bodyparams = body.pop("params", {})
         from_ = bodyparams.pop("from_", 0)
@@ -83,8 +110,10 @@ class RawDensePassageRetriever(DensePassageRetriever):
         top_k: int = None,
     ):
         body = payload or params["payload"]
+        body = clean_body(body)
         query = body.get("query", None)
         bodyparams = body.pop("params", {})
+        body.pop("use_dp", None)
         # custom_query = body.get('custom_query', None)
 
         from_ = bodyparams.pop("from_", 0)
