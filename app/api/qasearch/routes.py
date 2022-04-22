@@ -60,6 +60,7 @@ def post_querysearch(payload: SearchRequest, request: Request):
             qa_response = {}
 
     response = remix(search_response, qa_response)
+    response.pop("sentence_transformer_documents", None)
 
     return response
 

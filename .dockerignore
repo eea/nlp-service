@@ -1,0 +1,8 @@
+.venv
+data
+mlruns
+notebooks
+sample_model
+tests
+vendor
+volumes
