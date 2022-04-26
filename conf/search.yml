@@ -8,7 +8,7 @@ description: |
 package: app.api.search
 tags:
   - semanticsearch
-prefix: /_search
+prefix: /_search_classic
 
 components:    # define all the building-blocks for Pipeline
   - name: FacetedDocumentStore
@@ -16,17 +16,6 @@ components:    # define all the building-blocks for Pipeline
     params:
       host: localhost
       index: data_searchui
-      create_index: false
-      content_field: "description"
-      embedding_field: "embedding"
-      search_fields: "*"
-      name_field: "_id"
-
-  - name: HaystackDocumentStore
-    type: SearchlibElasticsearchDocumentStore
-    params:
-      host: localhost
-      index: data_searchui-documents
       create_index: false
       content_field: "text"
       embedding_field: "embedding"
@@ -41,46 +30,39 @@ components:    # define all the building-blocks for Pipeline
     params:
       document_store: FacetedDocumentStore
 
-  - name: RawRetrieverWithQuery
-    type: RawElasticsearchRetriever
-    params:
-      document_store: FacetedDocumentStore
-
   - name: DensePassageRetriever
     type: RawDensePassageRetriever
     params:
-      document_store: HaystackDocumentStore
+      # document_store: HaystackDocumentStore
+      document_store: FacetedDocumentStore
 
-  # - name: Ranker
-  #   type: RawFARMRanker
-  #   params:
-  #     model_name_or_path: amberoad/bert-multilingual-passage-reranking-msmarco
-  #     document_store: FacetedDocumentStore
-
-  - name: CategoryDeclarativeQuery
+  - name: TagRequestAsDeclarativeQuery
     type: Category
     params:
       category: "query:declarative"
 
-  - name: CategoryInterrogativeQuery
+  - name: TagRequestAsInterrogativeQuery
     type: Category
     params:
       category: "query:interrogative"
 
-  - name: CategoryKeywordQuery
+  - name: TagRequestAsKeyword
     type: Category
     params:
       category: "query:keyword"
 
-  - name: CategoryMetadataRequest
+  - name: TagRequestAsMetadata
     type: Category
     params:
       category: "request:metadata"
 
-  - name: CategoryQueryRequest
+  - name: TagRequestAsQuery
     type: Category
     params:
       category: "request:query"
+
+  - name: DPRequestClassifier
+    type: DPRequestClassifier
 
   - name: QueryClassifier
     type: TransformersQueryClassifier
@@ -99,41 +81,39 @@ pipelines:
       - name: RequestClassifier
         inputs: [Query]
 
-      - name: CategoryMetadataRequest
+      - name: TagRequestAsMetadata
         inputs: [RequestClassifier.output_1]
 
-      - name: CategoryQueryRequest
+      - name: TagRequestAsQuery
         inputs: [RequestClassifier.output_2]
 
       - name: RawRetriever
-        inputs: [CategoryMetadataRequest]
+        inputs: [TagRequestAsMetadata]
 
       - name: QueryClassifier
-        inputs: [CategoryQueryRequest]
-
-      - name: CategoryKeywordQuery
-        inputs: [QueryClassifier.output_2]
-
-      - name: RawRetrieverWithQuery
-        inputs: [CategoryKeywordQuery]
-
-      # - name: Ranker
-      #   inputs: [RawRetrieverWithQuery]
+        inputs: [TagRequestAsQuery]
 
       - name: QuestionStatementQueryClassifier
         inputs: [QueryClassifier.output_1]
 
-      - name: CategoryInterrogativeQuery
+      - name: TagRequestAsKeyword
+        inputs: [QueryClassifier.output_2]
+
+      - name: TagRequestAsInterrogativeQuery
         inputs: [QuestionStatementQueryClassifier.output_1]
 
-      - name: CategoryDeclarativeQuery
+      - name: TagRequestAsDeclarativeQuery
         inputs: [QuestionStatementQueryClassifier.output_2]
 
-      - name: RawRetrieverWithQuery
-        inputs: [CategoryInterrogativeQuery]
+      - name: DPRequestClassifier
+        inputs: [TagRequestAsInterrogativeQuery, TagRequestAsDeclarativeQuery, TagRequestAsKeyword]
 
-      - name: RawRetrieverWithQuery
-        inputs: [CategoryDeclarativeQuery]
+      - name: RawRetriever
+        inputs: [DPRequestClassifier.output_1]
+
+      - name: DensePassageRetriever
+        inputs: [DPRequestClassifier.output_2]
+
 
 # See
 # https://github.com/deepset-ai/haystack/blob/master/docs/_src/api/api/pipelines.md#load_from_yaml

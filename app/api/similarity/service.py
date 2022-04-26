@@ -54,9 +54,11 @@ class SimilarityModel(PipelineModel):
         sentences = [payload["base"]] + payload["candidates"]
         documents = [Document(text) for text in sentences]
 
-        output = process_request(self.pipeline, {"documents": documents})
+        output = process_request(
+            self.pipeline, {"sentence_transformer_documents": documents}
+        )
 
-        documents = output["documents"]
+        documents = output["sentence_transformer_documents"]
 
         base_doc = documents[0]
         del documents[0]
@@ -71,6 +73,7 @@ class SimilarityModel(PipelineModel):
             "predictions": predictions,
             "clusters": self.clustering([base_doc] + documents),
         }
+
         return res
 
     # def clusterize_text(self, sentences):
