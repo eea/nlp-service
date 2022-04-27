@@ -45,19 +45,19 @@ def post_querysearch(payload: SearchRequest, request: Request):
     with concurrency_limiter.run():
         search_pipeline = getattr(request.app.state, component.search_pipeline)
         search_response = search_pipeline.predict(body)
+        qa_response = {}
 
-        qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
+        if search_response.get("query_type", None) != "request:metadata":
+            qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
 
-        if qa_pipeline and body.get("size", 0):
-            query = body.pop("query")
-            params = body.get("params", {})
-            params.update({"custom_query": query})
-            body["params"] = params
-            body["query"] = get_search_term(query)
+            if qa_pipeline and body.get("size", 0):
+                query = body.pop("query")
+                params = body.get("params", {})
+                params.update({"custom_query": query})
+                body["params"] = params
+                body["query"] = get_search_term(query)
 
-            qa_response = qa_pipeline.predict(body)
-        else:
-            qa_response = {}
+                qa_response = qa_pipeline.predict(body)
 
     response = remix(search_response, qa_response)
     response.pop("sentence_transformer_documents", None)
