@@ -17,6 +17,7 @@ es_params = [
     "runtime_mappings",
     "highlight",
     "aggs",
+    "source",
     "_source",
     "from_",
     "params",  # will be removed later in code
@@ -55,9 +56,9 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         # Support for QA-type
         body.pop("use_dp", None)
         query = body.get("query", None)
-        bodyparams = body.pop("params", {})
+        bodyparams = body.pop("params", {}) or {}
         from_ = bodyparams.pop("from_", 0)
-        _source = bodyparams.pop("_source", None)
+        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None)
 
         if top_k is not None:
             body["size"] = top_k
@@ -110,14 +111,16 @@ class RawDensePassageRetriever(DensePassageRetriever):
         index: str = None,
         top_k: int = None,
     ):
-        import pdb
-
-        pdb.set_trace()
         body = payload or params["payload"]
+        # body.pop("use_dp", None)
         body = clean_body(body)
         query = body.get("query", None)
         bodyparams = body.pop("params", {})
-        body.pop("use_dp", None)
+        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None)
+
+        if _source:
+            body["_source"] = _source
+
         # custom_query = body.get('custom_query', None)
 
         from_ = bodyparams.pop("from_", 0)
