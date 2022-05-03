@@ -21,6 +21,7 @@ es_params = [
     "_source",
     "from_",
     "params",  # will be removed later in code
+    "index",
 ]
 
 
