@@ -47,7 +47,10 @@ def post_querysearch(payload: SearchRequest, request: Request):
         search_response = search_pipeline.predict(body)
         qa_response = {}
 
-        if search_response.get("query_type", None) != "request:metadata":
+        if (
+            search_response.get("query_type", None) != "request:metadata"
+            and body.get("from", None) == 0
+        ):
             qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
 
             if qa_pipeline and body.get("size", 0):
