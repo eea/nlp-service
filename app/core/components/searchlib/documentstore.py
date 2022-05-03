@@ -396,6 +396,7 @@ class ESHit2HaystackDoc(BaseComponent):
                 documents.append(doc)
 
         # TODO: query might come as full ES body
+
         return {
             "documents": [
                 self.document_store._convert_es_hit_to_document(

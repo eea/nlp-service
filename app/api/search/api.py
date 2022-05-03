@@ -28,6 +28,7 @@ class SearchRequest(BaseModel):
     params: Optional[Dict] = None
     source: Optional[Dict] = None
     suggest: Optional[Dict] = None
+    index: Optional[str] = None
 
 
 class Document(BaseModel):

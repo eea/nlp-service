@@ -49,7 +49,7 @@ def post_querysearch(payload: SearchRequest, request: Request):
 
         if (
             search_response.get("query_type", None) != "request:metadata"
-            and body.get("from", None) == 0
+            and body.get("from", 0) == 0
         ):
             qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
 

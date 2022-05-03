@@ -56,7 +56,7 @@ class ElasticSearchRequestClassifier(BaseComponent):
     ):
 
         payload = params["payload"] or {}
-        if (payload).get("size", 0) > 0 and payload.get("from", None) == 0:
+        if (payload).get("size", 0) > 0 and payload.get("from", 0) == 0:
             search_term = get_search_term(payload["query"])
             print("searchterm", search_term)
             if search_term:
