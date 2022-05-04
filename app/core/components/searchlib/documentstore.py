@@ -361,8 +361,9 @@ class ESHit2HaystackDoc(BaseComponent):
 
     outgoing_edges = 1
 
-    def __init__(self, document_store=None):
+    def __init__(self, document_store=None, nested_vector_field="nlp_250"):
         self.document_store = document_store
+        self.nested_vector_field = nested_vector_field
 
     def run(
         self,
@@ -381,9 +382,13 @@ class ESHit2HaystackDoc(BaseComponent):
             hits = []
 
         documents = []
+        content_field = self.document_store.content_field
+        embedding_field = self.document_store.embedding_field
+        nested_vector_field = self.nested_vector_field
+
         for hit in hits:
             try:
-                inner_hits = hit["inner_hits"][NLP_FIELD]["hits"]["hits"]
+                inner_hits = hit["inner_hits"][nested_vector_field]["hits"]["hits"]
                 assert len(inner_hits) > 0
             except (KeyError, AssertionError, TypeError):
                 documents.append(hit)
@@ -391,11 +396,9 @@ class ESHit2HaystackDoc(BaseComponent):
 
             for inner_hit in inner_hits:
                 doc = deepcopy(hit)
-                doc["_source"]["embedding"] = inner_hit["_source"]["embedding"]
-                doc["_source"]["fulltext"] = inner_hit["_source"]["text"]
+                doc["_source"][embedding_field] = inner_hit["_source"][embedding_field]
+                doc["_source"][content_field] = inner_hit["_source"][content_field]
                 documents.append(doc)
-
-        # TODO: query might come as full ES body
 
         return {
             "documents": [

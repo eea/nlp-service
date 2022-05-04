@@ -16,6 +16,7 @@ components:
       create_index: false
       content_field: "text"
       embedding_field: "embedding"
+      nested_vector_field: nlp_250
       search_fields: "*"
       name_field: "_id"
 
@@ -33,6 +34,7 @@ components:
     type: ESHit2HaystackDoc
     params:
       document_store: FacetedDocumentStore
+      nested_vector_field: "nlp_250"
 
   - name: AnswerExtraction
     type: TransformersReader
