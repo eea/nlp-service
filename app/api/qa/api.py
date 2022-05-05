@@ -45,7 +45,7 @@ class Answer(BaseModel):
     original_answer: Optional[dict] = None
 
 
-class Response(BaseModel):
-    query: str
-    answers: List[Answer]
+class QA_Response(BaseModel):
+    query: Optional[str]
+    answers: Optional[List[Answer]]
     # documents: List[Answer]

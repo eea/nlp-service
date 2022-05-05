@@ -18,6 +18,19 @@ class Category(BaseComponent):
         return {"query_type": self.category}, "output_1"
 
 
+class DPRequestClassifier(BaseComponent):
+    outgoing_edges = 2
+
+    def run(
+        self,
+        params,
+    ):
+        params = params.get("payload", {}).get("params", {})
+        use_dp = params.get("use_dp", False)
+
+        return {}, use_dp and "output_2" or "output_1"
+
+
 class ElasticSearchRequestClassifier(BaseComponent):
     """A classifier and search query adapter for incoming requests from ES
 
@@ -42,9 +55,10 @@ class ElasticSearchRequestClassifier(BaseComponent):
         params: Optional[dict] = None,
     ):
 
-        payload = params["payload"]
-        if (payload or {}).get("size", 0) > 0:
+        payload = params["payload"] or {}
+        if (payload).get("size", 0) > 0 and payload.get("from", 0) == 0:
             search_term = get_search_term(payload["query"])
+            print("searchterm", search_term)
             if search_term:
                 return {"query": search_term}, "output_2"
 
