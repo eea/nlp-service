@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 
-def remix(search_response, qa_response):
+def remix(search_response, qa_response, exclude=None):
+    exclude_fields = exclude or []
     res = {}
     res.update(search_response)
     res.update(qa_response)
@@ -24,6 +25,12 @@ def remix(search_response, qa_response):
 
     for field in fields:
         res.pop(field, None)
+
+    hits = res.get("hits", {}).get("hits", [])
+    for hit in hits:
+        for field in exclude_fields:
+            if field in hit.get("_source", {}):
+                del hit["_source"][field]
 
     return res
 
@@ -63,12 +70,16 @@ def post_querysearch(payload: SearchRequest, request: Request):
 
                 qa_response = qa_pipeline.predict(body)
 
-    response = remix(search_response, qa_response)
+    response = remix(search_response, qa_response, excluded_meta_data)
     response.pop("sentence_transformer_documents", None)
 
-    import pdb
+    answers = response.get("answers", [])
+    if answers:
+        for hit in answers:
+            for field in excluded_meta_data:
+                if field in hit.get("source", []):
+                    del hit["source"][field]
 
-    pdb.set_trace()
     return response
 
 

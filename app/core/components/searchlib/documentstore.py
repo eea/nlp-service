@@ -391,7 +391,12 @@ class ESHit2HaystackDoc(BaseComponent):
                 inner_hits = hit["inner_hits"][nested_vector_field]["hits"]["hits"]
                 assert len(inner_hits) > 0
             except (KeyError, AssertionError, TypeError):
-                documents.append(hit)
+
+                # Filtering empty documents
+                if hit["_source"][content_field]:
+                    documents.append(hit)
+
+                # TODO: here we need to split docs by sizes
                 continue
 
             for inner_hit in inner_hits:
@@ -400,7 +405,7 @@ class ESHit2HaystackDoc(BaseComponent):
                 doc["_source"][content_field] = inner_hit["_source"][content_field]
                 documents.append(doc)
 
-        return {
+        res = {
             "documents": [
                 self.document_store._convert_es_hit_to_document(
                     raw_doc, return_embedding=False
@@ -408,4 +413,5 @@ class ESHit2HaystackDoc(BaseComponent):
                 for raw_doc in documents
             ],
             "query": query,
-        }, "output_1"
+        }
+        return res, "output_1"
