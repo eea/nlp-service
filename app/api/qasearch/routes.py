@@ -31,6 +31,7 @@ def remix(search_response, qa_response):
 @router.post("")  # , response_model=QASearchResponse
 def post_querysearch(payload: SearchRequest, request: Request):
     component = request.app.state.querysearch.component
+    excluded_meta_data = component.excluded_meta_data
 
     body = payload.dict()
     # use_dp = body.get("params", {}).pop("use_dp", False)
@@ -65,6 +66,9 @@ def post_querysearch(payload: SearchRequest, request: Request):
     response = remix(search_response, qa_response)
     response.pop("sentence_transformer_documents", None)
 
+    import pdb
+
+    pdb.set_trace()
     return response
 
 
