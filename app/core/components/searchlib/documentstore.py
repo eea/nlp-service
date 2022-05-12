@@ -405,6 +405,13 @@ class ESHit2HaystackDoc(BaseComponent):
                 doc["_source"][content_field] = inner_hit["_source"][content_field]
                 documents.append(doc)
 
+        # Adjust the query for the following pipeline node, the AnswerExtraction
+        if not isinstance(query, str):
+            try:
+                query = params["payload"]["RawRetriever"]["payload"]["custom_query"]
+            except KeyError:
+                logger.warning("Could not get custom query from RawRetriever")
+
         res = {
             "documents": [
                 self.document_store._convert_es_hit_to_document(
