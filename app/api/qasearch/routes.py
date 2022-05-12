@@ -62,11 +62,11 @@ def post_querysearch(payload: SearchRequest, request: Request):
             qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
 
             if qa_pipeline and body.get("size", 0):
-                query = body.pop("query")
-                params = body.get("params", {})
-                params.update({"custom_query": query})
-                body["params"] = params
-                body["query"] = get_search_term(query)
+                # query = body.pop("query")
+                # params = body.get("params", {})
+                # params.update({"custom_query": query})
+                # body["params"] = params
+                # body["query"] = get_search_term(query)
 
                 qa_response = qa_pipeline.predict(body)
 
