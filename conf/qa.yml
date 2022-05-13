@@ -18,6 +18,9 @@ components:
       embedding_field: "embedding"
       search_fields: "*"
       name_field: "_id"
+      # excluded_meta_data:
+      #   - fulltext
+      #   - embedding
 
   - name: RawRetriever
     type: RawElasticsearchRetriever

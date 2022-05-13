@@ -13,3 +13,6 @@ components:
     params:
       search_pipeline: "search"
       qa_pipeline: "qa"
+      excluded_meta_data:
+        - fulltext
+        - embedding
