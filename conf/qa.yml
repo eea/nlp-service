@@ -37,6 +37,7 @@ components:
     params:
       document_store: FacetedDocumentStore
       nested_vector_field: "nlp_250"
+      clean_config: "qa-clean-config.yml"
 
   - name: AnswerExtraction
     type: TransformersReader

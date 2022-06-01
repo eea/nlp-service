@@ -18,6 +18,10 @@ CONFIG_PATH = os.getenv(
     pkg_resources.resource_filename("app", "../conf/"),
 )
 
+CONFIG_CLEAN_PATH = os.getenv(
+    "CLEAN_CONFIG_PATH",
+    pkg_resources.resource_filename("app", "../app/core/components/config"),
+)
 
 IS_DEBUG = os.getenv("DEBUG", True)
 

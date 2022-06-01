@@ -1,13 +1,19 @@
 import logging
+import os
+import os.path
+import re
 from copy import deepcopy
 from typing import Any, List, Optional  # , Dict
 
 import numpy as np
-from app.core.config import NLP_FIELD
+import yaml
 from elasticsearch.exceptions import RequestError
 from haystack.document_stores.elasticsearch import ElasticsearchDocumentStore
 from haystack.nodes.base import BaseComponent
 from haystack.schema import Document, MultiLabel
+
+from app.core import config
+from app.core.config import NLP_FIELD
 
 logger = logging.getLogger(__name__)
 
@@ -356,14 +362,56 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             return result
 
 
+class ESHitClean:
+    """
+     Clean an Elastic Search Hit by stripping the URLs and by replacing all
+     the strings from config file with the replacement also defined in the config file
+    """
+
+    def __init__(self, text, token=None, config_file=None):
+        """
+        :param text: the text that will be cleaned
+        :param token: the string that will replace the urls
+        :param config_file: the name of the config file with all the strings that will be replaced in the given text
+        """
+        self.text = text
+        self.token = token or "<stripped_url>"
+        self.config_file = config_file or "qa-clean-config.yml"
+
+        with open(
+                os.path.join(config.CONFIG_CLEAN_PATH, self.config_file), "r", encoding="utf-8"
+        ) as stream:
+            self.config = yaml.safe_load(stream)
+
+    def __strip_url(self):
+        """
+        replace all urls from document with a token
+        """
+        self.text = re.sub("http[s]?://\S+", self.token, self.text)
+
+    def __strip_txt(self):
+        """
+        replace all the slogans from document with the slogan replacement
+        """
+        for slogan in self.config.get("slogans", None):
+            self.text = self.text.replace(slogan.get("text", None), slogan.get("replacement", None))
+
+    def run(self):
+        self.__strip_url()
+        self.__strip_txt()
+
+        return self.text
+
+
 class ESHit2HaystackDoc(BaseComponent):
     """A component that converts raw elasticsearch hits to Haystack Documents"""
 
     outgoing_edges = 1
 
-    def __init__(self, document_store=None, nested_vector_field="nlp_250"):
+    def __init__(self, document_store=None, nested_vector_field="nlp_250", clean_config="qa-clean-config.yml"):
         self.document_store = document_store
         self.nested_vector_field = nested_vector_field
+        self.clean_config = clean_config
 
     def run(
         self,
@@ -394,6 +442,8 @@ class ESHit2HaystackDoc(BaseComponent):
 
                 # Filtering empty documents
                 if hit["_source"][content_field]:
+                    clean = {"text": hit["_source"][content_field], "config_file": self.clean_config}
+                    hit["_source"][content_field] = ESHitClean(**clean).run()
                     documents.append(hit)
 
                 # TODO: here we need to split docs by sizes
@@ -402,7 +452,10 @@ class ESHit2HaystackDoc(BaseComponent):
             for inner_hit in inner_hits:
                 doc = deepcopy(hit)
                 doc["_source"][embedding_field] = inner_hit["_source"][embedding_field]
-                doc["_source"][content_field] = inner_hit["_source"][content_field]
+
+                clean = {"text": inner_hit["_source"][content_field], "config_file": self.clean_config}
+                doc["_source"][content_field] = ESHitClean(**clean).run()
+
                 documents.append(doc)
 
         # Adjust the query for the following pipeline node, the AnswerExtraction

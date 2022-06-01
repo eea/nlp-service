@@ -64,12 +64,17 @@ class SearchTikaConverter(BaseConverter):
                                 in garbled text.
         """
 
+        # This method is commented because it was removed from Haystack BaseConverter and is not needed anymore
+        # BaseConverter from Haystack was refactored and the configs are taken directly from the kwargs of the _init_
+        # and passed to the Haystack haystack.nodes.base.BaseComponent
+
         # save init parameters to enable export of component config as YAML
-        self.set_config(
-            tika_url=tika_url,
-            remove_numeric_tables=remove_numeric_tables,
-            valid_languages=valid_languages,
-        )
+        # self.set_config(
+        #    tika_url=tika_url,
+        #    remove_numeric_tables=remove_numeric_tables,
+        #    valid_languages=valid_languages,
+        # )
+
         self.requestOptions = requestOptions
         ping = requests.get(tika_url)
         if ping.status_code != 200:
