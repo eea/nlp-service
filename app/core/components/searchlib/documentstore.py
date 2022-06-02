@@ -4,6 +4,7 @@ from typing import Any, List, Optional  # , Dict
 
 import numpy as np
 from app.core.config import NLP_FIELD
+from app.core.elasticsearch import get_search_term
 from elasticsearch.exceptions import RequestError
 from haystack.document_stores.elasticsearch import ElasticsearchDocumentStore
 from haystack.nodes.base import BaseComponent
@@ -410,7 +411,12 @@ class ESHit2HaystackDoc(BaseComponent):
             try:
                 query = params["payload"]["RawRetriever"]["payload"]["custom_query"]
             except KeyError:
-                logger.warning("Could not get custom query from RawRetriever")
+                try:
+                    body = params["payload"]["query"]
+                    query = get_search_term(body)
+                except Exception:
+                    logger.exception("Could not get custom query from RawRetriever")
+                    query = ""
 
         res = {
             "documents": [
