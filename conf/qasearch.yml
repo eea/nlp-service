@@ -1,0 +1,18 @@
+version: '1.0'
+
+package: app.api.qasearch
+tags:
+  - qa
+prefix: /_search
+description: |
+  A service that combines search and QA
+
+components:
+  - name: QuerySearch
+    type: QuerySearchModel
+    params:
+      search_pipeline: "search"
+      qa_pipeline: "qa"
+      excluded_meta_data:
+        - fulltext
+        - embedding

@@ -1,3 +1,4 @@
+import copy
 import logging
 from typing import Optional
 
@@ -6,6 +7,33 @@ from haystack.nodes.retriever import (DensePassageRetriever,
                                       ElasticsearchRetriever)
 
 logger = logging.getLogger(__name__)
+
+es_params = [
+    "query",
+    "size",
+    "suggest",
+    "sort",
+    "track_total_hits",
+    "runtime_mappings",
+    "highlight",
+    "aggs",
+    "source",
+    "_source",
+    "from_",
+    "params",  # will be removed later in code
+    "index",
+]
+
+
+def clean_body(body):
+    body = copy.deepcopy(body)
+    keys = list(body.keys())
+
+    for k in keys:
+        if k not in es_params:
+            del body[k]
+
+    return body
 
 
 class RawElasticsearchRetriever(ElasticsearchRetriever):
@@ -24,12 +52,14 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         top_k: int = None,
     ):
         body = payload or params["payload"]
+        body = clean_body(body)
 
         # Support for QA-type
+        body.pop("use_dp", None)
         query = body.get("query", None)
-        bodyparams = body.pop("params", {})
+        bodyparams = body.pop("params", {}) or {}
         from_ = bodyparams.pop("from_", 0)
-        _source = bodyparams.pop("_source", None)
+        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None)
 
         if top_k is not None:
             body["size"] = top_k
@@ -45,7 +75,7 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             body["custom_query"] = custom_query  # ['query']
 
         if isinstance(query, str):
-            body["query"] = {"match": {"text": body["query"]}}
+            body["query"] = {"match": {"fulltext": body["query"]}}
 
         if index:
             body["index"] = index
@@ -82,10 +112,16 @@ class RawDensePassageRetriever(DensePassageRetriever):
         index: str = None,
         top_k: int = None,
     ):
-
         body = payload or params["payload"]
+        # body.pop("use_dp", None)
+        body = clean_body(body)
         query = body.get("query", None)
         bodyparams = body.pop("params", {})
+        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None)
+
+        if _source:
+            body["_source"] = _source
+
         # custom_query = body.get('custom_query', None)
 
         from_ = bodyparams.pop("from_", 0)

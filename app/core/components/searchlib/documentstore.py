@@ -1,10 +1,10 @@
-import json
 import logging
 from copy import deepcopy
 from typing import Any, List, Optional  # , Dict
 
-import jq
 import numpy as np
+from app.core.config import NLP_FIELD
+from app.core.elasticsearch import get_search_term
 from elasticsearch.exceptions import RequestError
 from haystack.document_stores.elasticsearch import ElasticsearchDocumentStore
 from haystack.nodes.base import BaseComponent
@@ -94,7 +94,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         self, body: dict, query_emb: np.ndarray, custom_query: Optional[dict] = None
     ):
         """
-                Generate Elasticsearch query for vector similarity.
+        Generate Elasticsearch query for vector similarity.
 
         The original query looks like:
 
@@ -174,42 +174,73 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
           }
         }
         """
+        full_path = f"{NLP_FIELD}.{self.embedding_field}"
 
         if self.similarity == "cosine":
-            similarity_fn_name = "cosineSimilarity"
+            # The script adds 1.0 to the cosine similarity to prevent the score from being negative.
+            script_source = f"""
+                (cosineSimilarity(params.query_vector, '{full_path}') + 1.0)
+            """
         elif self.similarity == "dot_product":
-            similarity_fn_name = "dotProduct"
+            # Using the standard sigmoid function prevents scores from being negative.
+            script_source = f"""
+              double value = dotProduct(params.query_vector, '{full_path}');
+              return sigmoid(1, Math.E, -value);
+            """
         else:
             raise Exception(
                 "Invalid value for similarity in ElasticSearchDocumentStore "
                 "constructor. Choose between 'cosine' and 'dot_product'"
             )
 
-        query = deepcopy(custom_query or body)
-
-        if query.get("function_score", {}).get("query", {}).get("bool", {}).get("must"):
-            # TODO: might not be enough, might be too much
-            del query["function_score"]["query"]["bool"]["must"]
-
-        filterquery = query.get("function_score", {}).get("query")
-
-        script = {
-            "script_score": {
-                "query": filterquery or {"match_all": {}},
-                "script": {
-                    # offset score to ensure a positive range as required by ES
-                    "source": f"{similarity_fn_name}(params.query_vector,"
-                    f"'{self.embedding_field}') + 1000",
-                    "params": {"query_vector": query_emb.tolist()},
+        semantic_score = {
+            "nested": {
+                "inner_hits": {},
+                "path": NLP_FIELD,
+                "score_mode": "max",
+                "query": {
+                    "function_score": {
+                        "script_score": {
+                            "script": {
+                                "source": script_source,
+                                "params": {
+                                    "query_vector": query_emb.tolist(),
+                                },
+                            }
+                        }
+                    }
                 },
             }
         }
 
-        # support simple QA style queries
-        if jq.compile(".match.text").input(query).first():
-            query = {"function_score": {}}
+        query = deepcopy(custom_query or body)
+        try:
+            query_must = query["function_score"]["query"]["bool"]["must"]
+        except KeyError:
+            query_must = []
+        try:
+            query_filters = query["function_score"]["query"]["bool"]["filter"]
+        except KeyError:
+            query_filters = []
+        try:
+            query_functions = query["function_score"]["functions"]
+        except KeyError:
+            query_functions = []
 
-        query["function_score"]["query"] = script
+        # TODO: Check if combining exact matches scores with semantic score
+        # TODO: improve the quality of the results.
+        query = {
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "must": [*query_must, semantic_score],
+                        "filter": query_filters,
+                    }
+                },
+                "functions": query_functions,
+                "score_mode": "sum",
+            }
+        }
         # print('---[ ES Embedding query ]------')
         # print(query)
         # print('---------')
@@ -230,6 +261,8 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         sort: Optional[Any] = None,
         track_total_hits: Optional[bool] = True,
         explain: Optional[bool] = False,
+        _source: Optional[dict] = None,
+        suggest: Optional[dict] = None,
     ) -> List[Document]:
         if index is None:
             index = self.index
@@ -243,7 +276,6 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
                 "ElasticsearchDocumentStore()"
             )
         else:
-            # +1 in similarity to avoid negative numbers (for cosine sim)
             emb_query = self._get_vector_similarity_query(
                 body=query, query_emb=query_emb, custom_query=custom_query
             )
@@ -272,6 +304,12 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
             if explain is not None:
                 body["explain"] = explain
+
+            if _source:
+                body["_source"] = _source
+
+            if suggest is not None:
+                body["suggest"] = suggest
 
             if self.excluded_meta_data:
                 body["_source"] = {"excludes": self.excluded_meta_data}
@@ -324,8 +362,9 @@ class ESHit2HaystackDoc(BaseComponent):
 
     outgoing_edges = 1
 
-    def __init__(self, document_store=None):
+    def __init__(self, document_store=None, nested_vector_field="nlp_250"):
         self.document_store = document_store
+        self.nested_vector_field = nested_vector_field
 
     def run(
         self,
@@ -338,12 +377,54 @@ class ESHit2HaystackDoc(BaseComponent):
         params: Optional[dict] = None,
         elasticsearch_result: Any = None,
     ):
+        try:
+            hits = elasticsearch_result["hits"]["hits"]
+        except KeyError:
+            hits = []
 
-        hits = elasticsearch_result.get("hits", {}).get("hits", [])
-        documents = [
-            self.document_store._convert_es_hit_to_document(hit, return_embedding=False)
-            for hit in hits
-        ]
+        documents = []
+        content_field = self.document_store.content_field
+        embedding_field = self.document_store.embedding_field
+        nested_vector_field = self.nested_vector_field
 
-        # TODO: query might come as full ES body
-        return {"documents": documents, "query": query}, "output_1"
+        for hit in hits:
+            try:
+                inner_hits = hit["inner_hits"][nested_vector_field]["hits"]["hits"]
+                assert len(inner_hits) > 0
+            except (KeyError, AssertionError, TypeError):
+
+                # Filtering empty documents
+                if hit["_source"][content_field]:
+                    documents.append(hit)
+
+                # TODO: here we need to split docs by sizes
+                continue
+
+            for inner_hit in inner_hits:
+                doc = deepcopy(hit)
+                doc["_source"][embedding_field] = inner_hit["_source"][embedding_field]
+                doc["_source"][content_field] = inner_hit["_source"][content_field]
+                documents.append(doc)
+
+        # Adjust the query for the following pipeline node, the AnswerExtraction
+        if not isinstance(query, str):
+            try:
+                query = params["payload"]["RawRetriever"]["payload"]["custom_query"]
+            except KeyError:
+                try:
+                    body = params["payload"]["query"]
+                    query = get_search_term(body)
+                except Exception:
+                    logger.exception("Could not get custom query from RawRetriever")
+                    query = ""
+
+        res = {
+            "documents": [
+                self.document_store._convert_es_hit_to_document(
+                    raw_doc, return_embedding=False
+                )
+                for raw_doc in documents
+            ],
+            "query": query,
+        }
+        return res, "output_1"

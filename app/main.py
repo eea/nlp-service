@@ -13,9 +13,11 @@ from app.api.system import router as sys_router
 from app.core import config
 from app.core.errors.http_error import http_error_handler
 from app.core.event_handlers import start_app_handler, stop_app_handler
-from app.core.pipeline import add_components, add_pipeline
+from app.core.pipeline import (COMPONENTS, add_components_config, add_pipeline,
+                               load_components)
 from app.views import router as views_router
 from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.middleware.cors import CORSMiddleware
 
@@ -26,30 +28,6 @@ template_folder = os.path.join(folder, "templates")
 template_folder = os.path.abspath(template_folder)
 
 fastapi_chameleon.global_init(template_folder, auto_reload=dev_mode)
-
-
-def load_components(config):
-    from haystack.nodes.base import BaseComponent
-
-    components = {}  # definitions of each component from the YAML.
-
-    for definition in config.get("components", []):
-        copied = copy.deepcopy(definition)
-        name = copied.pop("name")
-        params = copied.get("params", {})
-
-        # loads references to other components
-        for k, v in params.items():
-            if isinstance(v, str) and v in components:
-                params[k] = components[v]
-
-        try:
-            components[name] = BaseComponent.load_from_args(copied["type"], **params)
-        except Exception:
-            print(f"Error loading: (${copied['type']}) with params: ${params}")
-            raise
-
-    return components
 
 
 def get_app() -> FastAPI:
@@ -96,9 +74,13 @@ def get_app() -> FastAPI:
 
     service_descriptions = []
 
+    # instances of each component, loaded based on definitions from the YAML.
+    components = {}
+
     for name in service_names or []:
         logger.info(f"Loading service <{name}> started")
         print(f"Loading service <{name}> started")
+
         with open(
             os.path.join(config.CONFIG_PATH, f"{name}.yml"), "r", encoding="utf-8"
         ) as stream:
@@ -106,15 +88,16 @@ def get_app() -> FastAPI:
 
         service_conf = config.overwrite_with_env_variables(service_conf, name)
 
-        load_components(service_conf)
+        load_components(service_conf, components)
+
+        component_defs = service_conf.get("components", [])
+        add_components_config(component_defs)
+
         pipelines = service_conf.get("pipelines", [])
-        if pipelines:
-            for pipeline_def in pipelines:
-                pipeline_name = pipeline_def["name"]
-                add_pipeline(pipeline_name, [pipeline_def, service_conf])
-        else:
-            components = service_conf.get("components", [])
-            add_components(components)
+
+        for pipeline_def in pipelines:
+            pipeline_name = pipeline_def["name"]
+            add_pipeline(pipeline_name, [pipeline_def, service_conf])
 
         pkg = service_conf.get("package", f"app.api.services.{name}")
         tags = service_conf.get("tags", [name])
@@ -129,6 +112,8 @@ def get_app() -> FastAPI:
         api_router.include_router(sys_router.router, prefix="/sys")
 
         logger.info(f"Loading service <{name}> completed")
+
+    COMPONENTS.update(components)
 
     fast_app.include_router(views_router, prefix="")
     fast_app.include_router(api_router, prefix=config.API_PREFIX)
@@ -152,6 +137,12 @@ def get_app() -> FastAPI:
     fast_app.add_event_handler("startup", startup)
     fast_app.add_event_handler("startup", startup_tests)
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
+
+    static_media_path = os.environ.get("STATIC_MEDIA")
+    if static_media_path:
+        if not os.path.exists(static_media_path):
+            os.mkdir(static_media_path)
+        app.mount("/static", StaticFiles(directory=static_media_path), name="static")
 
     if config.IS_DEBUG:
         logger.info("See http://127.0.0.1:8000/docs for Swagger API Documentation.")

@@ -1,11 +1,39 @@
 import copy
 import logging
 
+import numpy as np
+import torch
+from haystack import Document
 from haystack.nodes.base import BaseComponent
+from sklearn.cluster import AgglomerativeClustering
 from spacy.lang.en import English
+from torch import Tensor
 
 logger = logging.getLogger(__name__)
 # import spacy
+
+
+class AnswerOptimizer(BaseComponent):
+    outgoing_edges = 1
+
+    def run(self, answers, cutoff=0.1):
+        valid_answers = [a for a in answers if a.score >= cutoff and a.answer]
+        primary = valid_answers and valid_answers[0] or None
+
+        res = {"sentence_transformer_documents": []}
+
+        if primary:
+            candidates = list(
+                set(a.answer for a in valid_answers if a.answer != primary and a.answer)
+            )
+
+            payload = {"base": primary.answer, "candidates": candidates}
+            sentences = [payload["base"]] + payload["candidates"]
+            documents = [Document(text) for text in sentences]
+
+            res["sentence_transformer_documents"] = documents
+
+        return res, "output_1"
 
 
 class SearchlibQAAdapter(BaseComponent):
@@ -15,7 +43,50 @@ class SearchlibQAAdapter(BaseComponent):
         nlp.add_pipe("sentencizer")
         self.nlp = nlp
 
-    def run(self, query, documents, answers):
+    def _normalize(self, a: Tensor):
+        if not isinstance(a, torch.Tensor):
+            a = torch.tensor(a)
+
+        if len(a.shape) == 1:
+            a = a.unsqueeze(0)
+
+        a_norm = torch.nn.functional.normalize(a, p=2, dim=1)
+
+        return a_norm
+
+    def cos_sim(self, a: Tensor, b: Tensor):
+        """
+        Computes the cosine similarity cos_sim(a[i], b[j]) for all i and j.
+        :return: Matrix with res[i][j]  = cos_sim(a[i], b[j])
+        """
+        a_norm = self._normalize(a)
+        b_norm = self._normalize(b)
+
+        score_tensor = torch.mm(a_norm, b_norm.transpose(0, 1))
+
+        score = score_tensor.numpy().flatten().tolist()[0]
+
+        return score
+
+    def clustering(self, documents):
+        if len(documents) < 2:
+            return [[doc.content, 0] for doc in documents]
+
+        embeddings = [doc.embedding for doc in documents]
+
+        corpus = np.array([self._normalize(e).numpy().flatten() for e in embeddings])
+        # corpus = np.array([e.numpy() for e in embeddings])
+        # See
+        # https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering
+        model = AgglomerativeClustering(
+            n_clusters=None, affinity="cosine", linkage="single", distance_threshold=0.2
+        )
+        model.fit(corpus)
+        labels = model.labels_.tolist()
+        clusters = [[doc.content, label] for (doc, label) in zip(documents, labels)]
+        return clusters
+
+    def run(self, query, documents, answers, sentence_transformer_documents):
         # @(Pdb) pp kwargs['answers'][0]
         # {'answer': 'global warming and a rapidly evolving world economy',
         #  'context': 't local level are exacerbated by threats by global '
@@ -24,12 +95,27 @@ class SearchlibQAAdapter(BaseComponent):
 
         # answers = kwargs.pop('answers', [])
 
-        document_map = {doc.id: doc for doc in documents}
+        base_doc = sentence_transformer_documents[0]
+        del sentence_transformer_documents[0]
+
+        predictions = []
+        for i, doc in enumerate(sentence_transformer_documents):
+            score = self.cos_sim(base_doc.embedding, doc.embedding)
+            predictions.append({"score": score, "text": doc.content})
+
+        similarity = {
+            "base": base_doc.content,
+            "predictions": predictions,
+            "clusters": self.clustering([base_doc] + sentence_transformer_documents),
+        }
 
         output = {
             "documents": documents,
+            "similarity": similarity,
             "answers": [],
         }
+
+        document_map = {doc.id: doc for doc in documents}
 
         for doc in [a.to_dict() for a in answers if a.answer]:  # in-place mutation
             doc["original_answer"] = copy.deepcopy(doc)

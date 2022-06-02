@@ -2,6 +2,7 @@
 """
 
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel
 
 
@@ -27,6 +28,7 @@ class SearchRequest(BaseModel):
     params: Optional[Dict] = None
     source: Optional[Dict] = None
     suggest: Optional[Dict] = None
+    index: Optional[str] = None
 
 
 class Document(BaseModel):
@@ -38,5 +40,9 @@ class Document(BaseModel):
 
 class SearchResponse(BaseModel):
     """A search response"""
+
+    hits: Optional[List[Any]]
+    aggregations: Optional[dict]
+    query_type: Optional[str]
 
     # documents: List

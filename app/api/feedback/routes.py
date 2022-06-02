@@ -1,12 +1,12 @@
 import json
 import logging
+import os
 from typing import Dict, Optional, Union
 
 from fastapi import APIRouter, Request
 from haystack.schema import Answer, Document, Label
 
-from .api import (CreateLabelSerialized, FeedbackRequest, FeedbackResponse,
-                  FilterRequest, LabelSerialized)
+from .api import FeedbackRequest, FeedbackResponse, FilterRequest
 
 router = APIRouter()
 
@@ -16,18 +16,6 @@ logger = logging.getLogger(__name__)
 @router.post("", response_model=FeedbackResponse)
 def post_feedback(feedback: FeedbackRequest, request: Request):
     DOCUMENT_STORE = request.app.state.feedback_document_store.component
-
-    # is_correct_answer: bool,
-    # is_correct_document: bool,
-    # origin: Literal["user-feedback", "gold-label"],
-    # answer: Optional[Answer],
-    # id: Optional[str] = None,
-    # no_answer: Optional[bool] = None,
-    # pipeline_id: Optional[str] = None,
-    # created_at: Optional[str] = None,
-    # updated_at: Optional[str] = None,
-    # meta: Optional[dict] = None,
-    # filters: Optional[dict] = None,
 
     document = Document(id=feedback.document_id, content=feedback.context)
     answer = Answer(
@@ -49,7 +37,8 @@ def post_feedback(feedback: FeedbackRequest, request: Request):
 
     label = Label(**props)
     DOCUMENT_STORE.write_labels([label])
-    return {}
+
+    return {"status": "ok"}
 
 
 post_feedback.__doc__ = """
@@ -250,6 +239,10 @@ def export_feedback(
 
     export = {"data": export_data}
 
-    with open("feedback_squad_direct.json", "w", encoding="utf8") as f:
+    static_media_path = os.environ.get("STATIC_MEDIA", "var")
+
+    dest = os.path.join(static_media_path, "feedback_squad_direct.json")
+    with open(dest, "w", encoding="utf8") as f:
         json.dump(export_data, f, ensure_ascii=False, sort_keys=True, indent=4)
+
     return export
