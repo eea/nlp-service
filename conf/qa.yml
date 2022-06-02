@@ -37,7 +37,9 @@ components:
     params:
       document_store: FacetedDocumentStore
       nested_vector_field: "nlp_250"
-      clean_config: "qa-clean-config.yml"
+      clean_config:
+        - text: "Do something for our planet, print this page only if needed. Even a small action can make an enormous difference when millions of people do it !"
+          replacement: ""
 
   - name: AnswerExtraction
     type: TransformersReader

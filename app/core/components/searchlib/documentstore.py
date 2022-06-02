@@ -368,20 +368,15 @@ class ESHitClean:
      the strings from config file with the replacement also defined in the config file
     """
 
-    def __init__(self, text, token=None, config_file=None):
+    def __init__(self, text, token=None, config=None):
         """
         :param text: the text that will be cleaned
         :param token: the string that will replace the urls
-        :param config_file: the name of the config file with all the strings that will be replaced in the given text
+        :param config: the list with texts to be replaced and their replacements
         """
         self.text = text
         self.token = token or "<stripped_url>"
-        self.config_file = config_file or "qa-clean-config.yml"
-
-        with open(
-                os.path.join(config.CONFIG_CLEAN_PATH, self.config_file), "r", encoding="utf-8"
-        ) as stream:
-            self.config = yaml.safe_load(stream)
+        self.config = config
 
     def __strip_url(self):
         """
@@ -393,8 +388,9 @@ class ESHitClean:
         """
         replace all the slogans from document with the slogan replacement
         """
-        for slogan in self.config.get("slogans", None):
-            self.text = self.text.replace(slogan.get("text", None), slogan.get("replacement", None))
+        for slogan in self.config:
+            if slogan["text"]:
+                self.text = self.text.replace(slogan["text"], slogan["replacement"])
 
     def run(self):
         self.__strip_url()
@@ -408,7 +404,9 @@ class ESHit2HaystackDoc(BaseComponent):
 
     outgoing_edges = 1
 
-    def __init__(self, document_store=None, nested_vector_field="nlp_250", clean_config="qa-clean-config.yml"):
+    def __init__(self, document_store=None, nested_vector_field="nlp_250", clean_config=None):
+        if clean_config is None:
+            clean_config = []
         self.document_store = document_store
         self.nested_vector_field = nested_vector_field
         self.clean_config = clean_config
@@ -442,8 +440,8 @@ class ESHit2HaystackDoc(BaseComponent):
 
                 # Filtering empty documents
                 if hit["_source"][content_field]:
-                    clean = {"text": hit["_source"][content_field], "config_file": self.clean_config}
-                    hit["_source"][content_field] = ESHitClean(**clean).run()
+                    hit["_source"][content_field] = ESHitClean(text=hit["_source"][content_field],
+                                                               config=self.clean_config).run()
                     documents.append(hit)
 
                 # TODO: here we need to split docs by sizes
@@ -453,8 +451,8 @@ class ESHit2HaystackDoc(BaseComponent):
                 doc = deepcopy(hit)
                 doc["_source"][embedding_field] = inner_hit["_source"][embedding_field]
 
-                clean = {"text": inner_hit["_source"][content_field], "config_file": self.clean_config}
-                doc["_source"][content_field] = ESHitClean(**clean).run()
+                doc["_source"][content_field] = ESHitClean(text=inner_hit["_source"][content_field],
+                                                           config=self.clean_config).run()
 
                 documents.append(doc)
 
