@@ -1,0 +1,4 @@
+- expression: "Do something for our planet, print this page only if needed. Even a small action can make an enormous difference when millions of people do it !"
+  replacement: ""
+- expression: 'http[s]?://\S+'
+  replacement: "<stripped_url>"

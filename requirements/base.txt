@@ -10,6 +10,7 @@ numpy
 pydantic
 pygraphviz
 pymilvus
+pyyaml-include
 tensorflow
 tensorflow-hub
 torch

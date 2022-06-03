@@ -5,6 +5,7 @@ import os
 import os.path
 
 import yaml
+from yamlinclude import YamlIncludeConstructor
 
 import fastapi_chameleon
 import uvicorn
@@ -28,6 +29,8 @@ template_folder = os.path.join(folder, "templates")
 template_folder = os.path.abspath(template_folder)
 
 fastapi_chameleon.global_init(template_folder, auto_reload=dev_mode)
+
+YamlIncludeConstructor.add_to_loader_class(loader_class=yaml.SafeLoader, base_dir=config.CONFIG_PATH)
 
 
 def get_app() -> FastAPI:
