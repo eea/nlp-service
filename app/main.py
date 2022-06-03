@@ -29,6 +29,8 @@ template_folder = os.path.abspath(template_folder)
 
 fastapi_chameleon.global_init(template_folder, auto_reload=dev_mode)
 
+logger.add("var/nlpservice.log", rotation="500 MB")
+
 
 def get_app() -> FastAPI:
     """FastAPI app controller"""
