@@ -16,3 +16,6 @@ components:
       excluded_meta_data:
         - fulltext
         - embedding
+        - nlp_100
+        - nlp_250
+        - nlp_500
