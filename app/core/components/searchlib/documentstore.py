@@ -416,6 +416,9 @@ class ESHit2HaystackDoc(BaseComponent):
                     query = get_search_term(body)
                 except Exception:
                     logger.exception("Could not get custom query from RawRetriever")
+                    import pdb
+
+                    pdb.set_trace()
                     query = ""
 
         res = {

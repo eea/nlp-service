@@ -94,6 +94,14 @@ class SearchlibQAAdapter(BaseComponent):
         #  'meta': {'SearchableText':
 
         # answers = kwargs.pop('answers', [])
+        output = {
+            "documents": documents,
+            "similarity": None,
+            "answers": [],
+        }
+
+        if not sentence_transformer_documents:
+            return output, "output_1"
 
         base_doc = sentence_transformer_documents[0]
         del sentence_transformer_documents[0]
@@ -103,16 +111,10 @@ class SearchlibQAAdapter(BaseComponent):
             score = self.cos_sim(base_doc.embedding, doc.embedding)
             predictions.append({"score": score, "text": doc.content})
 
-        similarity = {
+        output["similarity"] = {
             "base": base_doc.content,
             "predictions": predictions,
             "clusters": self.clustering([base_doc] + sentence_transformer_documents),
-        }
-
-        output = {
-            "documents": documents,
-            "similarity": similarity,
-            "answers": [],
         }
 
         document_map = {doc.id: doc for doc in documents}
