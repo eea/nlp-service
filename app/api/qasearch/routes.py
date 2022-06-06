@@ -77,12 +77,16 @@ def post_querysearch(payload: SearchRequest, request: Request):
     if answers:
         for hit in answers:
             for field in excluded_meta_data:
+                if field in hit:
+                    del hit[field]
                 if field in hit.get("source", []):
                     del hit["source"][field]
 
     hits = response.get("hits", {}).get("hits", [])
     for hit in hits:
         for field in excluded_meta_data:
+            if field in hit:
+                del hit[field]
             if field in hit.get("source", []):
                 del hit["source"][field]
 
