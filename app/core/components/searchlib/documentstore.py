@@ -394,17 +394,20 @@ class ESHit2HaystackDoc(BaseComponent):
             except (KeyError, AssertionError, TypeError):
 
                 # Filtering empty documents
-                if hit["_source"][content_field]:
+                if hit["_source"].get(content_field):
                     documents.append(hit)
 
                 # TODO: here we need to split docs by sizes
                 continue
 
             for inner_hit in inner_hits:
-                doc = deepcopy(hit)
-                doc["_source"][embedding_field] = inner_hit["_source"][embedding_field]
-                doc["_source"][content_field] = inner_hit["_source"][content_field]
-                documents.append(doc)
+                if inner_hit["_source"].get(content_field):
+                    doc = deepcopy(hit)
+                    doc["_source"][embedding_field] = inner_hit["_source"][
+                        embedding_field
+                    ]
+                    doc["_source"][content_field] = inner_hit["_source"][content_field]
+                    documents.append(doc)
 
         # Adjust the query for the following pipeline node, the AnswerExtraction
         if not isinstance(query, str):
