@@ -4,13 +4,12 @@ from copy import deepcopy
 from typing import Any, List, Optional  # , Dict
 
 import numpy as np
+from app.core.config import NLP_FIELD
+from app.core.elasticsearch import get_search_term
 from elasticsearch.exceptions import RequestError
 from haystack.document_stores.elasticsearch import ElasticsearchDocumentStore
 from haystack.nodes.base import BaseComponent
 from haystack.schema import Document, MultiLabel
-
-from app.core import config
-from app.core.config import NLP_FIELD
 
 logger = logging.getLogger(__name__)
 
@@ -410,7 +409,7 @@ class ESHit2HaystackDoc(BaseComponent):
             except (KeyError, AssertionError, TypeError):
 
                 # Filtering empty documents
-                if hit["_source"][content_field]:
+                if hit["_source"].get(content_field):
                     hit["_source"][content_field] = clean_text(text=hit["_source"][content_field],
                                                                conf=self.clean_config)
 
@@ -420,19 +419,29 @@ class ESHit2HaystackDoc(BaseComponent):
                 continue
 
             for inner_hit in inner_hits:
-                doc = deepcopy(hit)
-                doc["_source"][embedding_field] = inner_hit["_source"][embedding_field]
-                doc["_source"][content_field] = clean_text(text=inner_hit["_source"][content_field],
-                                                           conf=self.clean_config)
-
-                documents.append(doc)
+                if inner_hit["_source"].get(content_field):
+                    doc = deepcopy(hit)
+                    doc["_source"][embedding_field] = inner_hit["_source"][
+                        embedding_field
+                    ]
+                    doc["_source"][content_field] = clean_text(text=inner_hit["_source"][content_field],
+                                                               conf=self.clean_config)
+                    documents.append(doc)
 
         # Adjust the query for the following pipeline node, the AnswerExtraction
         if not isinstance(query, str):
             try:
                 query = params["payload"]["RawRetriever"]["payload"]["custom_query"]
             except KeyError:
-                logger.warning("Could not get custom query from RawRetriever")
+                try:
+                    body = params["payload"]["query"]
+                    query = get_search_term(body)
+                except Exception:
+                    logger.exception("Could not get custom query from RawRetriever")
+                    import pdb
+
+                    pdb.set_trace()
+                    query = ""
 
         res = {
             "documents": [

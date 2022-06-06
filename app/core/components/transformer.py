@@ -65,6 +65,8 @@ class SentenceTransformer(BaseComponent):
         self.model = AutoModel.from_pretrained(kwargs["model"])
 
     def run(self, sentence_transformer_documents):
+        if not sentence_transformer_documents:
+            return {"sentence_transformer_documents": []}, "output_1"
         sentences = [doc.content for doc in sentence_transformer_documents]
         encoded_input = self.tokenizer(
             sentences, padding=True, truncation=True, return_tensors="pt"
