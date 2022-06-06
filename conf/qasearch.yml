@@ -15,6 +15,7 @@ components:
       qa_pipeline: "qa"
       excluded_meta_data:
         - fulltext
+        - text
         - embedding
         - nlp_100
         - nlp_250
