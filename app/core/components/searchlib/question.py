@@ -23,12 +23,23 @@ class DPRequestClassifier(BaseComponent):
 
     def run(
         self,
-        params,
+        params=None,
+        payload=None,
     ):
-        params = params.get("payload", {}).get("params", {})
+        params = params or {}
+        params = params.get("payload", {}).get("params", {}) or {}
         use_dp = params.get("use_dp", False)
 
         return {}, use_dp and "output_2" or "output_1"
+
+
+def get_from(payload):
+    start = payload.get("from", payload.get("from_"))
+
+    if start is None:
+        return 0
+
+    return start
 
 
 class ElasticSearchRequestClassifier(BaseComponent):
@@ -56,7 +67,7 @@ class ElasticSearchRequestClassifier(BaseComponent):
     ):
 
         payload = params["payload"] or {}
-        if (payload).get("size", 0) > 0 and payload.get("from", 0) == 0:
+        if payload.get("size", 0) > 0 and get_from(payload) == 0:
             search_term = get_search_term(payload["query"])
             print("searchterm", search_term)
             if search_term:
