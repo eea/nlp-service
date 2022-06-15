@@ -1,6 +1,7 @@
 import logging
 from copy import deepcopy
-from typing import Any, List, Optional  # , Dict
+from datetime import datetime
+from typing import Any, List, Optional, Union  # , Dict
 
 import numpy as np
 from app.core.config import NLP_FIELD
@@ -14,6 +15,79 @@ logger = logging.getLogger(__name__)
 
 
 class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
+    def __init__(
+        self,
+        host: Union[str, List[str]] = "localhost",
+        port: Union[int, List[int]] = 9200,
+        username: str = "",
+        password: str = "",
+        api_key_id: Optional[str] = None,
+        api_key: Optional[str] = None,
+        aws4auth=None,
+        index: str = "document",
+        label_index: str = "label",
+        search_fields: Union[str, list] = "content",
+        content_field: str = "content",
+        name_field: str = "name",
+        embedding_field: str = "embedding",
+        embedding_dim: int = 768,
+        custom_mapping: Optional[dict] = None,
+        excluded_meta_data: Optional[list] = None,
+        analyzer: str = "standard",
+        scheme: str = "http",
+        ca_certs: Optional[str] = None,
+        verify_certs: bool = True,
+        recreate_index: bool = False,
+        create_index: bool = True,
+        refresh_type: str = "wait_for",
+        similarity="dot_product",
+        timeout=30,
+        return_embedding: bool = False,
+        duplicate_documents: str = "overwrite",
+        index_type: str = "flat",
+        scroll: str = "1d",
+        skip_missing_embeddings: bool = True,
+        synonyms: Optional[List] = None,
+        synonym_type: str = "synonym",
+        internal_excluded_meta_data: Optional[list] = None,
+    ):
+        super(SearchlibElasticsearchDocumentStore, self).__init__(
+            host=host,
+            port=port,
+            username=username,
+            password=password,
+            api_key_id=api_key_id,
+            api_key=api_key,
+            aws4auth=aws4auth,
+            index=index,
+            label_index=label_index,
+            search_fields=search_fields,
+            content_field=content_field,
+            name_field=name_field,
+            embedding_field=embedding_field,
+            embedding_dim=embedding_dim,
+            custom_mapping=custom_mapping,
+            excluded_meta_data=excluded_meta_data,
+            analyzer=analyzer,
+            scheme=scheme,
+            ca_certs=ca_certs,
+            verify_certs=verify_certs,
+            recreate_index=recreate_index,
+            create_index=create_index,
+            refresh_type=refresh_type,
+            similarity=similarity,
+            timeout=timeout,
+            return_embedding=return_embedding,
+            duplicate_documents=duplicate_documents,
+            index_type=index_type,
+            scroll=scroll,
+            skip_missing_embeddings=skip_missing_embeddings,
+            synonyms=synonyms,
+            synonym_type=synonym_type,
+        )
+
+        self.internal_excluded_meta_data = internal_excluded_meta_data
+
     def query(
         self,
         query: Optional[dict],
@@ -81,13 +155,23 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
                 self.excluded_meta_data + body["_source"]["_excludes"]
             )
 
+        if self.internal_excluded_meta_data:
+            excludes_list = body.get("_source", {}).get("excludes", [])
+            if len(excludes_list) == 0:
+                body["_source"] = {"excludes": self.internal_excluded_meta_data}
+
+            excludes_list = body.get("_source", {}).get("excludes", [])
+            logger.info(f"exclude fields: {excludes_list}")
+
         if sort is not None:
             body["sort"] = sort
 
         logger.info(f"Retriever query: {index} {body}")
-
+        before = datetime.now()
         result = self.client.search(index=index, body=body)
-
+        after = datetime.now()
+        delta = after - before
+        logger.info(f"RESULTS in {delta.total_seconds()} seconds")
         return result
 
     def _get_vector_similarity_query(
