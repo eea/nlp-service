@@ -20,3 +20,6 @@ components:
         - nlp_100
         - nlp_250
         - nlp_500
+      default_query_types:
+        - "query:interrogative"
+        - "query:declarative"

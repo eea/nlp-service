@@ -2,11 +2,12 @@ import logging
 
 from app.api.search.api import SearchRequest
 from app.core.config import CONCURRENT_REQUEST_PER_WORKER
-from app.core.elasticsearch import get_search_term
+from app.core.elasticsearch import get_body_from  # , get_search_term
+# from app.core.elasticsearch import get_search_term
 from app.core.utils import RequestLimiter
 from fastapi import APIRouter, Request
 
-from .api import QASearchResponse
+# from .api import QASearchResponse
 
 router = APIRouter()
 
@@ -35,10 +36,27 @@ def remix(search_response, qa_response, exclude=None):
     return res
 
 
+_missing = object()
+
+
+def is_qa_request(body, response, default_query_types):
+    from_ = get_body_from(body)
+    query_type = response.get("query_type", None)
+
+    params = body.get("params", {}) or {}
+    handled_types = params.get("QuerySearch", {}).get("query_types", _missing)
+
+    if handled_types is _missing:
+        handled_types = default_query_types
+
+    return (query_type in handled_types) and (from_ == 0)  # "request:metadata"
+
+
 @router.post("")  # , response_model=QASearchResponse
 def post_querysearch(payload: SearchRequest, request: Request):
     component = request.app.state.querysearch.component
     excluded_meta_data = component.excluded_meta_data
+    default_query_types = component.default_query_types
 
     body = payload.dict()
     # use_dp = body.get("params", {}).pop("use_dp", False)
@@ -55,10 +73,7 @@ def post_querysearch(payload: SearchRequest, request: Request):
         search_response = search_pipeline.predict(body)
         qa_response = {}
 
-        if (
-            search_response.get("query_type", None) != "request:metadata"
-            and body.get("from", 0) == 0
-        ):
+        if is_qa_request(body, search_response, default_query_types):
             qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
 
             if qa_pipeline and body.get("size", 0):
