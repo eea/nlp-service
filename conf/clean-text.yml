@@ -2,3 +2,9 @@
   replacement: ""
 - expression: 'http[s]?://\S+'
   replacement: "<stripped_url>"
+- expression: "HelpCenter FAQ"
+  replacement: ""
+- expression: 'PDF generated on \d+ [a-zA-Z]+ \d+\, \d+:\d+ (AM|PM)( Document Actions Share with others )?'
+  replacement: ""
+- expression: 'Permalinks - Permalink to this version - .+? - Permalink to latest version - .+? For references, please go to'
+  replacement: " For references, please go to"
