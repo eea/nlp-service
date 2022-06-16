@@ -30,3 +30,12 @@ def get_search_term(body):
         return ""
 
     return search_term
+
+
+def get_body_from(payload):
+    start = payload.get("from", payload.get("from_"))
+
+    if start is None:
+        return 0
+
+    return start

@@ -1,7 +1,7 @@
 import logging
 from typing import Any, List, Optional  # , Dict
 
-from app.core.elasticsearch import get_search_term
+from app.core.elasticsearch import get_body_from, get_search_term
 from haystack.nodes.base import BaseComponent
 from haystack.schema import Document, MultiLabel
 
@@ -23,9 +23,11 @@ class DPRequestClassifier(BaseComponent):
 
     def run(
         self,
-        params,
+        params=None,
+        payload=None,
     ):
-        params = params.get("payload", {}).get("params", {})
+        params = params or {}
+        params = params.get("payload", {}).get("params", {}) or {}
         use_dp = params.get("use_dp", False)
 
         return {}, use_dp and "output_2" or "output_1"
@@ -56,7 +58,7 @@ class ElasticSearchRequestClassifier(BaseComponent):
     ):
 
         payload = params["payload"] or {}
-        if (payload).get("size", 0) > 0 and payload.get("from", 0) == 0:
+        if payload.get("size", 0) > 0 and get_body_from(payload) == 0:
             search_term = get_search_term(payload["query"])
             print("searchterm", search_term)
             if search_term:
