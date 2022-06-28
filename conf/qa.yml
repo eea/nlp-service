@@ -59,21 +59,22 @@ components:
   - name: SearchlibQAAdapter
     type: SearchlibQAAdapter
 
-  - name: DPRequestClassifier
+  - name: QADPRequestClassifier
     type: DPRequestClassifier
+
 
 pipelines:
   - name: query
     type: Query
     nodes:
-      - name: DPRequestClassifier
+      - name: QADPRequestClassifier
         inputs: [Query]
 
       - name: RawRetriever
-        inputs: [DPRequestClassifier.output_1]
+        inputs: [QADPRequestClassifier.output_1]
 
       - name: DensePassageRetriever
-        inputs: [DPRequestClassifier.output_2]
+        inputs: [QADPRequestClassifier.output_2]
 
       - name: ESHit2HaystackDoc
         inputs: [RawRetriever, DensePassageRetriever]
