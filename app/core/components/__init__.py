@@ -13,6 +13,7 @@ from .spacy import SpacyModel
 from .summarizer import SearchlibTransformersSummarizer
 from .transformer import (NERTransformersPipeline, SentenceTransformer,
                           TransformersPipeline)
+from .searchlib.languagedetect import LangDetect
 
 __all__ = [
     Category,
@@ -30,4 +31,5 @@ __all__ = [
     SpacyModel,
     TransformersPipeline,
     QuerySearchModel,
+    LangDetect,
 ]
