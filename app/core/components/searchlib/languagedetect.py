@@ -11,7 +11,6 @@ class LangDetect(BaseComponent):
     outgoing_edges = 1
 
     def run(self, params: Optional[dict] = None, ):
-        print(params)
         payload = params["payload"]
 
         search_term = get_search_term(payload["query"])
