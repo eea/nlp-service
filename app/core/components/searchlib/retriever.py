@@ -2,7 +2,7 @@ import copy
 import logging
 from typing import Optional
 
-from app.core.components.searchlib.hightlight import adjust_highlight
+from app.core.components.searchlib.highlight import adjust_highlight
 from app.core.elasticsearch import get_search_term
 from haystack.nodes.retriever import (DensePassageRetriever,
                                       ElasticsearchRetriever)
@@ -55,7 +55,7 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         body = payload or params["payload"]
         # get search_term and language
         search_term = get_search_term(payload["query"])
-        detected_languages = body.get("detected_language").get("predictions")
+        detected_languages = body.get("detected_languages", [])
 
         body = clean_body(body)
 
@@ -90,7 +90,11 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(**body)
 
-            output = adjust_highlight(output=output, search_term=search_term, detected_languages=detected_languages)
+            output = adjust_highlight(
+                output=output,
+                search_term=search_term,
+                detected_languages=detected_languages,
+            )
 
             return {"elasticsearch_result": output, "query": query}, "output_1"
         else:

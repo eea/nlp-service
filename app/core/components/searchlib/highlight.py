@@ -1,30 +1,36 @@
 import re
+
 import nltk
 
-nltk.download("stopwords")
-from nltk.corpus import stopwords
+try:
+    from nltk.corpus import stopwords
+except ImportError:
+    nltk.download("stopwords")
+finally:
+    from nltk.corpus import stopwords
 
-lang_code_mapping = {"bg": "bulgarian",
-                     "cs": "czech",
-                     "de": "german",
-                     "el": "greek",
-                     "en": "english",
-                     "es": "spanish",
-                     "et": "estonian",
-                     "fr": "french",
-                     "hr": "croatian",
-                     "it": "italian",
-                     "lt": "lithuanian",
-                     "mt": "maltese",
-                     "nl": "dutch",
-                     "pl": "polish",
-                     "pt": "portuguese",
-                     "ro": "romanian",
-                     "sk": "slovak",
-                     "sl": "slovenian",
-                     "sv": "swedish",
-                     "tr": "turkish"
-                     }
+lang_code_mapping = {
+    "bg": "bulgarian",
+    "cs": "czech",
+    "de": "german",
+    "el": "greek",
+    "en": "english",
+    "es": "spanish",
+    "et": "estonian",
+    "fr": "french",
+    "hr": "croatian",
+    "it": "italian",
+    "lt": "lithuanian",
+    "mt": "maltese",
+    "nl": "dutch",
+    "pl": "polish",
+    "pt": "portuguese",
+    "ro": "romanian",
+    "sk": "slovak",
+    "sl": "slovenian",
+    "sv": "swedish",
+    "tr": "turkish",
+}
 
 
 def get_stop_words(language_code):
@@ -48,7 +54,8 @@ def create_positions_dict(text):
 
     # remove delimiters
     delimiters = ",.!?/&-:; "
-    new_text = ' '.join(w for w in re.split("[" + "\\".join(delimiters) + "]", text.lower()) if w)
+    splitter = "[" + "\\".join(delimiters) + "]"
+    new_text = " ".join(w for w in re.split(splitter, text.lower()) if w)
 
     # get the tokens
     tokens = new_text.split()
@@ -142,10 +149,16 @@ def get_sequences(searched_text, original_es_highlight, stop_words):
 
                 if test_highlighting(prev_token):
                     dehighlighted_prev_token = get_highlighted_text(prev_token)
-                    if (dehighlighted_curr_token in searched_tokens_positions) and (dehighlighted_prev_token in searched_tokens_positions):
+                    if (dehighlighted_curr_token in searched_tokens_positions) and (
+                        dehighlighted_prev_token in searched_tokens_positions
+                    ):
 
-                        curr_token_set = searched_tokens_positions[dehighlighted_curr_token.lower()]
-                        prev_token_set = searched_tokens_positions[dehighlighted_prev_token.lower()]
+                        curr_token_set = searched_tokens_positions[
+                            dehighlighted_curr_token.lower()
+                        ]
+                        prev_token_set = searched_tokens_positions[
+                            dehighlighted_prev_token.lower()
+                        ]
 
                         if test_consecutive_tokens(prev_token_set, curr_token_set):
                             curr_position = curr_position + 1
@@ -155,9 +168,13 @@ def get_sequences(searched_text, original_es_highlight, stop_words):
 
                             if start_seq <= end_seq:
                                 if only_stop_words_in_seq:
-                                    highlighted_sequences.append((start_seq, end_seq, 'r'))
+                                    highlighted_sequences.append(
+                                        (start_seq, end_seq, "r")
+                                    )
                                 else:
-                                    highlighted_sequences.append((start_seq, end_seq, 'k'))
+                                    highlighted_sequences.append(
+                                        (start_seq, end_seq, "k")
+                                    )
                             only_stop_words_in_seq = True
                             curr_position = curr_position + 1
                             start_seq = curr_position
@@ -174,9 +191,9 @@ def get_sequences(searched_text, original_es_highlight, stop_words):
             end_seq = curr_position - 1
             if start_seq <= end_seq:
                 if only_stop_words_in_seq:
-                    highlighted_sequences.append((start_seq, end_seq, 'r'))
+                    highlighted_sequences.append((start_seq, end_seq, "r"))
                 else:
-                    highlighted_sequences.append((start_seq, end_seq, 'k'))
+                    highlighted_sequences.append((start_seq, end_seq, "k"))
 
             only_stop_words_in_seq = True
 
@@ -235,14 +252,20 @@ def replace_nth_occurrence(string, sub, replacement, n):
 def get_processed_text(searched_text, original_es_highlight, stop_words):
     processed_text = original_es_highlight
 
-    removable_tags_occurrences = get_removable_tags_occurrences(searched_text, original_es_highlight, stop_words)
+    removable_tags_occurrences = get_removable_tags_occurrences(
+        searched_text, original_es_highlight, stop_words
+    )
 
     nb_of_replacements = 0
 
     if removable_tags_occurrences:
         for occurrence in removable_tags_occurrences:
-            processed_text = replace_nth_occurrence(processed_text, "<em>", "", occurrence - nb_of_replacements)
-            processed_text = replace_nth_occurrence(processed_text, "</em>", "", occurrence - nb_of_replacements)
+            processed_text = replace_nth_occurrence(
+                processed_text, "<em>", "", occurrence - nb_of_replacements
+            )
+            processed_text = replace_nth_occurrence(
+                processed_text, "</em>", "", occurrence - nb_of_replacements
+            )
 
             nb_of_replacements = nb_of_replacements + 1
 
@@ -263,7 +286,6 @@ def adjust_highlight(output, search_term, detected_languages):
 
         stop_words = get_stop_words(detected_language)
 
-
     # here we process the "highlight":{"description.highlight":[]} elements from output
     output_hits = output["hits"]["hits"]
 
@@ -279,8 +301,9 @@ def adjust_highlight(output, search_term, detected_languages):
                     while highlight_counter < len(highlights_list):
                         original_highlighted_text = highlights_list[highlight_counter]
 
-                        highlights_list[highlight_counter] = get_processed_text(search_term, original_highlighted_text,
-                                                                                stop_words)
+                        highlights_list[highlight_counter] = get_processed_text(
+                            search_term, original_highlighted_text, stop_words
+                        )
 
                         highlight_counter = highlight_counter + 1
 
