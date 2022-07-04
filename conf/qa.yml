@@ -48,7 +48,8 @@ components:
     type: TransformersReader
     #FARMReader
     params:
-      model_name_or_path: deepset/roberta-base-squad2
+      model_name_or_path: deepset/tinyroberta-squad2
+      # model_name_or_path: deepset/roberta-base-squad2
       # model_name_or_path: bert-large-uncased
       # model_name_or_path: deepset/minilm-uncased-squad2
       # deepset/roberta-base-squad2
