@@ -19,4 +19,4 @@ class LangDetectRequest(BaseModel):
 
 
 class LangDetectResponse(BaseModel):
-    detect_languages: List[Any]
+    predictions: List[Any]

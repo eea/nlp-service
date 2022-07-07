@@ -74,18 +74,13 @@ components:    # define all the building-blocks for Pipeline
     params:
       model_name_or_path: shahrukhx01/question-vs-statement-classifier
 
-  - name: LangDetect
-    type: LangDetect
 
 pipelines:
   - name: search
     type: Query
     nodes:
-      - name: LangDetect
-        inputs: [Query]
-
       - name: RequestClassifier
-        inputs: [LangDetect]
+        inputs: [Query]
 
       - name: TagRequestAsMetadata
         inputs: [RequestClassifier.output_1]

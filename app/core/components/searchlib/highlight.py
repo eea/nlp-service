@@ -1,15 +1,14 @@
 import re
 
 import nltk
+nltk.download("stopwords")
+from nltk.corpus import stopwords
 
-try:
-    from nltk.corpus import stopwords
-except ImportError:
-    nltk.download("stopwords")
-finally:
-    from nltk.corpus import stopwords
+from langdetect import DetectorFactory, detect, detect_langs
 
-lang_code_mapping = {
+DetectorFactory.seed = 0
+
+LANG_CODE_MAPPING = {
     "bg": "bulgarian",
     "cs": "czech",
     "de": "german",
@@ -17,6 +16,7 @@ lang_code_mapping = {
     "en": "english",
     "es": "spanish",
     "et": "estonian",
+    "fi": "finnish",
     "fr": "french",
     "hr": "croatian",
     "it": "italian",
@@ -32,281 +32,262 @@ lang_code_mapping = {
     "tr": "turkish",
 }
 
-
-def get_stop_words(language_code):
-    stop_words = []
-
-    if language_code:
-        language = lang_code_mapping[language_code]
-        stop_words = stopwords.words(language)
-    else:
-        # default language is 'english'
-        stop_words = stopwords.words("english")
-
-    return stop_words
+DEFAULT_LANG = "en"
 
 
-def create_positions_dict(text):
-    tokens_position = {}
+class Highlight:
 
-    if text is None:
-        return tokens_position
+    def __init__(self, search_term):
+        self.search_term = search_term
 
-    # remove delimiters
-    delimiters = ",.!?/&-:; "
-    splitter = "[" + "\\".join(delimiters) + "]"
-    new_text = " ".join(w for w in re.split(splitter, text.lower()) if w)
+    @property
+    def language(self):
+        """
+        detect languages in the search term
 
-    # get the tokens
-    tokens = new_text.split()
+        languages list can have one or multiple languages
+        if it has multiple languages and among them there is English, choose English,
+        else choose the first language in the list of detected languages
 
-    curr_position = 0
+        :return: language code for search term
+        """
 
-    while curr_position < len(tokens):
-        if tokens[curr_position] not in tokens_position:
-            tokens_position[tokens[curr_position]] = set()
+        search_term = {"texts": [self.search_term], "options": {"debug": False}}
+        meth = search_term["options"]["debug"] and detect_langs or detect
+        detected_languages = [meth(text) for text in search_term["texts"] if text]
 
-        tokens_position[tokens[curr_position]].add(curr_position)
+        if detected_languages:
+            return DEFAULT_LANG if DEFAULT_LANG in detected_languages else detected_languages[0]
 
-        curr_position = curr_position + 1
+        return []
 
-    return tokens_position
+    @property
+    def stop_words(self):
+        """
+        default language is 'english'
+        :return: stop_words for the search term language
+        """
+        if self.language and self.language in LANG_CODE_MAPPING:
+            return stopwords.words(LANG_CODE_MAPPING[self.language]) if self.language else stopwords.words("english")
+        return []
 
+    def _create_positions(self):
+        tokens_position = {}
 
-def test_consecutive_tokens(set1, set2):
-    for elem1 in set1:
-        if (elem1 + 1) in set2:
-            return True
+        if self.search_term is None:
+            return tokens_position
 
-    return False
+        # remove delimiters
+        delimiters = ",.!?/&-:; "
+        splitter = "[" + "\\".join(delimiters) + "]"
+        new_text = " ".join(w for w in re.split(splitter, self.search_term.lower()) if w)
 
+        # get the tokens
+        tokens = new_text.split()
 
-def test_highlighting(text):
-    if ("<em>" in text) and ("</em>" in text):
-        return True
+        curr_position = 0
 
-    return False
+        while curr_position < len(tokens):
+            if tokens[curr_position] not in tokens_position:
+                tokens_position[tokens[curr_position]] = set()
 
-
-def get_highlighted_text(text):
-    text = text.replace("<em>", "")
-    text = text.replace("</em>", "")
-
-    return text
-
-
-def get_sequences(searched_text, original_es_highlight, stop_words):
-    """
-    store a list of tuples (start_seq, end_seq, status) in highlighted_sequences
-    a tuple represent the start and the end of a highlighted sequence and if the sequence
-    has only stop words ('r' - from remove) or not ('k' - keep)
-
-    Algorithm used in get_sequences(searched_text, original_es_highlight):
-    Go through each word from original_es_highlight, one by one.
-    At every step, we need to know which is the beginning of the subsequence of tokens from original_es_highlight,
-    that are consecutive in searched_text, that is ending in the current token from original_es_highlight.
-    In order to do so, we hold in a variable the index of the token that is at the beginning of this subsequence.
-    When we advance to a new token from original_es_highlight,
-    we need first to check if the token can continue the already found sequence until the current moment
-    meaning if the current token is marked (with <em> , </em>) and if it is successive in the searched_text.
-    if the current token is marked and is consecutive to the previous token
-    (we determine that by looking at the precedence of tokens in searched_text),
-    then we just go on to the next token, the beginning of the sequence remains the same.
-    if not (the token is not highlighted because is not part of searched_text, or, if it is, is not successive to the precedent token),
-    then it means that the current subsequence ends at the previous token (including the previous token).
-    in the process we also verify each token from the sequences
-    so that we know if a sequence contains only stop words or not.
-    """
-
-    highlighted_sequences = []
-
-    if (searched_text is None) or (original_es_highlight is None):
-        return highlighted_sequences
-
-    searched_tokens_positions = create_positions_dict(searched_text)
-
-    highlighted_tokens = original_es_highlight.split()
-
-    curr_position = 0
-
-    start_seq = 0
-    end_seq = 0
-    only_stop_words_in_seq = True
-
-    while curr_position < len(highlighted_tokens):
-        curr_token = highlighted_tokens[curr_position]
-
-        if test_highlighting(curr_token):
-            dehighlighted_curr_token = get_highlighted_text(curr_token)
-
-            if dehighlighted_curr_token.lower() not in stop_words:
-                only_stop_words_in_seq = False
-
-            if curr_position == 0:
-                curr_position = curr_position + 1
-            else:
-                prev_token = highlighted_tokens[curr_position - 1]
-
-                if test_highlighting(prev_token):
-                    dehighlighted_prev_token = get_highlighted_text(prev_token)
-                    if (dehighlighted_curr_token in searched_tokens_positions) and (
-                        dehighlighted_prev_token in searched_tokens_positions
-                    ):
-
-                        curr_token_set = searched_tokens_positions[
-                            dehighlighted_curr_token.lower()
-                        ]
-                        prev_token_set = searched_tokens_positions[
-                            dehighlighted_prev_token.lower()
-                        ]
-
-                        if test_consecutive_tokens(prev_token_set, curr_token_set):
-                            curr_position = curr_position + 1
-                        else:
-                            # the sequence ends because we got to a highlighted token that is not consecutive
-                            end_seq = curr_position
-
-                            if start_seq <= end_seq:
-                                if only_stop_words_in_seq:
-                                    highlighted_sequences.append(
-                                        (start_seq, end_seq, "r")
-                                    )
-                                else:
-                                    highlighted_sequences.append(
-                                        (start_seq, end_seq, "k")
-                                    )
-                            only_stop_words_in_seq = True
-                            curr_position = curr_position + 1
-                            start_seq = curr_position
-
-                    else:
-                        print("This is an ES highlighting error")
-                        curr_position = curr_position + 1
-                        start_seq = curr_position
-                else:
-                    # we start searching another sequence starting with current position
-                    start_seq = curr_position
-                    curr_position = curr_position + 1
-        else:
-            end_seq = curr_position - 1
-            if start_seq <= end_seq:
-                if only_stop_words_in_seq:
-                    highlighted_sequences.append((start_seq, end_seq, "r"))
-                else:
-                    highlighted_sequences.append((start_seq, end_seq, "k"))
-
-            only_stop_words_in_seq = True
+            tokens_position[tokens[curr_position]].add(curr_position)
 
             curr_position = curr_position + 1
-            start_seq = curr_position
 
-    return highlighted_sequences
+        return tokens_position
 
+    @staticmethod
+    def _is_consecutive_tokens(set_1, set_2):
+        for elem in set_1:
+            if (elem + 1) in set_2:
+                return True
+        return False
 
-def check_if_only_stop_words(tokens, start_seq, end_seq, stop_words):
-    # check if a given sequence contains only stop words
+    @staticmethod
+    def _is_highlighted(token):
+        if token:
+            if ("<em>" in token) and ("</em>" in token):
+                return True
+        return False
 
-    cursor = start_seq
-    while cursor <= end_seq:
-        curr_token = tokens[cursor]
-        dehighlighted_curr_token = get_highlighted_text(curr_token)
+    @staticmethod
+    def _get_highlighted(token):
+        if token:
+            token = token.replace("<em>", "")
+            token = token.replace("</em>", "")
 
-        if dehighlighted_curr_token not in stop_words:
-            return False
+        return token
 
-        cursor = cursor + 1
+    @staticmethod
+    def _add_sequence(start_seq, end_seq, only_stop_words, sequences):
+        if start_seq <= end_seq:
+            if only_stop_words:
+                sequences.append((start_seq, end_seq, "r"))
+            else:
+                sequences.append((start_seq, end_seq, "k"))
 
-    return True
+        return sequences
 
+    def _get_sequences(self, original):
+        """
+        store a list of tuples (start_seq, end_seq, status) in sequences
+        a tuple represent the start and the end of a highlighted sequence and if the sequence
+        has only stop words ('r' - from remove) or not ('k' - keep)
 
-def get_removable_tags_occurrences(searched_text, original_es_highlight, stop_words):
-    sequences = get_sequences(searched_text, original_es_highlight, stop_words)
+        Algorithm used in get_sequences(searched_text, original_es_highlight):
+        Go through each word from original_es_highlight, one by one.
+        At every step, we need to know which is the beginning of the subsequence of tokens from original_es_highlight,
+        that are consecutive in searched_text, that is ending in the current token from original_es_highlight.
+        In order to do so, we hold in a variable the index of the token that is at the beginning of this subsequence.
+        When we advance to a new token from original_es_highlight,
+        we need first to check if the token can continue the already found sequence until the current moment
+        meaning if the current token is marked (with <em> , </em>) and if it is successive in the searched_text.
+        if the current token is marked and is consecutive to the previous token
+        (we determine that by looking at the precedence of tokens in searched_text),
+        then we just go on to the next token, the beginning of the sequence remains the same.
+        if not (the token is not highlighted because is not part of searched_text, or, if it is, is not successive to the precedent token),
+        then it means that the current subsequence ends at the previous token (including the previous token).
+        in the process we also verify each token from the sequences
+        so that we know if a sequence contains only stop words or not.
+        """
 
-    occurrences_of_removable_tags = []
+        sequences = []
 
-    if sequences:
-        nb_of_tags = 0
-        for seq in sequences:
+        if not self.search_term or not original or not self.stop_words:
+            return sequences
 
-            if seq[2] == "r":
-                cursor = 0
-                while cursor <= seq[1] - seq[0]:
-                    occurrences_of_removable_tags.append(nb_of_tags + cursor + 1)
-                    cursor = cursor + 1
+        searched_tokens_positions = self._create_positions()
 
-            nb_of_tags = nb_of_tags + seq[1] - int(seq[0]) + 1
+        highlighted_tokens = original.split()
 
-    return occurrences_of_removable_tags
+        curr_position = 0
 
+        start_seq = 0
+        end_seq = 0
+        only_stop_words_in_seq = True
 
-def replace_nth_occurrence(string, sub, replacement, n):
-    where = [m.start() for m in re.finditer(sub, string)][n - 1]
-    before = string[:where]
-    after = string[where:]
-    after = after.replace(sub, replacement, 1)
-    new_string = before + after
+        while curr_position < len(highlighted_tokens):
+            curr_token = highlighted_tokens[curr_position]
 
-    return new_string
+            if self._is_highlighted(curr_token):
+                dehighlighted_curr_token = self._get_highlighted(curr_token)
 
+                if dehighlighted_curr_token.lower() not in self.stop_words:
+                    only_stop_words_in_seq = False
 
-def get_processed_text(searched_text, original_es_highlight, stop_words):
-    processed_text = original_es_highlight
+                if curr_position == 0:
+                    curr_position = curr_position + 1
+                else:
+                    prev_token = highlighted_tokens[curr_position - 1]
 
-    removable_tags_occurrences = get_removable_tags_occurrences(
-        searched_text, original_es_highlight, stop_words
-    )
+                    if self._is_highlighted(prev_token):
+                        dehighlighted_prev_token = self._get_highlighted(prev_token)
+                        if (dehighlighted_curr_token in searched_tokens_positions) and (
+                                dehighlighted_prev_token in searched_tokens_positions
+                        ):
+                            curr_token_set = searched_tokens_positions[
+                                dehighlighted_curr_token.lower()
+                            ]
+                            prev_token_set = searched_tokens_positions[
+                                dehighlighted_prev_token.lower()
+                            ]
 
-    nb_of_replacements = 0
+                            if self._is_consecutive_tokens(prev_token_set, curr_token_set):
+                                curr_position = curr_position + 1
+                            else:
+                                # the sequence ends because we got to a highlighted token that is not consecutive
+                                end_seq = curr_position - 1
+                                sequences = self._add_sequence(start_seq, end_seq, only_stop_words_in_seq, sequences)
+                                only_stop_words_in_seq = True
+                                start_seq = curr_position
+                                curr_position = curr_position + 1
+                        else:
+                            print("This is an ES highlighting error")
+                            curr_position = curr_position + 1
+                            start_seq = curr_position
+                    else:
+                        # we start searching another sequence starting with current position
+                        start_seq = curr_position
+                        curr_position = curr_position + 1
+            else:
+                end_seq = curr_position - 1
+                sequences = self._add_sequence(start_seq, end_seq, only_stop_words_in_seq, sequences)
+                only_stop_words_in_seq = True
+                curr_position = curr_position + 1
+                start_seq = curr_position
 
-    if removable_tags_occurrences:
-        for occurrence in removable_tags_occurrences:
-            processed_text = replace_nth_occurrence(
-                processed_text, "<em>", "", occurrence - nb_of_replacements
-            )
-            processed_text = replace_nth_occurrence(
-                processed_text, "</em>", "", occurrence - nb_of_replacements
-            )
+        return sequences
 
-            nb_of_replacements = nb_of_replacements + 1
+    def _get_removable_tags(self, original):
+        sequences = self._get_sequences(original)
 
-    return processed_text
+        removable_tags = []
 
+        if sequences:
+            nb_of_tags = 0
+            for seq in sequences:
+                if seq[2] == "r":
+                    cursor = 0
 
-def adjust_highlight(output, search_term, detected_languages):
-    detected_language = ""
-    stop_words = []
-    if detected_languages:
-        # detected_languages can have one or multiple languages
-        # if it has multiple languages and among them there is English, we will choose English,
-        # else we will choose the first language in the list of detected languages
-        if "en" in detected_languages:
-            detected_language = "en"
-        else:
-            detected_language = detected_languages[0]
+                    while cursor <= seq[1] - seq[0]:
+                        removable_tags.append(nb_of_tags + cursor + 1)
+                        cursor = cursor + 1
 
-        stop_words = get_stop_words(detected_language)
+                nb_of_tags = nb_of_tags + seq[1] - int(seq[0]) + 1
 
-    # here we process the "highlight":{"description.highlight":[]} elements from output
-    output_hits = output["hits"]["hits"]
+        return removable_tags
 
-    if output_hits:
-        counter = 0
-        while counter < len(output_hits):
-            current_hit = output_hits[counter]
-            if "highlight" in current_hit:
-                highlights_dict = current_hit["highlight"]
-                if "description.highlight" in highlights_dict:
-                    highlights_list = highlights_dict["description.highlight"]
-                    highlight_counter = 0
-                    while highlight_counter < len(highlights_list):
-                        original_highlighted_text = highlights_list[highlight_counter]
+    @staticmethod
+    def _replace_nth_occurrence(string, sub, replacement, n):
+        where = [m.start() for m in re.finditer(sub, string)][n - 1]
+        before = string[:where]
+        after = string[where:]
+        after = after.replace(sub, replacement, 1)
+        new_string = before + after
 
-                        highlights_list[highlight_counter] = get_processed_text(
-                            search_term, original_highlighted_text, stop_words
-                        )
+        return new_string
 
-                        highlight_counter = highlight_counter + 1
+    def _process_text(self, highlight):
+        processed_text = highlight
 
-            counter = counter + 1
+        removable_tags_occurrences = self._get_removable_tags(highlight)
 
-    return output
+        nb_of_replacements = 0
+
+        if removable_tags_occurrences:
+            for occurrence in removable_tags_occurrences:
+                processed_text = self._replace_nth_occurrence(
+                    processed_text, "<em>", "", occurrence - nb_of_replacements
+                )
+                processed_text = self._replace_nth_occurrence(
+                    processed_text, "</em>", "", occurrence - nb_of_replacements
+                )
+
+                nb_of_replacements = nb_of_replacements + 1
+
+        return processed_text
+
+    def adjust(self, text):
+        # here we process the "highlight":{"description.highlight":[]} elements from output
+        output_hits = text.get("hits", {}).get("hits", None)
+
+        if output_hits:
+            counter = 0
+            while counter < len(output_hits):
+                current_hit = output_hits[counter]
+                if "highlight" in current_hit:
+                    highlights_dict = current_hit["highlight"]
+                    if "description.highlight" in highlights_dict:
+                        highlights_list = highlights_dict["description.highlight"]
+                        highlight_counter = 0
+                        while highlight_counter < len(highlights_list):
+                            original_highlighted_text = highlights_list[highlight_counter]
+
+                            highlights_list[highlight_counter] = self._process_text(original_highlighted_text)
+
+                            highlight_counter += 1
+
+                counter = counter + 1
+
+        return text
