@@ -2,11 +2,11 @@ import copy
 import logging
 from typing import Optional
 
-from app.core.components.searchlib.highlight import Highlight
 from app.core.elasticsearch import get_search_term
 from haystack.nodes.retriever import (DensePassageRetriever,
                                       ElasticsearchRetriever)
 
+from .highlight import Highlight
 
 logger = logging.getLogger(__name__)
 

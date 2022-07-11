@@ -1,10 +1,16 @@
+import logging
 import re
 
 import nltk
-nltk.download("stopwords")
-from nltk.corpus import stopwords
+from langdetect import DetectorFactory, detect_langs
 
-from langdetect import DetectorFactory, detect, detect_langs
+logger = logging.getLogger(__name__)
+
+try:
+    from nltk.corpus import stopwords
+except Exception:
+    nltk.download("stopwords")
+
 
 DetectorFactory.seed = 0
 
@@ -32,10 +38,10 @@ LANG_CODE_MAPPING = {
     "tr": "turkish",
 }
 
-DEFAULT_LANG = "en"
-
 
 class Highlight:
+    threshold = 0.8
+    default_lang = "en"
 
     def __init__(self, search_term):
         self.search_term = search_term
@@ -52,14 +58,24 @@ class Highlight:
         :return: language code for search term
         """
 
-        search_term = {"texts": [self.search_term], "options": {"debug": False}}
-        meth = search_term["options"]["debug"] and detect_langs or detect
-        detected_languages = [meth(text) for text in search_term["texts"] if text]
+        # search_term = {"texts": [self.search_term], "options": {"debug": False}}
+        # meth = search_term["options"]["debug"] and detect_langs or detect
+        if not self.search_term:
+            return self.default_lang
 
-        if detected_languages:
-            return DEFAULT_LANG if DEFAULT_LANG in detected_languages else detected_languages[0]
+        detected = detect_langs(self.search_term)
+        scores = {x.lang: x.prob for x in detected if x.prob > self.threshold}
 
-        return DEFAULT_LANG
+        if self.default_lang in scores.keys():
+            return self.default_lang
+
+        lang = scores.keys()[0]
+        for k in scores.keys():
+            if scores[k] > scores[lang]:
+                lang = k
+
+        logger.info(f"Matched language {lang} for query: '{self.search_term}'")
+        return lang
 
     @property
     def stop_words(self):
@@ -68,7 +84,11 @@ class Highlight:
         :return: stop_words for the search term language
         """
         if self.language and self.language in LANG_CODE_MAPPING:
-            return stopwords.words(LANG_CODE_MAPPING[self.language]) if self.language else stopwords.words("english")
+            return (
+                stopwords.words(LANG_CODE_MAPPING[self.language])
+                if self.language
+                else stopwords.words("english")
+            )
         return []
 
     def _create_positions(self):
@@ -80,7 +100,9 @@ class Highlight:
         # remove delimiters
         delimiters = ",.!?/&-:; "
         splitter = "[" + "\\".join(delimiters) + "]"
-        new_text = " ".join(w for w in re.split(splitter, self.search_term.lower()) if w)
+        new_text = " ".join(
+            w for w in re.split(splitter, self.search_term.lower()) if w
+        )
 
         # get the tokens
         tokens = new_text.split()
@@ -184,7 +206,7 @@ class Highlight:
                     if self._is_highlighted(prev_token):
                         dehighlighted_prev_token = self._get_highlighted(prev_token)
                         if (dehighlighted_curr_token in searched_tokens_positions) and (
-                                dehighlighted_prev_token in searched_tokens_positions
+                            dehighlighted_prev_token in searched_tokens_positions
                         ):
                             curr_token_set = searched_tokens_positions[
                                 dehighlighted_curr_token.lower()
@@ -193,12 +215,19 @@ class Highlight:
                                 dehighlighted_prev_token.lower()
                             ]
 
-                            if self._is_consecutive_tokens(prev_token_set, curr_token_set):
+                            if self._is_consecutive_tokens(
+                                prev_token_set, curr_token_set
+                            ):
                                 curr_position = curr_position + 1
                             else:
                                 # the sequence ends because we got to a highlighted token that is not consecutive
                                 end_seq = curr_position - 1
-                                sequences = self._add_sequence(start_seq, end_seq, only_stop_words_in_seq, sequences)
+                                sequences = self._add_sequence(
+                                    start_seq,
+                                    end_seq,
+                                    only_stop_words_in_seq,
+                                    sequences,
+                                )
                                 only_stop_words_in_seq = True
                                 start_seq = curr_position
                                 curr_position = curr_position + 1
@@ -212,7 +241,9 @@ class Highlight:
                         curr_position = curr_position + 1
             else:
                 end_seq = curr_position - 1
-                sequences = self._add_sequence(start_seq, end_seq, only_stop_words_in_seq, sequences)
+                sequences = self._add_sequence(
+                    start_seq, end_seq, only_stop_words_in_seq, sequences
+                )
                 only_stop_words_in_seq = True
                 curr_position = curr_position + 1
                 start_seq = curr_position
@@ -282,9 +313,13 @@ class Highlight:
                         highlights_list = highlights_dict["description.highlight"]
                         highlight_counter = 0
                         while highlight_counter < len(highlights_list):
-                            original_highlighted_text = highlights_list[highlight_counter]
+                            original_highlighted_text = highlights_list[
+                                highlight_counter
+                            ]
 
-                            highlights_list[highlight_counter] = self._process_text(original_highlighted_text)
+                            highlights_list[highlight_counter] = self._process_text(
+                                original_highlighted_text
+                            )
 
                             highlight_counter += 1
 
