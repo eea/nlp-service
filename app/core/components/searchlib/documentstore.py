@@ -51,6 +51,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         synonyms: Optional[List] = None,
         synonym_type: str = "synonym",
         internal_excluded_meta_data: Optional[list] = None,
+        nested_content_field: str = "content",
     ):
         super(SearchlibElasticsearchDocumentStore, self).__init__(
             host=host,
@@ -88,6 +89,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         )
 
         self.internal_excluded_meta_data = internal_excluded_meta_data
+        self.nested_content_field = nested_content_field
 
     def query(
         self,
@@ -318,7 +320,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             "function_score": {
                 "query": {
                     "bool": {
-                        "must": [*query_must, semantic_score],
+                        "must": [semantic_score],
                         "filter": query_filters,
                     }
                 },
@@ -420,6 +422,14 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
             if excluded_meta_data:
                 body["_source"] = {"excludes": excluded_meta_data}
 
+            if self.internal_excluded_meta_data:
+                excludes_list = body.get("_source", {}).get("excludes", [])
+                excludes_list += self.internal_excluded_meta_data
+                body["_source"] = {"excludes": excludes_list}
+
+                excludes_list = body.get("_source", {}).get("excludes", [])
+                logger.info(f"exclude fields: {excludes_list}")
+
             logger.info(f"DeepRetriever query: {index} - {body}")
             # print("query body")
             # with open('/tmp/1.json', 'w') as f:
@@ -485,6 +495,7 @@ class ESHit2HaystackDoc(BaseComponent):
 
         documents = []
         content_field = self.document_store.content_field
+        nested_content_field = self.document_store.nested_content_field
         embedding_field = self.document_store.embedding_field
         nested_vector_field = self.nested_vector_field
 
@@ -506,13 +517,14 @@ class ESHit2HaystackDoc(BaseComponent):
                 continue
 
             for inner_hit in inner_hits:
-                if inner_hit["_source"].get(content_field):
+                if inner_hit["_source"].get(nested_content_field):
                     doc = deepcopy(hit)
                     doc["_source"][embedding_field] = inner_hit["_source"][
                         embedding_field
                     ]
-                    doc["_source"][content_field] = clean_text(
-                        text=inner_hit["_source"][content_field], conf=self.clean_config
+                    doc["_source"][nested_content_field] = clean_text(
+                        text=inner_hit["_source"][nested_content_field],
+                        conf=self.clean_config,
                     )
                     documents.append(doc)
 
@@ -527,7 +539,7 @@ class ESHit2HaystackDoc(BaseComponent):
                 except Exception:
                     logger.exception("Could not get custom query from RawRetriever")
                     # import pdb
-                    #
+
                     # pdb.set_trace()
                     query = ""
 
