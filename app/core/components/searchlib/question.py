@@ -21,15 +21,19 @@ class Category(BaseComponent):
 class DPRequestClassifier(BaseComponent):
     outgoing_edges = 2
 
-    def run(
-        self,
-        params=None,
-        payload=None,
-    ):
+    def run(self, params=None, payload=None):
         params = params or {}
         params = params.get("payload", {}).get("params", {}) or {}
-        use_dp = params.get("use_dp", False)
+        use_dp = params.get(self.name, {}).get("use_dp", False)
 
+        print ("----------------------------")
+        print ("----------------------------")
+        print ("----------------------------")
+        print ("DPRC")
+        if use_dp:
+            print ("output_2")
+        else:
+            print ("output_1")
         return {}, use_dp and "output_2" or "output_1"
 
 
@@ -58,10 +62,18 @@ class ElasticSearchRequestClassifier(BaseComponent):
     ):
 
         payload = params["payload"] or {}
-        if payload.get("size", 0) > 0 and get_body_from(payload) == 0:
+        print ("----------------------------")
+        print ("----------------------------")
+        print ("----------------------------")
+        print ("ERC")
+
+#        import pdb; pdb.set_trace()
+        if payload.get("size", 0) > 0:
             search_term = get_search_term(payload["query"])
             print("searchterm", search_term)
             if search_term:
+                print ("output_2")
                 return {"query": search_term}, "output_2"
 
+        print ("output_1")
         return {}, "output_1"
