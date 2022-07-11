@@ -59,7 +59,7 @@ class Highlight:
         if detected_languages:
             return DEFAULT_LANG if DEFAULT_LANG in detected_languages else detected_languages[0]
 
-        return []
+        return DEFAULT_LANG
 
     @property
     def stop_words(self):

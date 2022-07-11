@@ -39,7 +39,7 @@ def empty_highlight():
 
 def test_language(highlight, empty_highlight):
     assert highlight.language == "en"
-    assert empty_highlight.language == []
+    assert empty_highlight.language == "en"
 
 
 def test_detect_language():
@@ -64,9 +64,6 @@ def test_stop_words(highlight, empty_highlight):
     # then
     assert "the" in stop_words
     assert any(item in ["the", "this", "a", "an", "that"] for item in stop_words)
-
-    assert "the" not in empty_highlight.stop_words
-    assert empty_highlight.stop_words == []
 
 
 def test_create_positions(highlight, empty_highlight):
