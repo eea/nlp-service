@@ -45,6 +45,7 @@ class Highlight:
 
     def __init__(self, search_term):
         self.search_term = search_term
+        self.highlighted_tokens = []
 
     @property
     def language(self):
@@ -69,6 +70,9 @@ class Highlight:
         if self.default_lang in scores.keys():
             return self.default_lang
 
+        if not scores:
+            return self.default_lang
+
         lang = scores.keys()[0]
         for k in scores.keys():
             if scores[k] > scores[lang]:
@@ -76,6 +80,10 @@ class Highlight:
 
         logger.info(f"Matched language {lang} for query: '{self.search_term}'")
         return lang
+
+    @property
+    def searched_tokens_positions(self):
+        return self._create_positions()
 
     @property
     def stop_words(self):
@@ -151,37 +159,76 @@ class Highlight:
 
         return sequences
 
+    def _is_consecutive(self, position):
+        if position == 0:
+            return True
+        else:
+            curr_token = self.highlighted_tokens[position]
+            dehighlighted_curr_token = self._get_highlighted(curr_token)
+            curr_token_set = set()
+            if dehighlighted_curr_token.lower() in self.searched_tokens_positions:
+                curr_token_set = self.searched_tokens_positions[
+                    dehighlighted_curr_token.lower()
+                ]
+
+            prev_token = self.highlighted_tokens[position - 1]
+            dehighlighted_prev_token = self._get_highlighted(prev_token)
+            prev_token_set = set()
+            if dehighlighted_prev_token.lower() in self.searched_tokens_positions:
+                prev_token_set = self.searched_tokens_positions[
+                   dehighlighted_prev_token.lower()
+                ]
+
+            return self._is_consecutive_tokens(prev_token_set, curr_token_set)
+
+    def _is_highlighted_non_stop_word(self, position):
+        if not self._is_highlighted(self.highlighted_tokens[position]):
+            return False
+
+        dehighlighted_curr_token = self._get_highlighted(self.highlighted_tokens[position])
+        if dehighlighted_curr_token.lower() in self.stop_words:
+            return False
+
+        return True
+
+
+    def _sequence_ends(self, start_seq, position):
+       if not self._is_highlighted(self.highlighted_tokens[position]):
+           return 2
+       if not self._is_consecutive(position) and start_seq < position:
+           return 1
+
+       return 0
+
+
+    """
+    store a list of tuples (start_seq, end_seq, status) in sequences
+    a tuple represent the start and the end of a highlighted sequence and if the sequence
+    has only stop words ('r' - from remove) or not ('k' - keep)
+
+    Algorithm used in get_sequences(searched_text, original_es_highlight):
+    Go through each word from original_es_highlight, one by one.
+    At every step, we need to know which is the beginning of the subsequence of tokens from original_es_highlight,
+    that are consecutive in searched_text, that is ending in the current token from original_es_highlight.
+    In order to do so, we hold in a variable the index of the token that is at the beginning of this subsequence.
+    When we advance to a new token from original_es_highlight,
+    we need first to check if the token can continue the already found sequence until the current moment
+    meaning if the current token is marked (with <em> , </em>) and if it is successive in the searched_text.
+    if the current token is marked and is consecutive to the previous token
+    (we determine that by looking at the precedence of tokens in searched_text),
+    then we just go on to the next token, the beginning of the sequence remains the same.
+    if not (the token is not highlighted because is not part of searched_text, or, if it is, is not successive to the precedent token),
+    then it means that the current subsequence ends at the previous token (including the previous token).
+    in the process we also verify each token from the sequences
+    so that we know if a sequence contains only stop words or not.
+    """
     def _get_sequences(self, original):
-        """
-        store a list of tuples (start_seq, end_seq, status) in sequences
-        a tuple represent the start and the end of a highlighted sequence and if the sequence
-        has only stop words ('r' - from remove) or not ('k' - keep)
-
-        Algorithm used in get_sequences(searched_text, original_es_highlight):
-        Go through each word from original_es_highlight, one by one.
-        At every step, we need to know which is the beginning of the subsequence of tokens from original_es_highlight,
-        that are consecutive in searched_text, that is ending in the current token from original_es_highlight.
-        In order to do so, we hold in a variable the index of the token that is at the beginning of this subsequence.
-        When we advance to a new token from original_es_highlight,
-        we need first to check if the token can continue the already found sequence until the current moment
-        meaning if the current token is marked (with <em> , </em>) and if it is successive in the searched_text.
-        if the current token is marked and is consecutive to the previous token
-        (we determine that by looking at the precedence of tokens in searched_text),
-        then we just go on to the next token, the beginning of the sequence remains the same.
-        if not (the token is not highlighted because is not part of searched_text, or, if it is, is not successive to the precedent token),
-        then it means that the current subsequence ends at the previous token (including the previous token).
-        in the process we also verify each token from the sequences
-        so that we know if a sequence contains only stop words or not.
-        """
-
         sequences = []
 
         if not self.search_term or not original or not self.stop_words:
             return sequences
 
-        searched_tokens_positions = self._create_positions()
-
-        highlighted_tokens = original.split()
+        self.highlighted_tokens = original.split()
 
         curr_position = 0
 
@@ -189,64 +236,19 @@ class Highlight:
         end_seq = 0
         only_stop_words_in_seq = True
 
-        while curr_position < len(highlighted_tokens):
-            curr_token = highlighted_tokens[curr_position]
+        while curr_position < len(self.highlighted_tokens):
+            if self._is_highlighted_non_stop_word(curr_position):
+                only_stop_words_in_seq = False
 
-            if self._is_highlighted(curr_token):
-                dehighlighted_curr_token = self._get_highlighted(curr_token)
-
-                if dehighlighted_curr_token.lower() not in self.stop_words:
-                    only_stop_words_in_seq = False
-
-                if curr_position == 0:
-                    curr_position = curr_position + 1
-                else:
-                    prev_token = highlighted_tokens[curr_position - 1]
-
-                    if self._is_highlighted(prev_token):
-                        dehighlighted_prev_token = self._get_highlighted(prev_token)
-                        if (dehighlighted_curr_token in searched_tokens_positions) and (
-                            dehighlighted_prev_token in searched_tokens_positions
-                        ):
-                            curr_token_set = searched_tokens_positions[
-                                dehighlighted_curr_token.lower()
-                            ]
-                            prev_token_set = searched_tokens_positions[
-                                dehighlighted_prev_token.lower()
-                            ]
-
-                            if self._is_consecutive_tokens(
-                                prev_token_set, curr_token_set
-                            ):
-                                curr_position = curr_position + 1
-                            else:
-                                # the sequence ends because we got to a highlighted token that is not consecutive
-                                end_seq = curr_position - 1
-                                sequences = self._add_sequence(
-                                    start_seq,
-                                    end_seq,
-                                    only_stop_words_in_seq,
-                                    sequences,
-                                )
-                                only_stop_words_in_seq = True
-                                start_seq = curr_position
-                                curr_position = curr_position + 1
-                        else:
-                            print("This is an ES highlighting error")
-                            curr_position = curr_position + 1
-                            start_seq = curr_position
-                    else:
-                        # we start searching another sequence starting with current position
-                        start_seq = curr_position
-                        curr_position = curr_position + 1
-            else:
+            if self._sequence_ends(start_seq, curr_position):
                 end_seq = curr_position - 1
                 sequences = self._add_sequence(
                     start_seq, end_seq, only_stop_words_in_seq, sequences
                 )
                 only_stop_words_in_seq = True
-                curr_position = curr_position + 1
-                start_seq = curr_position
+                start_seq = curr_position + self._sequence_ends(start_seq, curr_position) - 1
+
+            curr_position = curr_position + 1
 
         return sequences
 
