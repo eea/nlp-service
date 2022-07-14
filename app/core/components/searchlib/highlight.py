@@ -40,6 +40,29 @@ LANG_CODE_MAPPING = {
 
 
 class Highlight:
+    """Optimizes highlight by removing standalone stop words that are highlighted
+
+    store a list of tuples (start_seq, end_seq, status) in sequences
+    a tuple represent the start and the end of a highlighted sequence and if the sequence
+    has only stop words ('r' - from remove) or not ('k' - keep)
+
+    Algorithm used in get_sequences(searched_text, original_es_highlight):
+    Go through each word from original_es_highlight, one by one.
+    At every step, we need to know which is the beginning of the subsequence of tokens from original_es_highlight,
+    that are consecutive in searched_text, that is ending in the current token from original_es_highlight.
+    In order to do so, we hold in a variable the index of the token that is at the beginning of this subsequence.
+    When we advance to a new token from original_es_highlight,
+    we need first to check if the token can continue the already found sequence until the current moment
+    meaning if the current token is marked (with <em> , </em>) and if it is successive in the searched_text.
+    if the current token is marked and is consecutive to the previous token
+    (we determine that by looking at the precedence of tokens in searched_text),
+    then we just go on to the next token, the beginning of the sequence remains the same.
+    if not (the token is not highlighted because is not part of searched_text, or, if it is, is not successive to the precedent token),
+    then it means that the current subsequence ends at the previous token (including the previous token).
+    in the process we also verify each token from the sequences
+    so that we know if a sequence contains only stop words or not.
+    """
+
     threshold = 0.8
     default_lang = "en"
 
@@ -200,28 +223,6 @@ class Highlight:
             return 1
 
         return 0
-
-    """
-    store a list of tuples (start_seq, end_seq, status) in sequences
-    a tuple represent the start and the end of a highlighted sequence and if the sequence
-    has only stop words ('r' - from remove) or not ('k' - keep)
-
-    Algorithm used in get_sequences(searched_text, original_es_highlight):
-    Go through each word from original_es_highlight, one by one.
-    At every step, we need to know which is the beginning of the subsequence of tokens from original_es_highlight,
-    that are consecutive in searched_text, that is ending in the current token from original_es_highlight.
-    In order to do so, we hold in a variable the index of the token that is at the beginning of this subsequence.
-    When we advance to a new token from original_es_highlight,
-    we need first to check if the token can continue the already found sequence until the current moment
-    meaning if the current token is marked (with <em> , </em>) and if it is successive in the searched_text.
-    if the current token is marked and is consecutive to the previous token
-    (we determine that by looking at the precedence of tokens in searched_text),
-    then we just go on to the next token, the beginning of the sequence remains the same.
-    if not (the token is not highlighted because is not part of searched_text, or, if it is, is not successive to the precedent token),
-    then it means that the current subsequence ends at the previous token (including the previous token).
-    in the process we also verify each token from the sequences
-    so that we know if a sequence contains only stop words or not.
-    """
 
     def _get_sequences(self, original):
         sequences = []
