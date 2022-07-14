@@ -176,7 +176,7 @@ class Highlight:
             prev_token_set = set()
             if dehighlighted_prev_token.lower() in self.searched_tokens_positions:
                 prev_token_set = self.searched_tokens_positions[
-                   dehighlighted_prev_token.lower()
+                    dehighlighted_prev_token.lower()
                 ]
 
             return self._is_consecutive_tokens(prev_token_set, curr_token_set)
@@ -185,21 +185,21 @@ class Highlight:
         if not self._is_highlighted(self.highlighted_tokens[position]):
             return False
 
-        dehighlighted_curr_token = self._get_highlighted(self.highlighted_tokens[position])
+        dehighlighted_curr_token = self._get_highlighted(
+            self.highlighted_tokens[position]
+        )
         if dehighlighted_curr_token.lower() in self.stop_words:
             return False
 
         return True
 
-
     def _sequence_ends(self, start_seq, position):
-       if not self._is_highlighted(self.highlighted_tokens[position]):
-           return 2
-       if not self._is_consecutive(position) and start_seq < position:
-           return 1
+        if not self._is_highlighted(self.highlighted_tokens[position]):
+            return 2
+        if not self._is_consecutive(position) and start_seq < position:
+            return 1
 
-       return 0
-
+        return 0
 
     """
     store a list of tuples (start_seq, end_seq, status) in sequences
@@ -222,6 +222,7 @@ class Highlight:
     in the process we also verify each token from the sequences
     so that we know if a sequence contains only stop words or not.
     """
+
     def _get_sequences(self, original):
         sequences = []
 
@@ -246,7 +247,9 @@ class Highlight:
                     start_seq, end_seq, only_stop_words_in_seq, sequences
                 )
                 only_stop_words_in_seq = True
-                start_seq = curr_position + self._sequence_ends(start_seq, curr_position) - 1
+                start_seq = (
+                    curr_position + self._sequence_ends(start_seq, curr_position) - 1
+                )
 
             curr_position = curr_position + 1
 
