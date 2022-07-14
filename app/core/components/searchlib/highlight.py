@@ -96,7 +96,7 @@ class Highlight:
         if not scores:
             return self.default_lang
 
-        lang = scores.keys()[0]
+        lang = list(scores.keys())[0]
         for k in scores.keys():
             if scores[k] > scores[lang]:
                 lang = k
