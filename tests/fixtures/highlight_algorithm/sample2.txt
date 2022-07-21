@@ -1,0 +1,84 @@
+{
+   "took":1206,
+   "timed_out":false,
+   "_shards":{
+      "total":1,
+      "successful":1,
+      "skipped":0,
+      "failed":0
+   },
+   "hits":{
+      "total":{
+         "value":168,
+         "relation":"eq"
+      },
+      "max_score":11.343447,
+      "hits":[
+         {
+            "_index":"data_searchui",
+            "_id":"https://www.eea.europa.eu/publications/emep-eea-guidebook-2019/part-b-sectoral-guidance-chapters/4-agriculture",
+            "_score":11.343447,
+            "_ignored":[
+               "description.keyword"
+            ],
+            "_source":{
+               "references":[
+
+               ],
+               "year":"2019-10-17T08:11:32+00:00",
+               "items_count_places":1,
+               "about":"https://www.eea.europa.eu/publications/emep-eea-guidebook-2019/part-b-sectoral-guidance-chapters/4-agriculture",
+               "items_count_title":1,
+               "organisation":"European Environment Agency (EEA)",
+               "items_count_year":1,
+               "description":"3. Agriculture\nChange language\n- English (en)\n- Russian (ru)\n|Title||Type|\n|3.B Manure management 2019||File|\n|3 D Crop production and agricultural soils 2019||File|\n|Manure Management N-flow tool||File|\n|3.D.f-3.I Use of pesticides and limestone 2019||File|\n|3.F Field burning of agricultural residues 2019||File|\nPermalinks\n- Permalink to this version\n- fa98476a125642b5907d141c61555365\n- Permalink to latest version\n- AV8GCKXBJT\nOlder versions\nFor references, please go to https://www.eea.europa.eu/publications/emep-eea-guidebook-2019/part-b-sectoral-guidance-chapters/4-agriculture or scan the QR code.\nPDF generated on 16 Jun 2022, 11:27 PM\nDocument Actions\nShare with others",
+               "language":"en",
+               "items_count_organisation":1,
+               "fleschReadingEaseScore":0,
+               "items_count_about":1,
+               "title":"3. Agriculture",
+               "items_count_fleschReadingEaseScore":1,
+               "items_count_fulltext":1,
+               "readingTime":0.4649122807017544,
+               "objectProvides":"Webpage",
+               "items_count_readingTime":1,
+               "items_count_language":1,
+               "hasWorkflowState":"published",
+               "fulltext":"3. Agriculture\nChange language\n- English (en)\n- Russian (ru)\n|Title||Type|\n|3.B Manure management 2019||File|\n|3 D Crop production and agricultural soils 2019||File|\n|Manure Management N-flow tool||File|\n|3.D.f-3.I Use of pesticides and limestone 2019||File|\n|3.F Field burning of agricultural residues 2019||File|\nPermalinks\n- Permalink to this version\n- fa98476a125642b5907d141c61555365\n- Permalink to latest version\n- AV8GCKXBJT\nOlder versions\nFor references, please go to https://www.eea.europa.eu/publications/emep-eea-guidebook-2019/part-b-sectoral-guidance-chapters/4-agriculture or scan the QR code.\nPDF generated on 16 Jun 2022, 11:27 PM\nDocument Actions\nShare with others\n\n",
+               "@version":"1",
+               "id":"https://www.eea.europa.eu/publications/emep-eea-guidebook-2019/part-b-sectoral-guidance-chapters/4-agriculture",
+               "items_count_site_id":1,
+               "spatial":"Other",
+               "issued":"2019-10-17T08:11:32+00:00",
+               "items_count_cluster_name":1,
+               "items_count_objectProvides":1,
+               "items_count_creator":1,
+               "cluster_name":"eea",
+               "creator":"European Environment Agency (EEA)",
+               "items_count_topic":1,
+               "format":"text/html",
+               "items_count_references":0,
+               "items_count_label":1,
+               "items_count_id":1,
+               "label":"3. Agriculture",
+               "items_count_hasWorkflowState":1,
+               "items_count_description":1,
+               "places":"unknown",
+               "items_count_format":1,
+               "@timestamp":"2022-06-16T22:17:08.194Z",
+               "items_count_issued":1,
+               "site_id":"eea",
+               "items_count_original_id":1,
+               "topic":"Various other issues",
+               "items_count_spatial":1,
+               "original_id":"https://www.eea.europa.eu/publications/emep-eea-guidebook-2019/part-b-sectoral-guidance-chapters/4-agriculture"
+            },
+            "highlight":{
+               "description.highlight":[
+                  "<em>Agriculture</em> and <em>agriculture</em> <em>with</em> <em>the</em> blabla <em>agriculture</em> <em>with</em> <em>a</em> lot of"
+               ]
+            }
+         }
+      ]
+   }
+}

@@ -74,6 +74,7 @@ components:    # define all the building-blocks for Pipeline
     params:
       model_name_or_path: shahrukhx01/question-vs-statement-classifier
 
+
 pipelines:
   - name: search
     type: Query

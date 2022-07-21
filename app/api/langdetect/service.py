@@ -12,3 +12,4 @@ class LangDetectModel(object):
 
         meth = payload["options"]["debug"] and detect_langs or detect
         return {"predictions": [meth(text) for text in payload["texts"]]}
+

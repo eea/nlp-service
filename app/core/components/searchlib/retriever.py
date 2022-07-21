@@ -6,6 +6,8 @@ from app.core.elasticsearch import get_search_term
 from haystack.nodes.retriever import (DensePassageRetriever,
                                       ElasticsearchRetriever)
 
+from .highlight import Highlight
+
 logger = logging.getLogger(__name__)
 
 es_params = [
@@ -84,6 +86,10 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             self.query_count += 1
             run_query_timed = self.timing(self.retrieve, "query_time")
             output = run_query_timed(**body)
+
+            highlight = Highlight(search_term=get_search_term(payload["query"]))
+            output = highlight.adjust(output)
+
             return {"elasticsearch_result": output, "query": query}, "output_1"
         else:
             raise Exception(f"Invalid root_node '{root_node}'.")

@@ -468,7 +468,9 @@ class ESHit2HaystackDoc(BaseComponent):
 
     outgoing_edges = 1
 
-    def __init__(self, document_store=None, nested_vector_field="nlp_250", clean_config=None):
+    def __init__(
+        self, document_store=None, nested_vector_field="nlp_250", clean_config=None
+    ):
         if clean_config is None:
             clean_config = []
         self.document_store = document_store
@@ -505,8 +507,9 @@ class ESHit2HaystackDoc(BaseComponent):
 
                 # Filtering empty documents
                 if hit["_source"].get(content_field):
-                    hit["_source"][content_field] = clean_text(text=hit["_source"][content_field],
-                                                               conf=self.clean_config)
+                    hit["_source"][content_field] = clean_text(
+                        text=hit["_source"][content_field], conf=self.clean_config
+                    )
 
                     documents.append(hit)
 
