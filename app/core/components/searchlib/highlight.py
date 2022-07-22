@@ -2,15 +2,12 @@ import logging
 import re
 
 import nltk
+nltk.download("stopwords")
+from nltk.corpus import stopwords
+
 from langdetect import DetectorFactory, detect_langs
 
 logger = logging.getLogger(__name__)
-
-try:
-    from nltk.corpus import stopwords
-except Exception:
-    nltk.download("stopwords")
-
 
 DetectorFactory.seed = 0
 
