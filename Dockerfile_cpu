@@ -3,7 +3,7 @@ FROM python:3.8.10
 WORKDIR /app
 
 RUN apt update
-RUN apt install libgraphviz-dev graphviz -y
+RUN apt install libgraphviz-dev graphviz -y git-lfs
 
 COPY requirements/ /app/requirements/
 RUN pip install --no-cache-dir -c requirements/constraints.txt -r requirements/cpu.txt
@@ -12,6 +12,8 @@ RUN python -m spacy download en_core_web_sm
 RUN python -m spacy download en_core_web_trf
 
 COPY . /app
+
+RUN python scripts/download_models.py
 
 # define the default command to run when starting the container
 CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "app.main:app"]

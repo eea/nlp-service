@@ -3,7 +3,7 @@ FROM nvcr.io/nvidia/tensorflow:21.08-tf2-py3
 WORKDIR /app
 
 RUN apt update
-RUN apt install libgraphviz-dev graphviz -y
+RUN apt install libgraphviz-dev graphviz -y git-lfs
 
 COPY requirements/ /app/requirements/
 RUN pip install --no-cache-dir -c requirements/constraints.txt -r requirements/gpu.txt
@@ -13,6 +13,8 @@ RUN python -m spacy download en_core_web_trf
 
 COPY . /app
 RUN mkdir /app/var
+
+RUN python scripts/download_models.py
 
 # define the default command to run when starting the container
 CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "app.main:app"]

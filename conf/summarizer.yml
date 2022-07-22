@@ -11,7 +11,7 @@ components:    # define all the building-blocks for Pipeline
   - name: Summarizer
     type: SearchlibTransformersSummarizer
     params:
-      model_name_or_path: google/pegasus-xsum
+      model_name_or_path: /app/models/google/pegasus-xsum
 
 pipelines:
   - name: summarizer

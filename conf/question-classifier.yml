@@ -42,12 +42,12 @@ components:    # define all the building-blocks for Pipeline
   - name: QueryClassifier
     type: TransformersQueryClassifier
     params:
-      model_name_or_path: shahrukhx01/bert-mini-finetune-question-detection
+      model_name_or_path: /app/models/shahrukhx01/bert-mini-finetune-question-detection
 
   - name: QuestionStatementQueryClassifier
     type: TransformersQueryClassifier
     params:
-      model_name_or_path: shahrukhx01/question-vs-statement-classifier
+      model_name_or_path: /app/models/shahrukhx01/question-vs-statement-classifier
 
   - name: CategoryDeclarativeQuery
     type: Category
