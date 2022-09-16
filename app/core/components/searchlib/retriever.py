@@ -61,7 +61,8 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         query = body.get("query", None)
         bodyparams = body.pop("params", {}) or {}
         from_ = bodyparams.pop("from_", 0)
-        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None)
+#        import pdb; pdb.set_trace()
+        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None) or body.pop("source", None) or body.pop("_source", None)
 
         if top_k is not None:
             body["size"] = top_k
@@ -123,7 +124,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
         body = clean_body(body)
         query = body.get("query", None)
         bodyparams = body.pop("params", {})
-        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None)
+        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None) or body.pop("source", None) or body.pop("_source", None)
 
         if _source:
             body["_source"] = _source

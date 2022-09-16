@@ -26,6 +26,7 @@ components:
         - nlp_100
         - nlp_250
         - nlp_500
+        - raw_value
 
   - name: RawRetriever
     type: RawElasticsearchRetriever
