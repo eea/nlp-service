@@ -54,7 +54,7 @@ def is_qa_request(body, response, default_query_types):
 
 @router.post("")  # , response_model=QASearchResponse
 def post_querysearch(payload: SearchRequest, request: Request):
-    import pdb; pdb.set_trace()
+#    import pdb; pdb.set_trace()
     component = request.app.state.querysearch.component
     excluded_meta_data = component.excluded_meta_data
     default_query_types = component.default_query_types
@@ -83,10 +83,10 @@ def post_querysearch(payload: SearchRequest, request: Request):
                 # params.update({"custom_query": query})
                 # body["params"] = params
                 # body["query"] = get_search_term(query)
-                import pdb; pdb.set_trace()
+#                import pdb; pdb.set_trace()
                 qa_response = qa_pipeline.predict(body)
 
-    import pdb; pdb.set_trace()
+#    import pdb; pdb.set_trace()
     response = remix(search_response, qa_response, excluded_meta_data)
     response.pop("sentence_transformer_documents", None)
 

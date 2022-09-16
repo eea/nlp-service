@@ -488,7 +488,7 @@ class ESHit2HaystackDoc(BaseComponent):
         params: Optional[dict] = None,
         elasticsearch_result: Any = None,
     ):
-        import pdb; pdb.set_trace()
+#        import pdb; pdb.set_trace()
         try:
             hits = elasticsearch_result["hits"]["hits"]
         except KeyError:
