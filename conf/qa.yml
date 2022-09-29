@@ -16,6 +16,7 @@ components:
       create_index: false
       content_field: "text"
       embedding_field: "embedding"
+      similarity: "cosine"
       search_fields: "*"
       name_field: "_id"
 #      excluded_meta_data:
@@ -47,13 +48,13 @@ components:
 
   - name: AnswerExtraction
     type: TransformersReader
-    #FARMReader
+#    type: FARMReader
     params:
       model_name_or_path: deepset/tinyroberta-squad2
       # model_name_or_path: deepset/roberta-base-squad2
       # model_name_or_path: bert-large-uncased
       # model_name_or_path: deepset/minilm-uncased-squad2
-      # deepset/roberta-base-squad2
+#      model_name_or_path: deepset/roberta-base-squad2
       # deepset/minilm-uncased-squad2
 
   - name: AnswerOptimizer
