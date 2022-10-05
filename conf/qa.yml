@@ -47,8 +47,8 @@ components:
       clean_config: !include clean-text.yml
 
   - name: AnswerExtraction
-    type: TransformersReader
-#    type: FARMReader
+#    type: TransformersReader
+    type: FARMReader
     params:
       model_name_or_path: deepset/tinyroberta-squad2
       # model_name_or_path: deepset/roberta-base-squad2
