@@ -1,0 +1,15 @@
+package: app.api.split
+
+components:
+  - name: Split
+    type: Split
+
+pipelines:
+  - name: split
+    type: Query
+    nodes:
+      - name: Split
+        inputs: [File]
+
+
+

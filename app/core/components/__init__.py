@@ -10,6 +10,7 @@ from .searchlib.reader import SearchlibQAAdapter
 from .searchlib.retriever import (RawDensePassageRetriever,
                                   RawElasticsearchRetriever)
 from .spacy import SpacyModel
+from .split import Split
 from .summarizer import SearchlibTransformersSummarizer
 from .transformer import (NERTransformersPipeline, SentenceTransformer,
                           TransformersPipeline)
@@ -30,4 +31,5 @@ __all__ = [
     SpacyModel,
     TransformersPipeline,
     QuerySearchModel,
+    Split
 ]
