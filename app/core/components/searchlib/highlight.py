@@ -1,3 +1,4 @@
+from functools import cached_property
 import logging
 import re
 
@@ -67,7 +68,7 @@ class Highlight:
         self.search_term = search_term
         self.highlighted_tokens = []
 
-    @property
+    @cached_property
     def language(self):
         """
         detect languages in the search term
@@ -78,7 +79,6 @@ class Highlight:
 
         :return: language code for search term
         """
-
         # search_term = {"texts": [self.search_term], "options": {"debug": False}}
         # meth = search_term["options"]["debug"] and detect_langs or detect
         if not self.search_term:
