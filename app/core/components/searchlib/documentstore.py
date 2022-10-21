@@ -31,6 +31,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         content_field: str = "content",
         name_field: str = "name",
         embedding_field: str = "embedding",
+        nlp_path: str = "nlp",
         embedding_dim: int = 768,
         custom_mapping: Optional[dict] = None,
         excluded_meta_data: Optional[list] = None,
@@ -90,6 +91,7 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
         self.internal_excluded_meta_data = internal_excluded_meta_data
         self.nested_content_field = nested_content_field
+        self.nlp_path = nlp_path
 
     def query(
         self,
@@ -282,7 +284,14 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
         semantic_score = {
             "nested": {
-                "inner_hits": {},
+#                "inner_hits": {},
+
+                "inner_hits": { "_source": {
+                    "excludes": [
+                      "nlp_250.embedding"
+                    ]
+                  }
+                },
                 "path": NLP_FIELD,
                 "score_mode": "max",
                 "query": {
@@ -520,9 +529,9 @@ class ESHit2HaystackDoc(BaseComponent):
             for inner_hit in inner_hits:
                 if inner_hit["_source"].get(nested_content_field):
                     doc = deepcopy(hit)
-                    doc["_source"][embedding_field] = inner_hit["_source"][
-                        embedding_field
-                    ]
+#                    doc["_source"][embedding_field] = inner_hit["_source"][
+#                        embedding_field
+#                    ]
                     doc["_source"][nested_content_field] = clean_text(
                         text=inner_hit["_source"][nested_content_field],
                         conf=self.clean_config,

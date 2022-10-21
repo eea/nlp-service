@@ -26,6 +26,27 @@ es_params = [
     "index",
 ]
 
+nested_tpl = {
+        "inner_hits": {
+                  "_source": {
+                    "excludes": [
+                      "<nlp_embedding>"
+                    ]
+                  }
+        },
+        "path": "<nlp_path>",
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": "<search_term>",
+                        "fields": ["<nlp_text>"],
+                    }
+                }
+            }
+        }
+}
+
 
 def clean_body(body):
     body = copy.deepcopy(body)
@@ -36,6 +57,47 @@ def clean_body(body):
             del body[k]
 
     return body
+
+def find_path(node, key, path=[]):
+    to_parse = []
+    if type(node) == list:
+        to_parse = range(len(node))
+    elif type(node) == dict:
+        to_parse = node.keys()
+
+    for sub_node in to_parse:
+        if sub_node == key:
+            return (True, path)
+
+        path.append(sub_node)
+        (success, path) = find_path(node[sub_node], key, path)
+        if success:
+            return (success, path)
+        path.pop(-1)
+
+    return (False, path)
+
+
+def get_value_from_path(node, path):
+    for step in path:
+        if type(step) == int:
+            node = node[step]
+        else:
+            node = node.get(step)
+
+    return node
+
+def make_nested_query(query, nlp_path, nlp_text, nlp_embedding):
+    (success, path) = find_path(query, "multi_match", [])
+    if success:
+        node = get_value_from_path(query, path)
+        node['nested'] = nested_tpl
+        node['nested']['path'] = nlp_path
+        node['nested']['inner_hits']['_source']['excludes'] = [f'{nlp_path}.{nlp_embedding}']
+        node['nested']['query']['bool']['must']['multi_match'] = copy.deepcopy(node['multi_match'])
+        node['nested']['query']['bool']['must']['multi_match']['fields'] = [f'{nlp_path}.{nlp_text}']
+        node.pop('multi_match')
+    return query
 
 
 class RawElasticsearchRetriever(ElasticsearchRetriever):
@@ -82,6 +144,8 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
 
         if index:
             body["index"] = index
+        if bodyparams.get("scope_answerextraction", False):
+            body = make_nested_query(body, self.document_store.nlp_path, self.document_store.nested_content_field, self.document_store.embedding_field)
 
         if root_node == "Query":
             self.query_count += 1
