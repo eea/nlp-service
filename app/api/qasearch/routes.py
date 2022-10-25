@@ -1,3 +1,6 @@
+""" Routes for the QA Search service
+"""
+
 import logging
 
 from app.api.search.api import SearchRequest
@@ -17,12 +20,15 @@ concurrency_limiter = RequestLimiter(CONCURRENT_REQUEST_PER_WORKER)
 
 
 def remix(search_response, qa_response, exclude=None):
+    """ Cleanup/mix the Search response with the QA response
+    """
+
     exclude_fields = exclude or []
     res = {}
     res.update(search_response)
     res.update(qa_response)
 
-    fields = ["elasticsearch_result", "documents", "params", "highlight"]
+    fields = ["elasticsearch_result", "documents", "params", "highlight", "elapsed"]
 
     for field in fields:
         res.pop(field, None)
@@ -33,6 +39,10 @@ def remix(search_response, qa_response, exclude=None):
             if field in hit.get("_source", {}):
                 del hit["_source"][field]
 
+    res['elapsed'] = {
+      'search':search_response.get('elapsed', []),
+      'qa':qa_response.get('elapsed', [])
+    }
     return res
 
 
@@ -40,6 +50,9 @@ _missing = object()
 
 
 def is_qa_request(body, response, default_query_types):
+    """ Current request should provide answers, or is a metadata req?
+    """
+
     from_ = get_body_from(body)
     query_type = response.get("query_type", None)
 
@@ -64,7 +77,9 @@ def post_querysearch(payload: SearchRequest, request: Request):
     source = body.pop("source", None)
 
     # pydantic doesn't like fields with _underscore in beginning?
-    # See https://github.com/samuelcolvin/pydantic/issues/288 for possible fixes
+    # See https://github.com/samuelcolvin/pydantic/issues/288
+    # for possible fixes
+
     if source:
         body["_source"] = source
 
@@ -74,7 +89,9 @@ def post_querysearch(payload: SearchRequest, request: Request):
         qa_response = {}
 
         if is_qa_request(body, search_response, default_query_types):
-            qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
+            qa_pipeline = getattr(
+                    request.app.state, component.qa_pipeline,
+                    None)
 
             if qa_pipeline and body.get("size", 0):
                 # query = body.pop("query")
@@ -82,7 +99,7 @@ def post_querysearch(payload: SearchRequest, request: Request):
                 # params.update({"custom_query": query})
                 # body["params"] = params
                 # body["query"] = get_search_term(query)
-
+                body['params']['scope_answerextraction'] = True
                 qa_response = qa_pipeline.predict(body)
 
     response = remix(search_response, qa_response, excluded_meta_data)

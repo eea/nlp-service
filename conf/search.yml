@@ -20,6 +20,7 @@ components:    # define all the building-blocks for Pipeline
       content_field: "text"
       embedding_field: "embedding"
       search_fields: "*"
+      similarity: "cosine"
       name_field: "_id"
 
   - name: RequestClassifier

@@ -99,7 +99,7 @@ class SearchlibQAAdapter(BaseComponent):
             "similarity": None,
             "answers": [],
         }
-
+#        import pdb; pdb.set_trace()
         if not sentence_transformer_documents:
             return output, "output_1"
 
