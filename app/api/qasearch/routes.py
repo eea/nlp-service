@@ -28,7 +28,7 @@ def remix(search_response, qa_response, exclude=None):
     res.update(search_response)
     res.update(qa_response)
 
-    fields = ["elasticsearch_result", "documents", "params", "highlight"]
+    fields = ["elasticsearch_result", "documents", "params", "highlight", "elapsed"]
 
     for field in fields:
         res.pop(field, None)
@@ -39,6 +39,10 @@ def remix(search_response, qa_response, exclude=None):
             if field in hit.get("_source", {}):
                 del hit["_source"][field]
 
+    res['elapsed'] = {
+      'search':search_response.get('elapsed', []),
+      'qa':qa_response.get('elapsed', [])
+    }
     return res
 
 
@@ -95,6 +99,7 @@ def post_querysearch(payload: SearchRequest, request: Request):
                 # params.update({"custom_query": query})
                 # body["params"] = params
                 # body["query"] = get_search_term(query)
+                body['params']['scope_answerextraction'] = True
                 qa_response = qa_pipeline.predict(body)
 
     response = remix(search_response, qa_response, excluded_meta_data)

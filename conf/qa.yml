@@ -28,6 +28,7 @@ components:
         - nlp_250
         - nlp_500
         - raw_value
+        - fulltext
 
   - name: RawRetriever
     type: RawElasticsearchRetriever
@@ -50,11 +51,12 @@ components:
 #    type: TransformersReader
     type: FARMReader
     params:
-      model_name_or_path: deepset/tinyroberta-squad2
+#      progress_bar: false
+#      model_name_or_path: deepset/tinyroberta-squad2
       # model_name_or_path: deepset/roberta-base-squad2
       # model_name_or_path: bert-large-uncased
       # model_name_or_path: deepset/minilm-uncased-squad2
-#      model_name_or_path: deepset/roberta-base-squad2
+      model_name_or_path: deepset/roberta-base-squad2
       # deepset/minilm-uncased-squad2
 
   - name: AnswerOptimizer

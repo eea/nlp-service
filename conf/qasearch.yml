@@ -21,6 +21,7 @@ components:
         - nlp_250
         - nlp_500
         - raw_value
+        - fulltext
 
       default_query_types:
         - "query:interrogative"
