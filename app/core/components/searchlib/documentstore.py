@@ -12,6 +12,7 @@ from haystack.document_stores.elasticsearch import ElasticsearchDocumentStore
 from haystack.nodes.base import BaseComponent
 from haystack.schema import Document, MultiLabel
 
+from .utils import find_path, get_value_from_path
 logger = logging.getLogger(__name__)
 
 
@@ -323,8 +324,25 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         except KeyError:
             query_functions = []
 
+
         # TODO: Check if combining exact matches scores with semantic score
         # TODO: improve the quality of the results.
+        (success, path) = find_path(query_must, "multi_match", [])
+        if success:
+            node = get_value_from_path(query_must, path)
+            semantic_score['nested']['query']['function_score']['query'] ={
+                      "bool": {
+                        "must": {
+                          "multi_match": {
+                            "query": node["multi_match"]["query"],
+                            "minimum_should_match": node["multi_match"]["minimum_should_match"],
+                            "fields": [
+                              f"{self.nlp_path}.{self.nested_content_field}"
+                            ]
+                          }
+                        }
+                      }
+            }
         query = {
             "function_score": {
                 "query": {
