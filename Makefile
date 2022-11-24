@@ -60,8 +60,9 @@ setup.conda:
 	conda init fish
 	conda activate py38
 	mamba install pytorch cudatoolkit=10.2 tensorflow tensorflow-hub -c pytorch
-	pip install poetry
-	pip install https://github.com/deepset-ai/haystack/archive/master.zip
+	pip install -e .
+	# pip install poetry
+	# pip install https://github.com/deepset-ai/haystack/archive/master.zip
 	# pip install -e .
 
 setup.uninstall: setup.python

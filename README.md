@@ -4,8 +4,6 @@
 
 Python 3.6+, a GPU-powered server
 
-##
-
 By default it would operate the following endpoints (go to
 [local OpenAPI page](http://localhost:8000/docs) for an overview):
 
@@ -28,34 +26,16 @@ You can customize which services to start via an environment variable:
 export NLP_SERVICES="embedding,ner,summarizer"
 ```
 
-<!-- ## Installation/Setup -->
-<!-- Makefile provided to get you up and going quickly. -->
-<!-- ```bash -->
-<!-- make setup -->
-<!-- ``` -->
-<!--  -->
-<!-- ## Run It -->
-<!-- 1. Start your  app with: -->
-<!-- ```bash -->
-<!-- poetry run uvicorn app.main:app -->
-<!-- ``` -->
-<!--  -->
-<!-- 2. Go to [http://localhost:8000/docs](http://localhost:8000/docs). -->
-<!--  -->
-<!-- 3. You can use the sample payload from the `docs/sample_payload.json` file when trying out the house price prediction model using the API. -->
-<!--    ![Prediction with example payload](./docs/sample_payload.png) -->
-<!--  -->
-<!-- ## Testing -->
-<!-- Makefile provided to provide test suite. -->
-<!-- ```bash -->
-<!-- make test -->
-<!-- ``` -->
-<!--  -->
-<!-- ## Linting & Formatting -->
-<!-- Makefile provided to provide linting & formatting suite. -->
-<!-- ```bash -->
-<!-- make format -->
-<!-- ``` -->
+## Instalation
+
+```
+	conda install mamba -n base -c conda-forge
+	conda create -n py38 python=3.8
+	conda init fish
+	conda activate py38
+	mamba install pytorch cudatoolkit=10.2 tensorflow tensorflow-hub -c pytorch
+	pip install -e .
+```
 
 ## Copyright and license
 
