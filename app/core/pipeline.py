@@ -108,13 +108,10 @@ class Pipeline(BasePipeline):
             component = cls._load_or_get_component(
                 name=name, definitions=component_definitions, components=COMPONENTS
             )
-            # if name == "SearchlibQAAdapter":
-            #     import pdb
-            #
-            #     pdb.set_trace()
-            pipeline.add_node(
-                component=component, name=name, inputs=node.get("inputs", [])
-            )
+            if pipeline.get_node(name) is None:
+                pipeline.add_node(
+                    component=component, name=name, inputs=node.get("inputs", [])
+                )
 
         return pipeline
 
