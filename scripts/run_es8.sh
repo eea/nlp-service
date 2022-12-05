@@ -50,6 +50,7 @@ env \
   CONVERTER_TIKA_PARAMS_TIKA_URL=http://localhost:9998/tika \
   TOKENIZERS_PARALLELISM=false \
   uvicorn --workers=1 --host 0.0.0.0 app.main:app
+  #--reload
 
 #converter,search,qa,similarity,summarizer,zeroshot-classifier,spacy,question-generation
 #

@@ -51,13 +51,6 @@ def load_components(config, components):
                 name=name, definitions=definitions, components=components
             )
             components[name] = component
-            # try:
-            #     components[name] = BaseComponent.load_from_args(
-            #         copied["type"], **params
-            #     )
-            # except Exception:
-            #     print(f"Error loading: (${copied['type']}) with params: ${params}")
-            #     raise
 
 
 def process_request(pipeline, request):

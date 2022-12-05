@@ -90,7 +90,7 @@ pipelines:
         inputs: [RequestClassifier.output_2]
 
       - name: RawRetriever
-        inputs: [TagRequestAsMetadata]
+        inputs: [TagRequestAsMetadata, DPRequestClassifier.output_1]
 
       - name: QueryClassifier
         inputs: [TagRequestAsQuery]
@@ -109,9 +109,6 @@ pipelines:
 
       - name: DPRequestClassifier
         inputs: [TagRequestAsInterrogativeQuery, TagRequestAsDeclarativeQuery, TagRequestAsKeyword]
-
-      - name: RawRetriever
-        inputs: [DPRequestClassifier.output_1]
 
       - name: DensePassageRetriever
         inputs: [DPRequestClassifier.output_2]
