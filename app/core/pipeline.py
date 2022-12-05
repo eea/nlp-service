@@ -29,9 +29,14 @@ def add_components_config(components):
 def load_components(config, components):
     """Instantiate components based on a configuration"""
 
-    from haystack.nodes.base import BaseComponent
+    # from haystack.nodes.base import BaseComponent
 
-    for definition in config.get("components", []):
+    defs = config.get("components", [])
+    definitions = {}
+    for definition in defs:
+        definitions[definition["name"]] = definition
+
+    for definition in defs:
         copied = copy.deepcopy(definition)
         name = copied.pop("name")
         params = copied.get("params", {})
@@ -41,14 +46,18 @@ def load_components(config, components):
             if isinstance(v, str) and v in components:
                 params[k] = components[v]
 
-        if not name in components:
-            try:
-                components[name] = BaseComponent.load_from_args(
-                    copied["type"], **params
-                )
-            except Exception:
-                print(f"Error loading: (${copied['type']}) with params: ${params}")
-                raise
+        if name not in components:
+            component = BasePipeline._load_or_get_component(
+                name=name, definitions=definitions, components=components
+            )
+            components[name] = component
+            # try:
+            #     components[name] = BaseComponent.load_from_args(
+            #         copied["type"], **params
+            #     )
+            # except Exception:
+            #     print(f"Error loading: (${copied['type']}) with params: ${params}")
+            #     raise
 
 
 def process_request(pipeline, request):
@@ -99,6 +108,10 @@ class Pipeline(BasePipeline):
             component = cls._load_or_get_component(
                 name=name, definitions=component_definitions, components=COMPONENTS
             )
+            # if name == "SearchlibQAAdapter":
+            #     import pdb
+            #
+            #     pdb.set_trace()
             pipeline.add_node(
                 component=component, name=name, inputs=node.get("inputs", [])
             )

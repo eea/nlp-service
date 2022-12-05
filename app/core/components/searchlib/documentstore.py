@@ -13,6 +13,7 @@ from haystack.nodes.base import BaseComponent
 from haystack.schema import Document, MultiLabel
 
 from .utils import find_path, get_value_from_path
+
 logger = logging.getLogger(__name__)
 
 
@@ -285,14 +286,8 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
 
         semantic_score = {
             "nested": {
-#                "inner_hits": {},
-
-                "inner_hits": { "_source": {
-                    "excludes": [
-                      "nlp_250.embedding"
-                    ]
-                  }
-                },
+                #                "inner_hits": {},
+                "inner_hits": {"_source": {"excludes": ["nlp_250.embedding"]}},
                 "path": NLP_FIELD,
                 "score_mode": "max",
                 "query": {
@@ -324,24 +319,23 @@ class SearchlibElasticsearchDocumentStore(ElasticsearchDocumentStore):
         except KeyError:
             query_functions = []
 
-
         # TODO: Check if combining exact matches scores with semantic score
         # TODO: improve the quality of the results.
         (success, path) = find_path(query_must, "multi_match", [])
         if success:
             node = get_value_from_path(query_must, path)
-            semantic_score['nested']['query']['function_score']['query'] ={
-                      "bool": {
-                        "must": {
-                          "multi_match": {
+            semantic_score["nested"]["query"]["function_score"]["query"] = {
+                "bool": {
+                    "must": {
+                        "multi_match": {
                             "query": node["multi_match"]["query"],
-                            "minimum_should_match": node["multi_match"]["minimum_should_match"],
-                            "fields": [
-                              f"{self.nlp_path}.{self.nested_content_field}"
-                            ]
-                          }
+                            "minimum_should_match": node["multi_match"][
+                                "minimum_should_match"
+                            ],
+                            "fields": [f"{self.nlp_path}.{self.nested_content_field}"],
                         }
-                      }
+                    }
+                }
             }
         query = {
             "function_score": {
@@ -515,7 +509,7 @@ class ESHit2HaystackDoc(BaseComponent):
         params: Optional[dict] = None,
         elasticsearch_result: Any = None,
     ):
-#        import pdb; pdb.set_trace()
+        #        import pdb; pdb.set_trace()
         try:
             hits = elasticsearch_result["hits"]["hits"]
         except KeyError:
@@ -524,7 +518,7 @@ class ESHit2HaystackDoc(BaseComponent):
         documents = []
         content_field = self.document_store.content_field
         nested_content_field = self.document_store.nested_content_field
-        embedding_field = self.document_store.embedding_field
+        # embedding_field = self.document_store.embedding_field
         nested_vector_field = self.nested_vector_field
 
         for hit in hits:
@@ -547,9 +541,9 @@ class ESHit2HaystackDoc(BaseComponent):
             for inner_hit in inner_hits:
                 if inner_hit["_source"].get(nested_content_field):
                     doc = deepcopy(hit)
-#                    doc["_source"][embedding_field] = inner_hit["_source"][
-#                        embedding_field
-#                    ]
+                    #                    doc["_source"][embedding_field] = inner_hit["_source"][
+                    #                        embedding_field
+                    #                    ]
                     doc["_source"][nested_content_field] = clean_text(
                         text=inner_hit["_source"][nested_content_field],
                         conf=self.clean_config,
@@ -581,3 +575,8 @@ class ESHit2HaystackDoc(BaseComponent):
             "query": query,
         }
         return res, "output_1"
+
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"

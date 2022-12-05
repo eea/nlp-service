@@ -14,6 +14,11 @@ class TransformersPipeline(BaseComponent):
 
         return {"result": result}, "output_1"
 
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"
+
 
 class NERTransformersPipeline(TransformersPipeline):
     outgoing_edges = 1
@@ -49,11 +54,16 @@ class NERTransformersPipeline(TransformersPipeline):
 
         return {"result": result["result"]}, output
 
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"
+
 
 class SentenceTransformer(BaseComponent):
     outgoing_edges = 1
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, model, *args, **kwargs):
         # from sentence_transformers import SentenceTransformer
         # self.model = SentenceTransformer(kwargs['model'])
         import torch
@@ -61,8 +71,8 @@ class SentenceTransformer(BaseComponent):
         self.torch = torch
         from transformers import AutoModel, AutoTokenizer
 
-        self.tokenizer = AutoTokenizer.from_pretrained(kwargs["model"])
-        self.model = AutoModel.from_pretrained(kwargs["model"])
+        self.tokenizer = AutoTokenizer.from_pretrained(model)
+        self.model = AutoModel.from_pretrained(model)
 
     def run(self, sentence_transformer_documents):
         if not sentence_transformer_documents:
@@ -97,3 +107,8 @@ class SentenceTransformer(BaseComponent):
     #     sum_mask = self.torch.clamp(input_mask_expanded.sum(1), min=1e-9)
     #
     #     return sum_embeddings / sum_mask
+
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"

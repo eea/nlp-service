@@ -9,7 +9,9 @@ _default_query_types = [
 
 
 class QuerySearchModel(BaseComponent):
-    """A component that only serves as a vesel for configuration from yml files"""
+    "A component that only serves as a vesel for configuration from yml files"
+
+    outgoing_edges = 1
 
     def __init__(
         self,
@@ -29,3 +31,8 @@ class QuerySearchModel(BaseComponent):
 
     def run(self, payload):
         return
+
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"

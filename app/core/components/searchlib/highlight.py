@@ -1,12 +1,12 @@
-from functools import cached_property
 import logging
 import re
+from functools import cached_property
 
 import nltk
-nltk.download("stopwords")
-from nltk.corpus import stopwords
 
+nltk.download("stopwords")
 from langdetect import DetectorFactory, detect_langs
+from nltk.corpus import stopwords
 
 logger = logging.getLogger(__name__)
 

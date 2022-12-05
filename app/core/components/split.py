@@ -1,8 +1,10 @@
 from haystack.nodes.base import BaseComponent
-from haystack.preprocessor.preprocessor import PreProcessor
+from haystack.nodes.preprocessor.preprocessor import PreProcessor
 
 
 class Split(BaseComponent):
+    outgoing_edges = 1
+
     def run(self, payload):
         preprocessor = PreProcessor(
             clean_empty_lines=payload.get("clean_empty_lines", True),
