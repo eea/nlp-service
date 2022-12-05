@@ -6,7 +6,8 @@ from typing import Dict, Optional
 
 from app.core.messages import NO_VALID_PAYLOAD
 from haystack.pipelines.base import Pipeline as BasePipeline
-from haystack.pipelines.config import (get_component_definitions,
+from haystack.pipelines.config import (build_component_dependency_graph,
+                                       get_component_definitions,
                                        get_pipeline_definition)
 from loguru import logger
 from networkx.drawing.nx_agraph import to_agraph
@@ -92,6 +93,9 @@ class Pipeline(BasePipeline):
             pipeline_config=pipeline_config,
             overwrite_with_env_variables=overwrite_with_env_variables,
         )
+        # graph = build_component_dependency_graph(
+        #     pipeline_definition, component_definitions
+        # )
 
         pipeline = cls()
 

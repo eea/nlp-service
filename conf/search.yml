@@ -83,32 +83,33 @@ pipelines:
       - name: RequestClassifier
         inputs: [Query]
 
-      - name: TagRequestAsMetadata
-        inputs: [RequestClassifier.output_1]
-
       - name: TagRequestAsQuery
         inputs: [RequestClassifier.output_2]
-
-      - name: RawRetriever
-        inputs: [TagRequestAsMetadata, DPRequestClassifier.output_1]
 
       - name: QueryClassifier
         inputs: [TagRequestAsQuery]
 
+      - name: TagRequestAsMetadata
+        inputs: [RequestClassifier.output_1]
+
       - name: QuestionStatementQueryClassifier
         inputs: [QueryClassifier.output_1]
-
-      - name: TagRequestAsKeyword
-        inputs: [QueryClassifier.output_2]
 
       - name: TagRequestAsInterrogativeQuery
         inputs: [QuestionStatementQueryClassifier.output_1]
 
+      - name: TagRequestAsKeyword
+        inputs: [QueryClassifier.output_2]
+
       - name: TagRequestAsDeclarativeQuery
         inputs: [QuestionStatementQueryClassifier.output_2]
 
+
       - name: DPRequestClassifier
         inputs: [TagRequestAsInterrogativeQuery, TagRequestAsDeclarativeQuery, TagRequestAsKeyword]
+
+      - name: RawRetriever
+        inputs: [TagRequestAsMetadata, DPRequestClassifier.output_1]
 
       - name: DensePassageRetriever
         inputs: [DPRequestClassifier.output_2]
