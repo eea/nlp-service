@@ -4,8 +4,6 @@
 
 Python 3.6+, a GPU-powered server
 
-##
-
 By default it would operate the following endpoints (go to
 [local OpenAPI page](http://localhost:8000/docs) for an overview):
 
@@ -26,6 +24,17 @@ You can customize which services to start via an environment variable:
 
 ```bash
 export NLP_SERVICES="embedding,ner,summarizer"
+```
+
+## Instalation
+
+```
+	conda install mamba -n base -c conda-forge
+	conda create -n py38 python=3.8
+	conda init fish
+	conda activate py38
+	mamba install pytorch cudatoolkit=10.2 tensorflow tensorflow-hub -c pytorch
+	pip install -e .
 ```
 
 See [install](./install.md) for installation instructions.
