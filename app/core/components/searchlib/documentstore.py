@@ -565,6 +565,12 @@ class ESHit2HaystackDoc(BaseComponent):
                     # pdb.set_trace()
                     query = ""
 
+        # haystack 1.11 has a validation on content_type, we have to set it to 'text'
+        ALLOWED_CONTENT_TYPES = ["text", "table", "image", "audio"]
+        for document in documents:
+            if document["_source"].get("content_type") not in ALLOWED_CONTENT_TYPES:
+                document["_source"]["content_type"] = "text"
+
         res = {
             "documents": [
                 self.document_store._convert_es_hit_to_document(
