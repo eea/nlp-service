@@ -19,7 +19,7 @@ class Split(BaseComponent):
         )
         tmp_doc = {"content": payload.get("fulltext", "")}
         docs = preprocessor.process(tmp_doc)
-        return {"parts": [doc["content"] for doc in docs]}, "output_1"
+        return {"parts": [doc.content for doc in docs]}, "output_1"
 
     def run_batch(self, *args, **kwargs):
         # TODO: implement this
