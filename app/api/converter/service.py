@@ -25,8 +25,9 @@ class TikaModel(PipelineModel):
 
         doc_id = payload["params"]["Tika"]["meta"]["id"]
 
-        for doc in payload["documents"]:
-            doc["id"] = doc_id
-            doc["text"] = doc["content"]  # BBB
+        payload["documents"] = [
+            {"id": doc_id, "text": doc.content, "meta": doc.meta}
+            for doc in payload["documents"]
+        ]
 
         return payload

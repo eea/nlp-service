@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from haystack import Document
 from haystack.nodes import TikaConverter
 from haystack.nodes.file_converter import BaseConverter
 from tika import parser as tikaparser
@@ -94,6 +95,7 @@ class SearchTikaConverter(BaseConverter):
         remove_numeric_tables: Optional[bool] = None,
         valid_languages: Optional[List[str]] = None,
         encoding: Optional[str] = None,
+        id_hash_keys:  Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         :param file_path: path of the file to convert
@@ -160,10 +162,9 @@ class SearchTikaConverter(BaseConverter):
                 )
 
         text = "\f".join(cleaned_pages)
-        document = {
-            "content": text,
-            "content_type": "text",
-            "meta": {**parsed["metadata"], **(meta or {})},
-        }
-
+        document = Document(
+            content = text,
+            content_type = "text",
+            meta = {**parsed["metadata"], **(meta or {})},
+        )
         return [document]
