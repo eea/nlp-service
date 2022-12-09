@@ -2,13 +2,46 @@ version: '2'
 
 services:
   nlp:
-    build: .
+    image: eeacms/nlp-service:v0.0.52
     ports:
       - "8000:8000"
     volumes:
       - .:/app
-      - ../nlp-cache/cache:/root/.cache
+      - ./cache:/root/.cache
+      - ./var:/nlp_log
     environment:
       - QA_ELASTICSEARCHDOCUMENTSTORE_PARAMS_HOST=elastic
       - NLP_SERVICES=ner
-    command: bash -c "tail -f /dev/null"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    shm_size: 1073741824
+    environment:
+      DISABLE_RUNTIME_TESTS: '1'
+      FEEDBACK_FEEDBACKSTORE_PARAMS_CREATE_INDEX: 'true'
+      FEEDBACK_FEEDBACKSTORE_PARAMS_HOST: elastic
+      FEEDBACK_FEEDBACKSTORE_PARAMS_INDEX: data_searchui
+      FEEDBACK_FEEDBACKSTORE_PARAMS_LABEL_INDEX: data_searchui-feedback
+      NLP_LOGFILE: /nlp_log/nlp-searchlib.log
+      NLP_LOGLEVEL: '20'
+      NLP_SERVICES: feedback,qa,search,similarity,qasearch,embedding,converter,split
+      QA_FACETEDDOCUMENTSTORE_PARAMS_CONTENT_FIELD: text
+      QA_FACETEDDOCUMENTSTORE_PARAMS_EMBEDDING_FIELD: embedding
+      QA_FACETEDDOCUMENTSTORE_PARAMS_HOST: elastic
+      QA_FACETEDDOCUMENTSTORE_PARAMS_INDEX: data_searchui
+      SEARCH_FACETEDDOCUMENTSTORE_PARAMS_CONTENT_FIELD: text
+      SEARCH_FACETEDDOCUMENTSTORE_PARAMS_EMBEDDING_FIELD: embedding
+      SEARCH_FACETEDDOCUMENTSTORE_PARAMS_HOST: elastic
+      SEARCH_FACETEDDOCUMENTSTORE_PARAMS_INDEX: data_searchui
+      TZ: Europe/Copenhagen
+      QA_ANSWEREXTRACTION_PARAMS_MODEL_NAME_OR_PATH: deepset/roberta-base-squad2
+      QA_FACETEDDOCUMENTSTORE_PARAMS_NESTED_CONTENT_FIELD: text
+      SEARCH_FACETEDDOCUMENTSTORE_PARAMS_NESTED_CONTENT_FIELD: text
+      QA_FACETEDDOCUMENTSTORE_PARAMS_NLP_PATH: nlp_250

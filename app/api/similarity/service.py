@@ -55,7 +55,7 @@ class SimilarityModel(PipelineModel):
         documents = [Document(text) for text in sentences]
 
         output = process_request(
-            self.pipeline, {"sentence_transformer_documents": documents}
+            self.pipeline, {"params":{"sentence_transformer_documents": documents}}
         )
 
         documents = output["sentence_transformer_documents"]

@@ -1,8 +1,14 @@
+.pytest_cache
 .venv
+benchmark
+cache
 data
+data
+docs
+haystack-git
 mlruns
 notebooks
 sample_model
-tests
+var
 vendor
 volumes

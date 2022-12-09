@@ -35,8 +35,15 @@ class AnswerOptimizer(BaseComponent):
 
         return res, "output_1"
 
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"
+
 
 class SearchlibQAAdapter(BaseComponent):
+    outgoing_edges = 1
+
     def __init__(self):
         # self.nlp = spacy.load("en_core_web_trf")
         nlp = English()
@@ -99,7 +106,7 @@ class SearchlibQAAdapter(BaseComponent):
             "similarity": None,
             "answers": [],
         }
-#        import pdb; pdb.set_trace()
+        #        import pdb; pdb.set_trace()
         if not sentence_transformer_documents:
             return output, "output_1"
 
@@ -171,3 +178,8 @@ class SearchlibQAAdapter(BaseComponent):
             output["answers"].append(doc)
 
         return output, "output_1"
+
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"

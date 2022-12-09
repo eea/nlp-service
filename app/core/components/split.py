@@ -1,8 +1,10 @@
 from haystack.nodes.base import BaseComponent
-from haystack.preprocessor.preprocessor import PreProcessor
+from haystack.nodes.preprocessor.preprocessor import PreProcessor
 
 
 class Split(BaseComponent):
+    outgoing_edges = 1
+
     def run(self, payload):
         preprocessor = PreProcessor(
             clean_empty_lines=payload.get("clean_empty_lines", True),
@@ -17,4 +19,9 @@ class Split(BaseComponent):
         )
         tmp_doc = {"content": payload.get("fulltext", "")}
         docs = preprocessor.process(tmp_doc)
-        return {"parts": [doc["content"] for doc in docs]}, "output_1"
+        return {"parts": [doc.content for doc in docs]}, "output_1"
+
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"

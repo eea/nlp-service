@@ -104,3 +104,9 @@ class SearchlibTransformersSummarizer(TransformersSummarizer):
             result.append(cur_doc)
 
         return result
+
+    #
+    # def run_batch(self, *args, **kwargs):
+    #     # TODO: implement this
+    #     raise ValueError
+    #     return {}, "output_1"
