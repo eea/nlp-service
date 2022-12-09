@@ -50,6 +50,11 @@ class RawFARMRanker(FARMRanker):
 
         return {"elasticsearch_result": elasticsearch_result}, "output_1"
 
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"
+
     def predict(
         self, query: Optional[str], hits: List[Any], params: Optional[dict]
     ) -> dict:

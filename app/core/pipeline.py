@@ -6,7 +6,8 @@ from typing import Dict, Optional
 
 from app.core.messages import NO_VALID_PAYLOAD
 from haystack.pipelines.base import Pipeline as BasePipeline
-from haystack.pipelines.config import (get_component_definitions,
+from haystack.pipelines.config import (build_component_dependency_graph,
+                                       get_component_definitions,
                                        get_pipeline_definition)
 from loguru import logger
 from networkx.drawing.nx_agraph import to_agraph
@@ -29,9 +30,14 @@ def add_components_config(components):
 def load_components(config, components):
     """Instantiate components based on a configuration"""
 
-    from haystack.nodes.base import BaseComponent
+    # from haystack.nodes.base import BaseComponent
 
-    for definition in config.get("components", []):
+    defs = config.get("components", [])
+    definitions = {}
+    for definition in defs:
+        definitions[definition["name"]] = definition
+
+    for definition in defs:
         copied = copy.deepcopy(definition)
         name = copied.pop("name")
         params = copied.get("params", {})
@@ -41,14 +47,11 @@ def load_components(config, components):
             if isinstance(v, str) and v in components:
                 params[k] = components[v]
 
-        if not name in components:
-            try:
-                components[name] = BaseComponent.load_from_args(
-                    copied["type"], **params
-                )
-            except Exception:
-                print(f"Error loading: (${copied['type']}) with params: ${params}")
-                raise
+        if name not in components:
+            component = BasePipeline._load_or_get_component(
+                name=name, definitions=definitions, components=components
+            )
+            components[name] = component
 
 
 def process_request(pipeline, request):
@@ -90,6 +93,9 @@ class Pipeline(BasePipeline):
             pipeline_config=pipeline_config,
             overwrite_with_env_variables=overwrite_with_env_variables,
         )
+        # graph = build_component_dependency_graph(
+        #     pipeline_definition, component_definitions
+        # )
 
         pipeline = cls()
 
@@ -99,9 +105,10 @@ class Pipeline(BasePipeline):
             component = cls._load_or_get_component(
                 name=name, definitions=component_definitions, components=COMPONENTS
             )
-            pipeline.add_node(
-                component=component, name=name, inputs=node.get("inputs", [])
-            )
+            if pipeline.get_node(name) is None:
+                pipeline.add_node(
+                    component=component, name=name, inputs=node.get("inputs", [])
+                )
 
         return pipeline
 

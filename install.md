@@ -23,7 +23,7 @@ conda install mamba -n base -c conda-forge
 * **Create a conda environment**
 
 ```shell
-conda create -n py38 python=3.8
+conda create -n py38 python=3.10
 ```
 
 * **Edit Anaconda Configuration File**
@@ -56,8 +56,7 @@ conda init fish
 * **Install the packages**
 
 ```shell
-mamba install pytorch cudatoolkit=10.2 tensorflow tensorflow-hub -c pytorch
-conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
+mamba install pytorch pytorch-cuda=11.6 tensorflow tensorflow-hub -c pytorch -c nvidia
 ```
 
  *Please note that ``cudatoolkit`` version may be different based on your system configuration*
@@ -79,6 +78,8 @@ More info: https://www.anaconda.com/blog/using-pip-in-a-conda-environment
 
 ```shell
 pip install -e .
+pip uninstall torch
+mamba install pytorch pytorch-cuda=11.6 tensorflow tensorflow-hub -c pytorch -c nvidia
 ```
 
 * **Install Jupyter Lab**

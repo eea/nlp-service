@@ -2,6 +2,8 @@ from haystack.nodes.base import BaseComponent
 
 
 class SpacyModel(BaseComponent):
+    outgoing_edges = 1
+
     def __init__(self, *args, **kwargs):
         import spacy
 

@@ -7,10 +7,10 @@ from haystack.nodes.retriever import (DensePassageRetriever,
                                       ElasticsearchRetriever)
 
 from .highlight import Highlight
+from .utils import find_path, get_value_from_path
 
 logger = logging.getLogger(__name__)
 
-from .utils import find_path, get_value_from_path
 
 es_params = [
     "query",
@@ -29,24 +29,18 @@ es_params = [
 ]
 
 nested_tpl = {
-        "inner_hits": {
-                  "_source": {
-                    "excludes": [
-                      "<nlp_embedding>"
-                    ]
-                  }
-        },
-        "path": "<nlp_path>",
-        "query": {
-            "bool": {
-                "must": {
-                    "multi_match": {
-                        "query": "<search_term>",
-                        "fields": ["<nlp_text>"],
-                    }
+    "inner_hits": {"_source": {"excludes": ["<nlp_embedding>"]}},
+    "path": "<nlp_path>",
+    "query": {
+        "bool": {
+            "must": {
+                "multi_match": {
+                    "query": "<search_term>",
+                    "fields": ["<nlp_text>"],
                 }
             }
         }
+    },
 }
 
 
@@ -60,16 +54,23 @@ def clean_body(body):
 
     return body
 
+
 def make_nested_query(query, nlp_path, nlp_text, nlp_embedding):
     (success, path) = find_path(query, "multi_match", [])
     if success:
         node = get_value_from_path(query, path)
-        node['nested'] = nested_tpl
-        node['nested']['path'] = nlp_path
-        node['nested']['inner_hits']['_source']['excludes'] = [f'{nlp_path}.{nlp_embedding}']
-        node['nested']['query']['bool']['must']['multi_match'] = copy.deepcopy(node['multi_match'])
-        node['nested']['query']['bool']['must']['multi_match']['fields'] = [f'{nlp_path}.{nlp_text}']
-        node.pop('multi_match')
+        node["nested"] = nested_tpl
+        node["nested"]["path"] = nlp_path
+        node["nested"]["inner_hits"]["_source"]["excludes"] = [
+            f"{nlp_path}.{nlp_embedding}"
+        ]
+        node["nested"]["query"]["bool"]["must"]["multi_match"] = copy.deepcopy(
+            node["multi_match"]
+        )
+        node["nested"]["query"]["bool"]["must"]["multi_match"]["fields"] = [
+            f"{nlp_path}.{nlp_text}"
+        ]
+        node.pop("multi_match")
     return query
 
 
@@ -96,8 +97,13 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         query = body.get("query", None)
         bodyparams = body.pop("params", {}) or {}
         from_ = bodyparams.pop("from_", 0)
-#        import pdb; pdb.set_trace()
-        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None) or body.pop("source", None) or body.pop("_source", None)
+        #        import pdb; pdb.set_trace()
+        _source = (
+            bodyparams.pop("source", None)
+            or bodyparams.pop("_source", None)
+            or body.pop("source", None)
+            or body.pop("_source", None)
+        )
 
         if top_k is not None:
             body["size"] = top_k
@@ -118,7 +124,12 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         if index:
             body["index"] = index
         if bodyparams.get("scope_answerextraction", False):
-            body = make_nested_query(body, self.document_store.nlp_path, self.document_store.nested_content_field, self.document_store.embedding_field)
+            body = make_nested_query(
+                body,
+                self.document_store.nlp_path,
+                self.document_store.nested_content_field,
+                self.document_store.embedding_field,
+            )
 
         if root_node == "Query":
             self.query_count += 1
@@ -131,6 +142,11 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             return {"elasticsearch_result": output, "query": query}, "output_1"
         else:
             raise Exception(f"Invalid root_node '{root_node}'.")
+
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"
 
     def retrieve(self, **kwargs):
         index = kwargs.get("index", self.document_store.index)
@@ -161,7 +177,12 @@ class RawDensePassageRetriever(DensePassageRetriever):
         body = clean_body(body)
         query = body.get("query", None)
         bodyparams = body.pop("params", {})
-        _source = bodyparams.pop("source", None) or bodyparams.pop("_source", None) or body.pop("source", None) or body.pop("_source", None)
+        _source = (
+            bodyparams.pop("source", None)
+            or bodyparams.pop("_source", None)
+            or body.pop("source", None)
+            or body.pop("_source", None)
+        )
 
         if _source:
             body["_source"] = _source
@@ -195,6 +216,11 @@ class RawDensePassageRetriever(DensePassageRetriever):
         else:
             raise Exception(f"Invalid root_node '{root_node}'.")
 
+    def run_batch(self, *args, **kwargs):
+        # TODO: implement this
+        raise ValueError
+        return {}, "output_1"
+
     def retrieve(self, **kwargs):
 
         index = kwargs.get("index", self.document_store.index)
@@ -205,7 +231,7 @@ class RawDensePassageRetriever(DensePassageRetriever):
         # Hardcoded for ES
         q = kwargs["query"]
         search_term = get_search_term(q)
-        query_emb = self.embed_queries(texts=[search_term])[0]
+        query_emb = self.embed_queries(queries=[search_term])[0]
         args.pop("use_dp", None)
         args["query_emb"] = query_emb
 

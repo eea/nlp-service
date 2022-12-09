@@ -1,0 +1,12 @@
+services:
+  nlp:
+    # build: .
+    # command: bash -c "tail -f /dev/null"
+    environment:
+      FEEDBACK_FEEDBACKSTORE_PARAMS_HOST: 10.120.10.204
+      FEEDBACK_FEEDBACKSTORE_PARAMS_PORT: 60168
+      QA_FACETEDDOCUMENTSTORE_PARAMS_HOST: 10.120.10.204
+      QA_FACETEDDOCUMENTSTORE_PARAMS_PORT: 60168
+      SEARCH_FACETEDDOCUMENTSTORE_PARAMS_HOST: 10.120.10.204
+      SEARCH_FACETEDDOCUMENTSTORE_PARAMS_PORT: 60168
+      NLP_SERVICES: feedback,qa,search,similarity,qasearch,embedding,split

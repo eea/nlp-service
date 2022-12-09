@@ -1,15 +1,19 @@
-import copy
+# import copy
 import importlib
 import logging
 import os
 import os.path
 
-import yaml
-from yamlinclude import YamlIncludeConstructor
-
 import fastapi_chameleon
 import uvicorn
 import venusian
+import yaml
+from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from loguru import logger
+from starlette.middleware.cors import CORSMiddleware
+from yamlinclude import YamlIncludeConstructor
+
 from app.api.system import router as sys_router
 from app.core import config
 from app.core.errors.http_error import http_error_handler
@@ -17,10 +21,6 @@ from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.core.pipeline import (COMPONENTS, add_components_config, add_pipeline,
                                load_components)
 from app.views import router as views_router
-from fastapi import APIRouter, FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
-from loguru import logger
-from starlette.middleware.cors import CORSMiddleware
 
 dev_mode = True
 
@@ -31,7 +31,9 @@ template_folder = os.path.abspath(template_folder)
 fastapi_chameleon.global_init(template_folder, auto_reload=dev_mode)
 
 # logger.add("var/nlpservice.log", rotation="500 MB", level="DEBUG")
-YamlIncludeConstructor.add_to_loader_class(loader_class=yaml.SafeLoader, base_dir=config.CONFIG_PATH)
+YamlIncludeConstructor.add_to_loader_class(
+    loader_class=yaml.SafeLoader, base_dir=config.CONFIG_PATH
+)
 
 logger.add("var/nlpservice.log", rotation="500 MB", level="DEBUG")
 

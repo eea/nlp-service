@@ -1,10 +1,11 @@
-
-from typing import Any, Optional, Dict, List, Tuple, Optional
 from datetime import datetime
+from typing import Dict, Tuple
 
 import haystack.nodes.base
 
 original_dispatch_run = haystack.nodes.base.BaseComponent._dispatch_run
+
+
 def timed_dispatch_run(self, **kwargs) -> Tuple[Dict, str]:
     before = datetime.now()
 
@@ -17,9 +18,12 @@ def timed_dispatch_run(self, **kwargs) -> Tuple[Dict, str]:
     print("---------")
     (res, val) = ret
     if type(res) is dict:
-        res['elapsed'] = res.get('elapsed', [])
-        res['elapsed'].append({self.name:{'start':before, 'end':after, 'delta':delta.total_seconds()}})
+        res["elapsed"] = res.get("elapsed", [])
+        res["elapsed"].append(
+            {self.name: {"start": before, "end": after, "delta": delta.total_seconds()}}
+        )
     return ret
+
 
 print("PATCH BASECOMPONENT")
 haystack.nodes.base.BaseComponent._dispatch_run = timed_dispatch_run

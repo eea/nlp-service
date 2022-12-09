@@ -1,4 +1,4 @@
-import haystack.ranker  # noqa // register these components
+# import haystack.ranker  # noqa // register these components
 
 from .embedding import EmbeddingModel
 from .searchlib.documentstore import SearchlibElasticsearchDocumentStore
@@ -31,5 +31,5 @@ __all__ = [
     SpacyModel,
     TransformersPipeline,
     QuerySearchModel,
-    Split
+    Split,
 ]
