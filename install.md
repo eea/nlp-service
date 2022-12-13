@@ -79,6 +79,7 @@ More info: https://www.anaconda.com/blog/using-pip-in-a-conda-environment
 ```shell
 pip install -e .
 pip uninstall torch
+mamba remove torch
 mamba install pytorch pytorch-cuda=11.6 tensorflow tensorflow-hub -c pytorch -c nvidia
 ```
 
