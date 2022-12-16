@@ -13,8 +13,8 @@ tags:
 components:
   - name: EmbeddingModel
     type: EmbeddingModel
-    params:
-      document_store:
+#    params:
+#      document_store:
 
 pipelines:
   - name: embedding
