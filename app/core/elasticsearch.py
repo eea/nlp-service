@@ -17,11 +17,11 @@ def get_search_term(body):
     strategies = [QUERY_MATCH_TEXT, QUERY_MATCH_ALL, QUERY_SIMPLE_MATCH, QUERY_QUERY]
     search_term = ""
 
-    for idx, compiled in enumerate(strategies):
+    for compiled in strategies:
         try:
             search_term = compiled.input(body).first()
         except Exception as e:
-            print(f"NLP exception:\n{e}\nbody: {body}\nstrategy: {idx}")
+            print(e)
         if search_term:
             break
 
