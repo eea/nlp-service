@@ -5,7 +5,6 @@ import os
 import os.path
 
 import fastapi_chameleon
-import nltk
 import uvicorn
 import venusian
 import yaml
@@ -22,8 +21,6 @@ from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.core.pipeline import (COMPONENTS, add_components_config, add_pipeline,
                                load_components)
 from app.views import router as views_router
-
-nltk.download("stopwords")
 
 dev_mode = True
 
@@ -51,13 +48,11 @@ def get_app() -> FastAPI:
     if os.environ.get("NLP_SERVICES"):
         service_names = os.environ["NLP_SERVICES"].strip().split(",")
 
-    loglevel = conf.get("loglevel", int(
-        os.environ.get("NLP_LOGLEVEL", logging.INFO)))
+    loglevel = conf.get("loglevel", int(os.environ.get("NLP_LOGLEVEL", logging.INFO)))
 
     if loglevel != -1:
         file_handler = logging.FileHandler(
-            conf.get("logfile", os.environ.get(
-                "NLP_LOGFILE", "/tmp/nlpservice.log"))
+            conf.get("logfile", os.environ.get("NLP_LOGFILE", "/tmp/nlpservice.log"))
         )
         file_handler.setFormatter(
             logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
@@ -121,8 +116,7 @@ def get_app() -> FastAPI:
         scanner = venusian.Scanner()
         scanner.scan(module)
 
-        api_router.include_router(
-            module.routes.router, tags=tags, prefix=prefix)
+        api_router.include_router(module.routes.router, tags=tags, prefix=prefix)
         api_router.include_router(sys_router.router, prefix="/sys")
 
         logger.info(f"Loading service <{name}> completed")
@@ -156,12 +150,10 @@ def get_app() -> FastAPI:
     if static_media_path:
         if not os.path.exists(static_media_path):
             os.mkdir(static_media_path)
-        app.mount(
-            "/static", StaticFiles(directory=static_media_path), name="static")
+        app.mount("/static", StaticFiles(directory=static_media_path), name="static")
 
     if config.IS_DEBUG:
-        logger.info(
-            "See http://127.0.0.1:8000/docs for Swagger API Documentation.")
+        logger.info("See http://127.0.0.1:8000/docs for Swagger API Documentation.")
 
     return fast_app
 
