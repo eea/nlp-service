@@ -2,9 +2,6 @@ import logging
 import re
 from functools import cached_property
 
-import nltk
-
-nltk.download("stopwords")
 from langdetect import DetectorFactory, detect_langs
 from nltk.corpus import stopwords
 
@@ -111,13 +108,15 @@ class Highlight:
         default language is 'english'
         :return: stop_words for the search term language
         """
-        if self.language and self.language in LANG_CODE_MAPPING:
+        available_stopwords = stopwords.fileids()
+        if self.language and \
+                self.language in LANG_CODE_MAPPING and \
+                self.language in available_stopwords:
             return (
                 stopwords.words(LANG_CODE_MAPPING[self.language])
-                if self.language
-                else stopwords.words("english")
             )
-        return []
+        else:
+            return stopwords.words("english")
 
     def _create_positions(self):
         tokens_position = {}
@@ -246,7 +245,8 @@ class Highlight:
                 )
                 only_stop_words_in_seq = True
                 start_seq = (
-                    curr_position + self._sequence_ends(start_seq, curr_position) - 1
+                    curr_position +
+                    self._sequence_ends(start_seq, curr_position) - 1
                 )
 
             curr_position = curr_position + 1

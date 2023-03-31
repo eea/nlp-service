@@ -1,11 +1,12 @@
 """ Routes for the QA Search service
 """
-
+import copy
 import logging
 
 from app.api.search.api import SearchRequest
 from app.core.config import CONCURRENT_REQUEST_PER_WORKER
 from app.core.elasticsearch import get_body_from  # , get_search_term
+
 # from app.core.elasticsearch import get_search_term
 from app.core.utils import RequestLimiter
 from fastapi import APIRouter, Request
@@ -63,6 +64,58 @@ def is_qa_request(body, response, default_query_types):
     return (query_type in handled_types) and (from_ == 0)  # "request:metadata"
 
 
+def remove_attribute(tree, attribute):
+    if isinstance(tree, dict):
+        if tree.get(attribute, None) is not None:
+            del tree[attribute]
+        for node in tree.keys():
+            remove_attribute(tree[node], attribute)
+    if isinstance(tree, list):
+        for node in tree:
+            remove_attribute(node, attribute)
+
+
+def remove_nodes_with_attribute(tree, attribute):
+    if isinstance(tree, dict):
+        for node in list(tree.keys()):
+            if (
+                isinstance(tree[node], dict)
+                and tree[node].get(attribute, None) is not None
+            ):
+                del tree[node]
+                continue
+            remove_nodes_with_attribute(tree[node], attribute)
+    if isinstance(tree, list):
+        for node in tree:
+            if isinstance(node, dict) and node.get(attribute, None) is not None:
+                del node
+                continue
+            remove_nodes_with_attribute(node, attribute)
+
+
+def remove_empty_nodes(tree):
+    if isinstance(tree, dict):
+        for node in list(tree.keys()):
+            remove_empty_nodes(tree[node])
+            if isinstance(tree[node], dict) and len(tree[node].keys()) == 0:
+                del tree[node]
+            else:
+                if isinstance(tree[node], list) and len(tree[node]) == 0:
+                    del tree[node]
+
+    if isinstance(tree, list):
+        for node in tree:
+            remove_empty_nodes(node)
+            try:
+                tree.remove({})
+            except:
+                pass
+            try:
+                tree.remove([])
+            except:
+                pass
+
+
 @router.post("")  # , response_model=QASearchResponse
 def post_querysearch(payload: SearchRequest, request: Request):
     component = request.app.state.querysearch.component
@@ -80,23 +133,28 @@ def post_querysearch(payload: SearchRequest, request: Request):
 
     if source:
         body["_source"] = source
+    search_body = copy.deepcopy(body)
+    remove_attribute(search_body, "ignoreFromNlp")
+    qa_body = copy.deepcopy(body)
+    remove_nodes_with_attribute(qa_body, "ignoreFromNlp")
+    remove_empty_nodes(qa_body)
 
     with concurrency_limiter.run():
         search_pipeline = getattr(request.app.state, component.search_pipeline)
-        search_response = search_pipeline.predict(body)
+        search_response = search_pipeline.predict(search_body)
         qa_response = {}
 
-        if is_qa_request(body, search_response, default_query_types):
+        if is_qa_request(qa_body, search_response, default_query_types):
             qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
 
-            if qa_pipeline and body.get("size", 0):
+            if qa_pipeline and qa_body.get("size", 0):
                 # query = body.pop("query")
                 # params = body.get("params", {})
                 # params.update({"custom_query": query})
                 # body["params"] = params
                 # body["query"] = get_search_term(query)
-                body["params"]["scope_answerextraction"] = True
-                qa_response = qa_pipeline.predict(body)
+                qa_body["params"]["scope_answerextraction"] = True
+                qa_response = qa_pipeline.predict(qa_body)
 
     response = remix(search_response, qa_response, excluded_meta_data)
     response.pop("sentence_transformer_documents", None)
