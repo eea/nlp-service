@@ -111,13 +111,15 @@ class Highlight:
         default language is 'english'
         :return: stop_words for the search term language
         """
-        if self.language and self.language in LANG_CODE_MAPPING:
-            return (
-                stopwords.words(LANG_CODE_MAPPING[self.language])
-                if self.language
-                else stopwords.words("english")
-            )
-        return []
+        available_stopwords = stopwords.fileids()
+        if (
+            self.language
+            and self.language in LANG_CODE_MAPPING
+            and self.language in available_stopwords
+        ):
+            return stopwords.words(LANG_CODE_MAPPING[self.language])
+        else:
+            return stopwords.words("english")
 
     def _create_positions(self):
         tokens_position = {}

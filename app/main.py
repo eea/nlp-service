@@ -5,6 +5,7 @@ import os
 import os.path
 
 import fastapi_chameleon
+import nltk
 import uvicorn
 import venusian
 import yaml
@@ -18,9 +19,15 @@ from app.api.system import router as sys_router
 from app.core import config
 from app.core.errors.http_error import http_error_handler
 from app.core.event_handlers import start_app_handler, stop_app_handler
-from app.core.pipeline import (COMPONENTS, add_components_config, add_pipeline,
-                               load_components)
+from app.core.pipeline import (
+    COMPONENTS,
+    add_components_config,
+    add_pipeline,
+    load_components,
+)
 from app.views import router as views_router
+
+nltk.download("stopwords")
 
 dev_mode = True
 
