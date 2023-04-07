@@ -72,20 +72,18 @@ class ElasticSearchRequestClassifier(BaseComponent):
     ):
 
         payload = params["payload"] or {}
-        print("----------------------------")
-        print("----------------------------")
-        print("----------------------------")
-        print("ERC")
+        q_id = payload.get("q_id")
+        print(f"{q_id} ERC {payload}")
 
         #        import pdb; pdb.set_trace()
         if payload.get("size", 0) > 0:
             search_term = get_search_term(payload["query"])
-            print("searchterm", search_term)
+            print(f"{q_id} searchterm {search_term}")
             if search_term:
-                print("output_2")
+                print(f"{q_id} output_2")
                 return {"query": search_term}, "output_2"
 
-        print("output_1")
+        print(f"{q_id} output_1")
         return {}, "output_1"
 
     def run_batch(self, *args, **kwargs):

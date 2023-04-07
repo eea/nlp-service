@@ -2,6 +2,7 @@
 """
 import copy
 import logging
+from datetime import datetime
 
 from app.api.search.api import SearchRequest
 from app.core.config import CONCURRENT_REQUEST_PER_WORKER
@@ -118,65 +119,72 @@ def remove_empty_nodes(tree):
 
 @router.post("")  # , response_model=QASearchResponse
 def post_querysearch(payload: SearchRequest, request: Request):
-    component = request.app.state.querysearch.component
-    excluded_meta_data = component.excluded_meta_data
-    default_query_types = component.default_query_types
+    q_id = datetime.timestamp(datetime.now())
+    try:
+        component = request.app.state.querysearch.component
+        excluded_meta_data = component.excluded_meta_data
+        default_query_types = component.default_query_types
 
-    body = payload.dict()
-    # use_dp = body.get("params", {}).pop("use_dp", False)
-    body.update(body.get("params", {}) or {})
-    source = body.pop("source", None)
+        body = payload.dict()
+        # use_dp = body.get("params", {}).pop("use_dp", False)
+        body.update(body.get("params", {}) or {})
+        source = body.pop("source", None)
 
-    # pydantic doesn't like fields with _underscore in beginning?
-    # See https://github.com/samuelcolvin/pydantic/issues/288
-    # for possible fixes
+        print(f'{q_id} {body}')
+        # pydantic doesn't like fields with _underscore in beginning?
+        # See https://github.com/samuelcolvin/pydantic/issues/288
+        # for possible fixes
 
-    if source:
-        body["_source"] = source
-    search_body = copy.deepcopy(body)
-    remove_attribute(search_body, "ignoreFromNlp")
-    qa_body = copy.deepcopy(body)
-    remove_nodes_with_attribute(qa_body, "ignoreFromNlp")
-    remove_empty_nodes(qa_body)
+        body["q_id"] = q_id
 
-    with concurrency_limiter.run():
-        search_pipeline = getattr(request.app.state, component.search_pipeline)
-        search_response = search_pipeline.predict(search_body)
-        qa_response = {}
+        if source:
+            body["_source"] = source
+        search_body = copy.deepcopy(body)
+        remove_attribute(search_body, "ignoreFromNlp")
+        qa_body = copy.deepcopy(body)
+        remove_nodes_with_attribute(qa_body, "ignoreFromNlp")
+        remove_empty_nodes(qa_body)
 
-        if is_qa_request(qa_body, search_response, default_query_types):
-            qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
+        with concurrency_limiter.run():
+            search_pipeline = getattr(request.app.state, component.search_pipeline)
+            search_response = search_pipeline.predict(search_body)
+            qa_response = {}
 
-            if qa_pipeline and qa_body.get("size", 0):
-                # query = body.pop("query")
-                # params = body.get("params", {})
-                # params.update({"custom_query": query})
-                # body["params"] = params
-                # body["query"] = get_search_term(query)
-                qa_body["params"]["scope_answerextraction"] = True
-                qa_response = qa_pipeline.predict(qa_body)
+            if is_qa_request(qa_body, search_response, default_query_types):
+                qa_pipeline = getattr(request.app.state, component.qa_pipeline, None)
 
-    response = remix(search_response, qa_response, excluded_meta_data)
-    response.pop("sentence_transformer_documents", None)
+                if qa_pipeline and qa_body.get("size", 0):
+                    # query = body.pop("query")
+                    # params = body.get("params", {})
+                    # params.update({"custom_query": query})
+                    # body["params"] = params
+                    # body["query"] = get_search_term(query)
+                    qa_body["params"]["scope_answerextraction"] = True
+                    qa_response = qa_pipeline.predict(qa_body)
 
-    answers = response.get("answers", [])
-    if answers:
-        for hit in answers:
+        response = remix(search_response, qa_response, excluded_meta_data)
+        response.pop("sentence_transformer_documents", None)
+
+        answers = response.get("answers", [])
+        if answers:
+            for hit in answers:
+                for field in excluded_meta_data:
+                    if field in hit:
+                        del hit[field]
+                    if field in hit.get("source", []):
+                        del hit["source"][field]
+
+        hits = response.get("hits", {}).get("hits", [])
+        for hit in hits:
             for field in excluded_meta_data:
                 if field in hit:
                     del hit[field]
                 if field in hit.get("source", []):
                     del hit["source"][field]
 
-    hits = response.get("hits", {}).get("hits", [])
-    for hit in hits:
-        for field in excluded_meta_data:
-            if field in hit:
-                del hit[field]
-            if field in hit.get("source", []):
-                del hit["source"][field]
-
-    return response
-
+        return response
+    except Exception as e:
+        logger.exception(f"{q_id} {str(e)}")
+        return {"errors":[f"{q_id} {str(e)}"]}
 
 post_querysearch.__doc__ = """ """

@@ -89,6 +89,7 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
         index: str = None,
         top_k: int = None,
     ):
+        q_id = payload.get("q_id")
         body = payload or params["payload"]
         body = clean_body(body)
 
@@ -139,6 +140,8 @@ class RawElasticsearchRetriever(ElasticsearchRetriever):
             highlight = Highlight(search_term=get_search_term(payload["query"]))
             output = highlight.adjust(output)
 
+            query["q_id"] = q_id
+            print (f'{q_id} RawElasticsearchRetriever output_hits: {output.get("hits",{}).get("total").get("value")} query: {query}')
             return {"elasticsearch_result": output, "query": query}, "output_1"
         else:
             raise Exception(f"Invalid root_node '{root_node}'.")
