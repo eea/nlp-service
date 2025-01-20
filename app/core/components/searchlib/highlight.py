@@ -83,8 +83,11 @@ class Highlight:
         # meth = search_term["options"]["debug"] and detect_langs or detect
         if not self.search_term:
             return self.default_lang
-
-        detected = detect_langs(self.search_term)
+        try:
+          detected = detect_langs(self.search_term)
+        except Exception:
+          logger.exception("Error in Language detection, fallback to default")
+          return self.default_lang
         scores = {x.lang: x.prob for x in detected if x.prob > self.threshold}
 
         if self.default_lang in scores.keys():
